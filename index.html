@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        .empty-state { border: 2px dashed #cbd5e1; border-radius: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: #64748b; }
+    </style>
+</head>
+<body class="text-slate-800 pb-12">
+
+    <!-- HEADER -->
+    <nav class="bg-slate-900 text-white p-4 shadow-xl sticky top-0 z-50">
+        <div class="container mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-lg shadow-lg"><i class="fas fa-chart-line text-xl"></i></div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">Maintenance Manager</h1>
+                    <p class="text-xs text-slate-400">ระบบวิเคราะห์ข้อมูลจากไฟล์ Excel</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <!-- Year Selector (Dynamic) -->
+                <div id="year-selector-container" class="bg-slate-800 p-1 rounded-lg flex shadow-inner hidden">
+                    <!-- Buttons will be injected here by JS -->
+                </div>
+
+                <!-- Import Button -->
+                <label for="fileUpload" class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-md font-medium text-sm flex items-center gap-2 transition-all">
+                    <i class="fas fa-file-import"></i> Import
+                </label>
+                <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(this)" style="display:none;">
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container mx-auto p-4 space-y-6 mt-4">
+
+        <!-- EMPTY STATE -->
+        <div id="empty-view" class="empty-state bg-white">
+            <i class="fas fa-cloud-upload-alt text-6xl mb-4 text-slate-300"></i>
+            <h3 class="text-xl font-bold text-slate-600">ยังไม่มีข้อมูล</h3>
+            <p class="text-sm mb-4">กรุณาอัปโหลดไฟล์ Excel เพื่อเริ่มการวิเคราะห์</p>
+            <p class="text-xs text-slate-400 bg-slate-100 p-2 rounded">รองรับไฟล์ Template เดิม</p>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboard-view" class="hidden space-y-6">
+            
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-slate-500 card">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Total Budget</p>
+                    <h3 id="kpi-budget" class="text-3xl font-bold text-slate-700 mt-2">฿0</h3>
+                    <p class="text-xs text-slate-400 mt-1">งบประมาณรวมทั้งปี</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 card">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Total Actual Cost</p>
+                    <h3 id="kpi-actual" class="text-3xl font-bold text-slate-800 mt-2">฿0</h3>
+                    <p class="text-xs text-slate-400 mt-1">ยอดจ่ายจริงรวมทั้งปี</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-emerald-500 card">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Variance</p>
+                    <h3 id="kpi-variance" class="text-3xl font-bold text-emerald-600 mt-2">฿0</h3>
+                    <p id="kpi-var-desc" class="text-xs text-slate-400 mt-1">Budget vs Actual</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 card">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Work Orders</p>
+                    <h3 id="kpi-jobs" class="text-3xl font-bold text-purple-600 mt-2">0</h3>
+                    <p class="text-xs text-slate-400 mt-1">จำนวนงานทั้งหมด (PM + BM)</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4"><i class="far fa-chart-bar"></i> Monthly Trend</h3>
+                    <div class="h-72"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4"><i class="fas fa-chart-pie"></i> Job Type</h3>
+                    <div class="h-64 flex justify-center"><canvas id="pieChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <h3 class="font-bold text-slate-700">Detailed Logs</h3>
+                        <!-- Location Filter (Level 1) -->
+                        <div class="relative">
+                            <select id="locationFilter" onchange="filterLocationChanged()" class="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none pr-8 bg-white cursor-pointer appearance-none">
+                                <option value="All">All Locations</option>
+                            </select>
+                            <i class="fas fa-map-marker-alt absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+
+                        <!-- Machine Filter (Level 2 - Dependent) -->
+                        <div class="relative">
+                            <select id="machineFilter" onchange="filterTable()" class="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none pr-8 bg-white cursor-pointer appearance-none">
+                                <option value="All">All Machines</option>
+                            </select>
+                            <i class="fas fa-cogs absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                        <div class="relative">
+                            <select id="typeFilter" onchange="filterTable()" class="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none pr-8 bg-white cursor-pointer appearance-none">
+                                <option value="All">All Types</option>
+                                <option value="PM">PM</option>
+                                <option value="BM">BM</option>
+                            </select>
+                            <i class="fas fa-filter absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="searchBox" placeholder="ค้นหา..." onkeyup="filterTable()" class="text-sm border rounded-lg pl-8 pr-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-auto">
+                            <i class="fas fa-search absolute left-2.5 top-2 text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-[500px]">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Machine</th>
+                                <th class="px-6 py-3">Type</th>
+                                <th class="px-6 py-3">Issue/Action</th>
+                                <th class="px-6 py-3 text-right">Budget</th>
+                                <th class="px-6 py-3 text-right">Actual</th>
+                                <th class="px-6 py-3 text-right">Variance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // GLOBAL VARIABLES
+        let rawData = [];
+        let yearsList = [];
+        let machineList = [];
+        let locationList = [];
+        let locMachineMap = {}; // Map ความสัมพันธ์ Location -> Machine IDs
+        let currentYear = null;
+        let charts = {};
+        let currentFilteredData = [];
+
+        // --- 1. FILE HANDLING ---
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                rawData = [];
+                yearsList = [];
+                machineList = [];
+                locationList = [];
+                locMachineMap = {}; // Reset Map
+
+                workbook.SheetNames.forEach(sheetName => {
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet);
+                    const processed = json.map(row => processRow(row)).filter(r => r !== null);
+                    rawData = rawData.concat(processed);
+                });
+
+                if (rawData.length === 0) {
+                    alert("ไม่พบข้อมูลในไฟล์ หรือรูปแบบไม่ถูกต้อง");
+                    return;
+                }
+                initDashboard();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ... (function processRow is the same) ...
+        function processRow(row) {
+            let dateVal = row['Date'] || row['date'] || row['วันที่'];
+            if (!dateVal) return null;
+
+            let dateObj;
+            if (typeof dateVal === 'number') {
+                dateObj = new Date(Math.round((dateVal - 25569) * 86400 * 1000));
+            } else {
+                const dStr = String(dateVal).trim();
+                if (dStr.includes('-')) {
+                    dateObj = new Date(dStr);
+                } else if (dStr.includes('/')) {
+                    const parts = dStr.split('/');
+                    dateObj = new Date(parts[2], parts[1]-1, parts[0]);
+                } else {
+                    return null;
+                }
+            }
+
+            if (isNaN(dateObj)) return null;
+
+            return {
+                year: dateObj.getFullYear(),
+                dateStr: dateObj.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                rawDate: dateObj,
+                id: row['Machine_ID'] || row['MachineID'] || '',
+                loc: row['Location'] || row['location'] || '',
+                type: row['Job_Type'] || row['Type'] || 'BM',
+                issue: row['Issue'] || '',
+                action: row['Action_Taken'] || row['Action'] || '',
+                budget: parseFloat(row['Budget'] || 0),
+                actual: parseFloat(row['Actual'] || 0),
+                variance: parseFloat(row['Variance'] || 0),
+                remark: row['Remark'] || ''
+            };
+        }
+
+        // --- 2. DASHBOARD LOGIC ---
+        function initDashboard() {
+            const uniqueYears = new Set(rawData.map(d => d.year));
+            yearsList = Array.from(uniqueYears).sort((a, b) => a - b);
+
+            const uniqueLocations = new Set();
+            locMachineMap = {};
+
+            // สร้าง Map ความสัมพันธ์ Location -> Machine จากข้อมูลทั้งหมด
+            rawData.forEach(row => {
+                if (row.loc) {
+                    uniqueLocations.add(row.loc);
+                    if (!locMachineMap[row.loc]) {
+                        locMachineMap[row.loc] = new Set();
+                    }
+                    if (row.id) {
+                        locMachineMap[row.loc].add(row.id);
+                    }
+                }
+            });
+
+            locationList = Array.from(uniqueLocations).sort();
+            const locationSelect = document.getElementById('locationFilter');
+            locationSelect.innerHTML = '<option value="All">All Locations</option>';
+            locationList.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l;
+                opt.innerText = l;
+                locationSelect.appendChild(opt);
+            });
+
+            // Initial Machine list (Show ALL unique machines initially)
+            const allMachines = new Set(rawData.map(d => d.id).filter(id => id));
+            updateMachineDropdown(allMachines);
+
+            const btnContainer = document.getElementById('year-selector-container');
+            btnContainer.innerHTML = '';
+            yearsList.forEach(year => {
+                const btn = document.createElement('button');
+                btn.id = `btn-${year}`;
+                btn.className = "px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white";
+                btn.innerText = year;
+                btn.onclick = () => switchYear(year);
+                btnContainer.appendChild(btn);
+            });
+
+            document.getElementById('empty-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            document.getElementById('year-selector-container').classList.remove('hidden');
+
+            if (yearsList.length > 0) switchYear(yearsList[yearsList.length - 1]);
+        }
+
+        // Function called when Location Filter changes
+        function filterLocationChanged() {
+            const selectedLoc = document.getElementById('locationFilter').value;
+            let machinesToShow = new Set();
+
+            if (selectedLoc === 'All') {
+                // ถ้าเลือก All ให้เอาเครื่องจักรทั้งหมดมาแสดง
+                rawData.forEach(r => { if(r.id) machinesToShow.add(r.id); });
+            } else {
+                // ถ้าเลือก Location เฉพาะ ให้ดึงจาก Map ที่เตรียมไว้
+                if (locMachineMap[selectedLoc]) {
+                    machinesToShow = locMachineMap[selectedLoc];
+                }
+            }
+            updateMachineDropdown(machinesToShow);
+            filterTable(); // Refresh Data
+        }
+
+        function updateMachineDropdown(machineSet) {
+            const machineSelect = document.getElementById('machineFilter');
+            machineSelect.innerHTML = '<option value="All">All Machines</option>';
+            
+            const sortedMachines = Array.from(machineSet).sort();
+            
+            sortedMachines.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = m;
+                machineSelect.appendChild(opt);
+            });
+            
+            // Reset selection to 'All' to avoid confusion
+            machineSelect.value = 'All'; 
+        }
+
+        function switchYear(year) {
+            currentYear = year;
+            yearsList.forEach(y => {
+                const btn = document.getElementById(`btn-${y}`);
+                btn.className = y === year 
+                    ? "px-4 py-2 rounded-md text-sm font-medium transition-all bg-blue-600 text-white shadow-lg"
+                    : "px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white";
+            });
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            currentFilteredData = getFilteredData();
+            
+            const totalBudget = currentFilteredData.reduce((s, i) => s + i.budget, 0);
+            const totalActual = currentFilteredData.reduce((s, i) => s + i.actual, 0);
+            const totalVariance = currentFilteredData.reduce((s, i) => s + i.variance, 0);
+            const totalJobs = currentFilteredData.length;
+
+            document.getElementById('kpi-budget').innerText = formatMoney(totalBudget);
+            document.getElementById('kpi-actual').innerText = formatMoney(totalActual);
+            const varEl = document.getElementById('kpi-variance');
+            varEl.innerText = (totalVariance > 0 ? '+' : '') + formatMoney(totalVariance);
+            varEl.className = `text-3xl font-bold mt-2 ${totalVariance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
+            document.getElementById('kpi-jobs').innerText = totalJobs;
+
+            renderCharts(currentFilteredData);
+            renderTable(currentFilteredData);
+        }
+
+        function getFilteredData() {
+            const locationVal = document.getElementById('locationFilter').value;
+            const machineVal = document.getElementById('machineFilter').value;
+            const typeVal = document.getElementById('typeFilter').value;
+            const searchVal = document.getElementById('searchBox').value.toLowerCase();
+
+            return rawData.filter(d => {
+                const matchYear = d.year === currentYear;
+                const matchLocation = locationVal === 'All' || d.loc === locationVal;
+                // Important: Even if machine filter is 'All', it must respect the location context implicitly if location is selected
+                // But the UI dropdown already limits choices, so checking d.id === machineVal is enough if not 'All'.
+                const matchMachine = machineVal === 'All' || d.id === machineVal; 
+                const matchType = typeVal === 'All' || d.type === typeVal;
+                const matchSearch = (d.id && d.id.toLowerCase().includes(searchVal)) || 
+                                    (d.issue && d.issue.toLowerCase().includes(searchVal)) || 
+                                    (d.remark && d.remark.toLowerCase().includes(searchVal));
+                return matchYear && matchLocation && matchMachine && matchType && matchSearch;
+            });
+        }
+
+        function renderCharts(data) {
+            const monthlyActual = new Array(12).fill(0);
+            const monthlyBudget = new Array(12).fill(0);
+            let pmCount = 0, bmCount = 0;
+
+            data.forEach(d => {
+                const m = d.rawDate.getMonth();
+                monthlyActual[m] += d.actual;
+                monthlyBudget[m] += d.budget;
+                if (d.type && d.type.toUpperCase() === 'PM') pmCount++; else bmCount++;
+            });
+
+            const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+            const ctxMain = document.getElementById('mainChart').getContext('2d');
+            if (charts.main) charts.main.destroy();
+            charts.main = new Chart(ctxMain, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Budget', data: monthlyBudget, backgroundColor: '#cbd5e1', borderRadius: 4 },
+                        { label: 'Actual', data: monthlyActual, backgroundColor: '#3b82f6', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+            });
+
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+            if (charts.pie) charts.pie.destroy();
+            charts.pie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['PM', 'BM'],
+                    datasets: [{ data: [pmCount, bmCount], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            const sorted = data.sort((a, b) => b.rawDate - a.rawDate);
+
+            sorted.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-50";
+                const varColor = row.variance >= 0 ? 'text-emerald-600' : 'text-red-600';
+                tr.innerHTML = `
+                    <td class="px-6 py-3 text-slate-600 whitespace-nowrap">${row.dateStr}</td>
+                    <td class="px-6 py-3 font-bold text-slate-800">${row.id}</td>
+                    <td class="px-6 py-3"><span class="px-2 py-0.5 rounded text-xs font-bold ${row.type==='PM'?'bg-emerald-100 text-emerald-800':'bg-red-100 text-red-800'}">${row.type}</span></td>
+                    <td class="px-6 py-3">
+                        <div class="font-medium text-slate-700">${row.issue}</div>
+                        <div class="text-xs text-slate-500">${row.action}</div>
+                    </td>
+                    <td class="px-6 py-3 text-right text-slate-400">${formatMoney(row.budget)}</td>
+                    <td class="px-6 py-3 text-right font-bold text-slate-700">${formatMoney(row.actual)}</td>
+                    <td class="px-6 py-3 text-right font-bold text-xs ${varColor}">${(row.variance>0?'+':'') + formatMoney(row.variance)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() { renderDashboard(); }
+        const formatMoney = (n) => '฿' + n.toLocaleString();
+
+    </script>
+</body>
+</html>
