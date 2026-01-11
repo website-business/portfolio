@@ -1,877 +1,274 @@
 <!DOCTYPE html>
-<html lang="th" class="light">
+<html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fleet Management System v4.1</title>
-    
-    <!-- Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { colors: { slate: { 850: '#1e293b', 900: '#0f172a' } } } }
-        }
-    </script>
+  <meta charset="UTF-8" />
+  <title>🚜 Machine Fleet Dashboard — V1 (Foundation Release)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-enter { animation: modalIn 0.3s ease-out forwards; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
-        .cursor-pointer { cursor: pointer; }
-    </style>
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 pb-20 transition-colors duration-300">
+<body class="bg-slate-100 text-slate-800">
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/90 dark:bg-slate-900/90 z-[80] flex flex-col items-center justify-center backdrop-blur-sm">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 mb-4"></div>
-        <p class="text-slate-600 dark:text-slate-300 font-semibold animate-pulse">กำลังเชื่อมต่อฐานข้อมูล...</p>
+<div class="max-w-7xl mx-auto p-4">
+
+  <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+    <h1 class="text-2xl font-bold">🚜 Machine Fleet Dashboard — V1</h1>
+    <div class="flex gap-2">
+      <button id="reloadBtn" class="px-3 py-1 rounded bg-blue-600 text-white">🔄 Reload</button>
     </div>
+  </header>
 
-    <!-- MODAL: DRILL DOWN (Top 10 Chart Click) -->
-    <div id="drilldown-modal" class="fixed inset-0 z-[60] hidden relative" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/75 transition-opacity backdrop-blur-sm" onclick="closeModal('drilldown-modal')"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 text-left shadow-xl transition-all w-full max-w-2xl modal-enter">
-                    <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-slate-800 dark:text-white" id="drilldown-title">10 อันดับสูงสุด</h3>
-                        <button onclick="closeModal('drilldown-modal')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
-                    </div>
-                    <div class="p-6">
-                        <div class="h-64 w-full relative"><canvas id="drilldownChart"></canvas></div>
-                        <p class="text-center text-xs text-blue-500 mt-4 animate-pulse"><i class="fas fa-hand-pointer"></i> กดที่แท่งกราฟเพื่อดูข้อมูลของรถคันนั้น</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- KPI -->
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div class="bg-white p-3 rounded shadow">
+      <div class="text-sm text-gray-500">เครื่องจักรทั้งหมด</div>
+      <div id="kpiTotal" class="text-2xl font-bold">-</div>
     </div>
-
-    <!-- MODAL: ALERT DETAIL -->
-    <div id="alert-modal" class="fixed inset-0 z-[60] hidden relative" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/75 transition-opacity backdrop-blur-sm" onclick="closeModal('alert-modal')"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 text-left shadow-xl transition-all w-full max-w-2xl modal-enter">
-                    <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-slate-800 dark:text-white" id="alert-modal-title">รายการแจ้งเตือน</h3>
-                        <button onclick="closeModal('alert-modal')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
-                    </div>
-                    <div class="p-0 overflow-y-auto max-h-[60vh] custom-scrollbar">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-700 sticky top-0">
-                                <tr><th class="px-6 py-3">ทะเบียน</th><th class="px-6 py-3">วันหมดอายุ</th><th class="px-6 py-3 text-center">สถานะ</th></tr>
-                            </thead>
-                            <tbody id="alert-modal-body" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="bg-white p-3 rounded shadow">
+      <div class="text-sm text-gray-500">ใช้งาน</div>
+      <div id="kpiActive" class="text-2xl font-bold">-</div>
     </div>
-
-    <!-- MODAL: ALL CARS LIST -->
-    <div id="all-cars-modal" class="fixed inset-0 z-[60] hidden relative" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/75 transition-opacity backdrop-blur-sm" onclick="closeModal('all-cars-modal')"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 text-left shadow-xl transition-all w-full max-w-4xl modal-enter">
-                    <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-slate-800 dark:text-white"><i class="fas fa-car mr-2"></i>รายชื่อรถทั้งหมด</h3>
-                        <div class="flex gap-2 items-center">
-                            <input type="text" id="popup-search" placeholder="ค้นหา..." onkeyup="renderPopupCarTable(this.value)" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 outline-none focus:ring-1 focus:ring-blue-500">
-                            <button onclick="closeModal('all-cars-modal')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
-                        </div>
-                    </div>
-                    <div class="p-0 overflow-y-auto max-h-[70vh] custom-scrollbar">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-700 sticky top-0">
-                                <tr>
-                                    <th class="px-6 py-3">ทะเบียน</th>
-                                    <th class="px-6 py-3">รุ่น</th>
-                                    <th class="px-6 py-3">ภาษีหมด</th>
-                                    <th class="px-6 py-3">ประกันหมด</th>
-                                    <th class="px-6 py-3 text-center">สถานะ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="popup-car-table" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="bg-white p-3 rounded shadow">
+      <div class="text-sm text-gray-500">ซ่อม</div>
+      <div id="kpiRepair" class="text-2xl font-bold">-</div>
     </div>
-
-    <!-- NAVBAR & FILTERS -->
-    <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 px-4 py-3 shadow-sm transition-colors duration-300">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
-            <!-- Brand -->
-            <div class="flex items-center gap-3 w-full md:w-auto">
-                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-md">
-                    <i class="fas fa-truck-moving text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight leading-tight">Fleet Manager <span class="text-xs font-normal opacity-70">v4.1</span></h1>
-                </div>
-                <!-- Mobile Controls -->
-                <div class="ml-auto md:hidden flex gap-2">
-                     <button onclick="toggleDarkMode()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-yellow-400">
-                        <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filters & Desktop Toggle -->
-            <div class="flex items-center gap-2 w-full md:w-auto justify-end overflow-x-auto no-scrollbar">
-                <!-- UI Mode Switcher -->
-                <div class="hidden md:flex bg-slate-100 dark:bg-slate-700 p-1 rounded-lg border border-slate-200 dark:border-slate-600 mr-2">
-                    <button onclick="setDeviceView('desktop')" id="btn-view-desktop" class="p-1.5 rounded bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm transition-all" title="Desktop"><i class="fas fa-desktop"></i></button>
-                    <button onclick="setDeviceView('tablet')" id="btn-view-tablet" class="p-1.5 rounded text-slate-400 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-600 transition-all" title="Tablet"><i class="fas fa-tablet-alt"></i></button>
-                    <button onclick="setDeviceView('mobile')" id="btn-view-mobile" class="p-1.5 rounded text-slate-400 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-600 transition-all" title="Mobile"><i class="fas fa-mobile-alt"></i></button>
-                </div>
-
-                <!-- Year Filter -->
-                <div class="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-1.5 whitespace-nowrap">
-                    <span class="text-xs text-slate-500 mr-2">ปี:</span>
-                    <select id="global-year-filter" onchange="handleYearChange()" class="bg-transparent text-sm font-bold text-blue-600 dark:text-blue-400 outline-none cursor-pointer">
-                        <option value="ALL">ทั้งหมด</option>
-                    </select>
-                </div>
-                <!-- Month Filter (Hidden by default) -->
-                <div id="month-filter-container" class="hidden items-center bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-1.5 whitespace-nowrap">
-                    <span class="text-xs text-slate-500 mr-2">เดือน:</span>
-                    <select id="global-month-filter" onchange="applyGlobalFilter()" class="bg-transparent text-sm font-bold text-blue-600 dark:text-blue-400 outline-none cursor-pointer">
-                        <option value="ALL">ทุกเดือน</option>
-                        <option value="0">ม.ค.</option><option value="1">ก.พ.</option><option value="2">มี.ค.</option>
-                        <option value="3">เม.ย.</option><option value="4">พ.ค.</option><option value="5">มิ.ย.</option>
-                        <option value="6">ก.ค.</option><option value="7">ส.ค.</option><option value="8">ก.ย.</option>
-                        <option value="9">ต.ค.</option><option value="10">พ.ย.</option><option value="11">ธ.ค.</option>
-                    </select>
-                </div>
-                
-                <button onclick="toggleDarkMode()" class="hidden md:flex w-9 h-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-yellow-400 transition-all">
-                    <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- CONTENT WRAPPER -->
-    <div id="main-wrapper" class="container mx-auto p-4 space-y-6 mt-2 fade-in hidden">
-        
-        <!-- MAIN TABS -->
-        <div class="flex justify-center overflow-x-auto pb-2 no-scrollbar">
-            <div class="bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 inline-flex gap-2 min-w-max">
-                <button onclick="switchTab('main')" id="btn-main" class="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white shadow-md transition-all flex items-center gap-2"><i class="fas fa-home"></i> Main</button>
-                <button onclick="switchTab('maintenance')" id="btn-maintenance" class="px-5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all flex items-center gap-2"><i class="fas fa-tools"></i> ซ่อมบำรุง</button>
-                <button onclick="switchTab('fuel')" id="btn-fuel" class="px-5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all flex items-center gap-2"><i class="fas fa-gas-pump"></i> น้ำมัน</button>
-                <button onclick="switchTab('insurance')" id="btn-insurance" class="px-5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all flex items-center gap-2"><i class="fas fa-shield-alt"></i> ประกันภัย</button>
-            </div>
-        </div>
-
-        <!-- ================= VIEW 1: MAIN (DASHBOARD) ================= -->
-        <div id="view-main" class="space-y-6 fade-in">
-            
-            <!-- 1. KPIs Row -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <!-- Total Cars (Trigger Modal) -->
-                <div onclick="openAllCarsModal()" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group">
-                    <div class="text-xs text-slate-400 uppercase font-bold mb-1">รถทั้งหมด</div>
-                    <div class="text-3xl font-bold text-slate-700 dark:text-white" id="kpi-total-cars">0</div>
-                    <div class="flex gap-3 mt-2 text-[10px] font-medium">
-                        <span class="text-green-500"><i class="fas fa-check-circle"></i> <span id="kpi-active-cars">0</span> ใช้งาน</span>
-                        <span class="text-red-500"><i class="fas fa-wrench"></i> <span id="kpi-repair-cars">0</span> ซ่อม</span>
-                    </div>
-                    <div class="absolute top-2 right-2 text-slate-300 group-hover:text-blue-500 transition-colors"><i class="fas fa-search"></i></div>
-                </div>
-                
-                <!-- Fuel Cost -->
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <div class="text-xs text-slate-400 uppercase font-bold mb-1">ค่าน้ำมันรวม (ตามตัวกรอง)</div>
-                    <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="kpi-fuel-total">฿0</div>
-                </div>
-
-                <!-- Tax Alert -->
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-red-100 dark:border-red-900/30">
-                    <div class="text-xs text-slate-400 uppercase font-bold mb-2 flex items-center gap-1"><i class="fas fa-file-invoice text-red-500"></i> ภาษี</div>
-                    <div class="grid grid-cols-2 gap-2 text-center">
-                        <div onclick="openAlertModal('ภาษี', 'expired')" class="cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 rounded p-1 transition-colors">
-                            <div class="text-xl font-bold text-red-600 leading-none" id="kpi-tax-expired">0</div>
-                            <div class="text-[10px] text-slate-400">หมดอายุ</div>
-                        </div>
-                        <div onclick="openAlertModal('ภาษี', 'near')" class="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded p-1 transition-colors border-l dark:border-slate-700">
-                            <div class="text-xl font-bold text-orange-500 leading-none" id="kpi-tax-warning">0</div>
-                            <div class="text-[10px] text-slate-400">ใกล้หมด</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Insurance Alert -->
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-orange-100 dark:border-orange-900/30">
-                    <div class="text-xs text-slate-400 uppercase font-bold mb-2 flex items-center gap-1"><i class="fas fa-shield-virus text-orange-500"></i> ประกัน</div>
-                    <div class="grid grid-cols-2 gap-2 text-center">
-                        <div onclick="openAlertModal('ประกัน', 'expired')" class="cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 rounded p-1 transition-colors">
-                            <div class="text-xl font-bold text-red-600 leading-none" id="kpi-ins-expired">0</div>
-                            <div class="text-[10px] text-slate-400">หมดอายุ</div>
-                        </div>
-                        <div onclick="openAlertModal('ประกัน', 'near')" class="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded p-1 transition-colors border-l dark:border-slate-700">
-                            <div class="text-xl font-bold text-orange-500 leading-none" id="kpi-ins-warning">0</div>
-                            <div class="text-[10px] text-slate-400">ใกล้หมด</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Charts Row (Clickable) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Fuel Chart -->
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative group">
-                    <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-4 flex justify-between items-center">
-                        <span><i class="fas fa-gas-pump text-blue-500 mr-2"></i> กราฟค่าใช้จ่ายน้ำมัน (รายเดือน)</span>
-                        <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-full cursor-help"><i class="fas fa-mouse-pointer"></i> กดเพื่อดู Top 10</span>
-                    </h3>
-                    <div class="h-64 relative"><canvas id="dashFuelChart"></canvas></div>
-                </div>
-
-                <!-- Maintenance Chart -->
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative group">
-                    <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-4 flex justify-between items-center">
-                        <span><i class="fas fa-tools text-purple-500 mr-2"></i> กราฟค่าใช้จ่ายซ่อมบำรุง (รายเดือน)</span>
-                        <span class="text-[10px] bg-purple-50 text-purple-600 px-2 py-1 rounded-full cursor-help"><i class="fas fa-mouse-pointer"></i> กดเพื่อดู Top 10</span>
-                    </h3>
-                    <div class="h-64 relative"><canvas id="dashMaintChart"></canvas></div>
-                </div>
-            </div>
-
-            <!-- 3. Status Chart (Center) -->
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 max-w-md mx-auto w-full">
-                <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-4 text-center">สถานะรถ</h3>
-                <div class="h-64 relative flex justify-center"><canvas id="dashStatusChart"></canvas></div>
-            </div>
-        </div>
-
-        <!-- ================= VIEW 2: MAINTENANCE ================= -->
-        <div id="view-maintenance" class="hidden space-y-6 fade-in">
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-                    <h2 class="text-lg font-bold text-slate-800 dark:text-white"><i class="fas fa-tools text-purple-500 mr-2"></i>ระบบซ่อมบำรุง</h2>
-                    <select id="maint-car-select" onchange="renderMaintenance()" class="w-full md:w-64 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer">
-                        <option value="">ดูภาพรวมทั้งหมด</option>
-                    </select>
-                </div>
-                
-                <!-- KPIs -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="p-4 bg-purple-50 dark:bg-slate-700/50 rounded-xl border border-purple-100 dark:border-purple-800">
-                        <div class="text-xs text-purple-500 font-bold uppercase">ค่าซ่อมรวม (ตามตัวกรอง)</div>
-                        <div class="text-2xl font-bold text-purple-700 dark:text-purple-300" id="maint-kpi-total">฿0</div>
-                    </div>
-                    <div class="p-4 bg-blue-50 dark:bg-slate-700/50 rounded-xl border border-blue-100 dark:border-blue-800">
-                        <div class="text-xs text-blue-500 font-bold uppercase">จำนวนรายการซ่อม</div>
-                        <div class="text-2xl font-bold text-blue-700 dark:text-blue-300" id="maint-kpi-count">0</div>
-                    </div>
-                    <div class="p-4 bg-pink-50 dark:bg-slate-700/50 rounded-xl border border-pink-100 dark:border-pink-800">
-                        <div class="text-xs text-pink-500 font-bold uppercase">เฉลี่ยต่อครั้ง</div>
-                        <div class="text-2xl font-bold text-pink-700 dark:text-pink-300" id="maint-kpi-avg">฿0</div>
-                    </div>
-                </div>
-
-                <div class="h-64 relative mb-6"><canvas id="maintDetailChart"></canvas></div>
-                
-                <div class="overflow-x-auto max-h-[500px] custom-scrollbar rounded-lg border border-slate-100 dark:border-slate-700">
-                    <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-slate-500 bg-slate-50 dark:bg-slate-700 uppercase sticky top-0">
-                            <tr><th class="px-4 py-3">วันที่</th><th class="px-4 py-3">ทะเบียน</th><th class="px-4 py-3">รายการ</th><th class="px-4 py-3 text-right">ค่าใช้จ่าย</th><th class="px-4 py-3">อู่/ศูนย์</th></tr>
-                        </thead>
-                        <tbody id="maint-table-body" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= VIEW 3: FUEL ================= -->
-        <div id="view-fuel" class="hidden space-y-6 fade-in">
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-                    <h2 class="text-lg font-bold text-slate-800 dark:text-white"><i class="fas fa-gas-pump text-blue-500 mr-2"></i>ระบบน้ำมันเชื้อเพลิง</h2>
-                    <select id="fuel-car-select" onchange="renderFuel()" class="w-full md:w-64 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer">
-                        <option value="">ดูภาพรวม (Top 10)</option>
-                    </select>
-                </div>
-
-                <!-- KPIs -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                        <div class="text-xs text-blue-500 font-bold uppercase">ยอดเติมรวม (ตามตัวกรอง)</div>
-                        <div class="text-2xl font-bold text-blue-700 dark:text-blue-300" id="fuel-kpi-cost">฿0</div>
-                    </div>
-                    <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
-                        <div class="text-xs text-indigo-500 font-bold uppercase">ปริมาณรวม (ลิตร)</div>
-                        <div class="text-2xl font-bold text-indigo-700 dark:text-indigo-300" id="fuel-kpi-liters">0 L</div>
-                    </div>
-                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                        <div class="text-xs text-emerald-500 font-bold uppercase">ระยะทางรวม (กม.)</div>
-                        <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300" id="fuel-kpi-dist">0 km</div>
-                        <div class="text-[10px] text-emerald-600 mt-1" id="fuel-kpi-rate"></div>
-                    </div>
-                </div>
-
-                <div class="h-72 w-full relative mb-6"><canvas id="fuelDetailChart"></canvas></div>
-
-                <div class="overflow-x-auto max-h-[500px] custom-scrollbar rounded-lg border border-slate-100 dark:border-slate-700">
-                    <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-slate-500 bg-slate-50 dark:bg-slate-700 uppercase sticky top-0">
-                            <tr>
-                                <th class="px-4 py-3">วันที่</th><th class="px-4 py-3">ทะเบียน</th><th class="px-4 py-3 text-right">เลขไมล์</th>
-                                <th class="px-4 py-3 text-right">ลิตร</th><th class="px-4 py-3 text-right">ราคา/ลิตร</th><th class="px-4 py-3 text-right">รวม (บาท)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="fuel-table-body" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= VIEW 4: INSURANCE ================= -->
-        <div id="view-insurance" class="hidden space-y-6 fade-in">
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                    <h2 class="text-lg font-bold text-slate-800 dark:text-white"><i class="fas fa-shield-alt text-orange-500 mr-2"></i>เปรียบเทียบประกันภัย</h2>
-                    <select id="ins-car-select" onchange="renderInsurance()" class="w-full md:w-64 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer">
-                        <option value="">-- เลือกทะเบียนรถ --</option>
-                    </select>
-                </div>
-                <div id="ins-content" class="hidden">
-                    <div class="bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 p-4 rounded-xl mb-6 flex items-center gap-4">
-                        <div class="bg-white dark:bg-slate-800 p-2 rounded-full shadow-sm text-orange-500"><i class="fas fa-trophy text-xl"></i></div>
-                        <div>
-                            <div class="text-xs uppercase font-bold text-orange-600 dark:text-orange-400">ความคุ้มค่าสูงสุด</div>
-                            <div class="font-bold text-lg text-slate-800 dark:text-white" id="ins-best-name">...</div>
-                            <div class="text-sm text-slate-600 dark:text-slate-300" id="ins-best-desc">...</div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="h-64 relative"><canvas id="insChart"></canvas></div>
-                        <div class="overflow-x-auto rounded-lg border border-slate-100 dark:border-slate-700">
-                            <table class="w-full text-sm text-left"><tbody id="ins-table-body" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800"></tbody></table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+    <div class="bg-white p-3 rounded shadow">
+      <div class="text-sm text-gray-500">ว่าง</div>
+      <div id="kpiIdle" class="text-2xl font-bold">-</div>
     </div>
+  </section>
 
-    <!-- SCRIPT -->
-    <script>
-        // --- CONFIG LINKS (ใส่ลิงก์จริงตรงนี้) ---
-        const LINKS = {
-            CARS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWS4RbhZlYQ1RnZCM41Pz3UPYXVb5lFId8T6S8vyQyuYzox44BylJQdnzlUdmRzE4f0u7sPy75SuqY/pub?gid=0&single=true&output=csv",
-            FUEL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWS4RbhZlYQ1RnZCM41Pz3UPYXVb5lFId8T6S8vyQyuYzox44BylJQdnzlUdmRzE4f0u7sPy75SuqY/pub?gid=1526088813&single=true&output=csv",
-            INS:  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWS4RbhZlYQ1RnZCM41Pz3UPYXVb5lFId8T6S8vyQyuYzox44BylJQdnzlUdmRzE4f0u7sPy75SuqY/pub?gid=63476950&single=true&output=csv",
-            MAINT: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWS4RbhZlYQ1RnZCM41Pz3UPYXVb5lFId8T6S8vyQyuYzox44BylJQdnzlUdmRzE4f0u7sPy75SuqY/pub?gid=1747475810&single=true&output=csv"
-        };
+  <!-- Charts -->
+  <section class="grid md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="font-semibold mb-2">⛽ ค่าใช้จ่ายน้ำมันรายเดือน</h2>
+      <canvas id="fuelChart"></canvas>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="font-semibold mb-2">🛠 ค่าใช้จ่ายซ่อมบำรุงรายเดือน</h2>
+      <canvas id="maintChart"></canvas>
+    </div>
+  </section>
 
-        // Global State
-        let rawData = { cars: [], fuel: [], ins: [], maint: [] };
-        let charts = {};
-        let availableYears = new Set();
+  <!-- Machine Table -->
+  <section class="bg-white p-4 rounded shadow">
+    <h2 class="font-semibold mb-2">📋 รายการเครื่องจักร</h2>
+    <div class="overflow-auto">
+      <table class="w-full text-sm border">
+        <thead class="bg-slate-200">
+          <tr>
+            <th class="p-2 border">รหัส</th>
+            <th class="p-2 border">ชื่อ</th>
+            <th class="p-2 border">ประเภท</th>
+            <th class="p-2 border">สถานะ</th>
+            <th class="p-2 border">สถานที่</th>
+            <th class="p-2 border">ชั่วโมง</th>
+          </tr>
+        </thead>
+        <tbody id="machineTable"></tbody>
+      </table>
+    </div>
+  </section>
 
-        // --- CORE FUNCTIONS ---
-        window.onload = async () => {
-            // Default White Mode (Removed dark mode default check)
-            // if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-            await loadData();
-            
-            // UI Switcher Default (Based on Screen)
-            if(window.innerWidth < 768) setDeviceView('mobile');
-            else if(window.innerWidth < 1024) setDeviceView('tablet');
-            else setDeviceView('desktop');
-        };
+</div>
 
-        async function loadData() {
-            try {
-                // Fetch All 4 CSVs
-                const [cars, fuel, ins, maint] = await Promise.all([
-                    fetchCSV(LINKS.CARS), fetchCSV(LINKS.FUEL), fetchCSV(LINKS.INS), fetchCSV(LINKS.MAINT)
-                ]);
-                
-                // Store & Clean
-                rawData.cars = cars.filter(r => r['ทะเบียนรถ'] && r['ทะเบียนรถ'].trim() !== '');
-                rawData.ins = ins.filter(r => r['ทะเบียนรถ']);
-                
-                // Process Date & Years
-                rawData.fuel = fuel.filter(r => r['วันที่']).map(r => {
-                    r.dateObj = parseDate(r['วันที่']);
-                    if(r.dateObj && !isNaN(r.dateObj)) availableYears.add(r.dateObj.getFullYear());
-                    return r;
-                });
-                
-                rawData.maint = maint.filter(r => r['วันที่']).map(r => {
-                    r.dateObj = parseDate(r['วันที่']);
-                    if(r.dateObj && !isNaN(r.dateObj)) availableYears.add(r.dateObj.getFullYear());
-                    return r;
-                });
+<script>
+// =========================
+// 🚀 Version Name
+// =========================
+const VERSION = "V1 — Foundation Release";
 
-                // Init Components
-                initYearFilter();
-                initDropdowns();
-                applyGlobalFilter(); 
+// =========================
+// 🔗 Google Sheet CSV URLs (PUT YOUR LINKS HERE)
+// =========================
+const SHEETS = {
+  machines: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=2036292301&single=true&output=csv",
+  fuel: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1215465404&single=true&output=csv",
+  maintenance: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=513299430&single=true&output=csv"
+};
 
-                document.getElementById('loading-overlay').classList.add('hidden');
-                document.getElementById('main-wrapper').classList.remove('hidden');
+// =========================
+// 📦 Data Store
+// =========================
+const dataStore = {
+  machines: [],
+  fuel: [],
+  maintenance: []
+};
 
-            } catch (error) {
-                console.error(error);
-                alert("เกิดข้อผิดพลาดในการโหลดข้อมูล (ตรวจสอบลิงก์): " + error.message);
-                document.getElementById('loading-overlay').innerHTML = "<p class='text-red-500'>โหลดข้อมูลล้มเหลว</p>";
-            }
+let fuelChart, maintChart;
+
+// =========================
+// 🔄 Load CSV Helper
+// =========================
+function loadCSV(url) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(url, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        if (result.errors && result.errors.length) {
+          console.error("CSV Parse Error:", result.errors);
         }
+        console.log("Loaded", url, "rows:", result.data.length);
+        resolve(result.data);
+      },
+      error: (err) => {
+        console.error("CSV Load Error:", err);
+        reject(err);
+      }
+    });
+  });
+});
+  });
+}
 
-        function fetchCSV(url) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(url, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data), error: err => reject(err) });
-            });
-        }
+// =========================
+// 🚀 Load All Data
+// =========================
+async function loadData() {
+  document.getElementById("reloadBtn").innerText = "⏳ Loading...";
 
-        function initYearFilter() {
-            const select = document.getElementById('global-year-filter');
-            const years = Array.from(availableYears).sort((a,b)=>b-a);
-            select.innerHTML = '<option value="ALL">ทั้งหมด</option>';
-            years.forEach(y => select.innerHTML += `<option value="${y}">${y}</option>`);
-            if(years.length > 0) select.value = years[0]; 
-            handleYearChange();
-        }
+  const [machines, fuel, maintenance] = await Promise.all([
+    loadCSV(SHEETS.machines),
+    loadCSV(SHEETS.fuel),
+    loadCSV(SHEETS.maintenance)
+  ]);
 
-        function handleYearChange() {
-            const year = document.getElementById('global-year-filter').value;
-            const monthFilter = document.getElementById('month-filter-container');
-            if (year === 'ALL') {
-                monthFilter.classList.add('hidden');
-                document.getElementById('global-month-filter').value = 'ALL';
-            } else {
-                monthFilter.classList.remove('hidden');
-            }
-            applyGlobalFilter();
-        }
+  dataStore.machines = machines;
+  dataStore.fuel = fuel;
+  dataStore.maintenance = maintenance;
 
-        function initDropdowns() {
-            const cars = [...new Set(rawData.cars.map(c => c['ทะเบียนรถ']))].sort();
-            ['maint-car-select', 'fuel-car-select', 'ins-car-select'].forEach(id => {
-                const el = document.getElementById(id);
-                const first = el.options[0].innerHTML;
-                el.innerHTML = `<option value="">${first}</option>`;
-                cars.forEach(c => el.innerHTML += `<option value="${c}">${c}</option>`);
-            });
-        }
+  renderDashboard();
 
-        function applyGlobalFilter() {
-            renderDashboard();
-            renderMaintenance();
-            renderFuel();
-        }
+  document.getElementById("reloadBtn").innerText = "🔄 Reload";
+}
 
-        // --- 1. DASHBOARD ---
-        function renderDashboard() {
-            const year = document.getElementById('global-year-filter').value;
-            const month = document.getElementById('global-month-filter').value;
-            
-            // KPIs
-            const active = rawData.cars.filter(c => c['สถานะ (ใช้งาน/ซ่อม)'] === 'ใช้งาน').length;
-            const repair = rawData.cars.length - active;
-            document.getElementById('kpi-total-cars').innerText = rawData.cars.length;
-            document.getElementById('kpi-active-cars').innerText = active;
-            document.getElementById('kpi-repair-cars').innerText = repair;
+// =========================
+// 📊 Render Dashboard
+// =========================
+function renderDashboard() {
+  renderKPI();
+  renderMachineTable();
+  renderFuelChart();
+  renderMaintenanceChart();
+}
 
-            // Alerts (Based on Today)
-            const today = new Date();
-            const next30 = new Date(); next30.setDate(today.getDate() + 30);
-            alertData = { tax: [], ins: [] }; // Reset
-            
-            rawData.cars.forEach(c => {
-                const tDate = parseDate(c['วันหมดอายุภาษี']);
-                const iDate = parseDate(c['วันหมดอายุประกัน']);
-                if(tDate) { 
-                    let status = tDate < today ? 'expired' : (tDate <= next30 ? 'near' : null);
-                    if(status) alertData.tax.push({...c, date: tDate, status});
-                }
-                if(iDate) {
-                    let status = iDate < today ? 'expired' : (iDate <= next30 ? 'near' : null);
-                    if(status) alertData.ins.push({...c, date: iDate, status});
-                }
-            });
+// =========================
+// 🔢 KPI
+// =========================
+function renderKPI() {
+  const total = dataStore.machines.length;
 
-            document.getElementById('kpi-tax-expired').innerText = alertData.tax.filter(x=>x.status==='expired').length;
-            document.getElementById('kpi-tax-warning').innerText = alertData.tax.filter(x=>x.status==='near').length;
-            document.getElementById('kpi-ins-expired').innerText = alertData.ins.filter(x=>x.status==='expired').length;
-            document.getElementById('kpi-ins-warning').innerText = alertData.ins.filter(x=>x.status==='near').length;
+  const active = dataStore.machines.filter(m => m["สถานะ"] === "ใช้งาน").length;
+  const repair = dataStore.machines.filter(m => m["สถานะ"] === "ซ่อม").length;
+  const idle = total - active - repair;
 
-            // Fuel KPI (Filtered)
-            let fData = rawData.fuel;
-            if(year !== 'ALL') fData = fData.filter(r => r.dateObj.getFullYear() == year);
-            if(month !== 'ALL' && year !== 'ALL') fData = fData.filter(r => r.dateObj.getMonth() == month);
-            
-            const totalFuel = fData.reduce((s,r) => s + cleanNum(r['ราคารวม']), 0);
-            document.getElementById('kpi-fuel-total').innerText = formatMoney(totalFuel);
+  document.getElementById("kpiTotal").innerText = total;
+  document.getElementById("kpiActive").innerText = active;
+  document.getElementById("kpiRepair").innerText = repair;
+  document.getElementById("kpiIdle").innerText = idle;
+}
 
-            // Charts
-            renderDashCharts(year);
-            renderStatusChart(active, repair);
-        }
+// =========================
+// 📋 Machine Table
+// =========================
+function renderMachineTable() {
+  const tbody = document.getElementById("machineTable");
+  tbody.innerHTML = "";
 
-        function renderDashCharts(year) {
-            const ctxFuel = document.getElementById('dashFuelChart').getContext('2d');
-            const ctxMaint = document.getElementById('dashMaintChart').getContext('2d');
-            const textColor = document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b';
+  dataStore.machines.forEach(m => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="border p-1">${m["รหัสเครื่อง"]}</td>
+      <td class="border p-1">${m["ชื่อเครื่อง"]}</td>
+      <td class="border p-1">${m["ประเภท"]}</td>
+      <td class="border p-1">${m["สถานะ"]}</td>
+      <td class="border p-1">${m["สถานที่ปัจจุบัน"]}</td>
+      <td class="border p-1 text-right">${m["ชั่วโมงทำงาน"]}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-            let fData = rawData.fuel, mData = rawData.maint;
-            if (year !== 'ALL') {
-                fData = fData.filter(r => r.dateObj.getFullYear() == year);
-                mData = mData.filter(r => r.dateObj.getFullYear() == year);
-            }
+// =========================
+// ⛽ Fuel Chart (Monthly Sum)
+// =========================
+function renderFuelChart() {
+  const monthly = {};
 
-            const fMonth = new Array(12).fill(0);
-            const mMonth = new Array(12).fill(0);
-            fData.forEach(r => fMonth[r.dateObj.getMonth()] += cleanNum(r['ราคารวม']));
-            mData.forEach(r => mMonth[r.dateObj.getMonth()] += cleanNum(r['ค่าใช้จ่าย']));
+  dataStore.fuel.forEach(f => {
+    if (!f["วันที่"]) return;
+    const month = f["วันที่"].slice(0, 7); // YYYY-MM
+    const cost = Number(f["ค่าใช้จ่าย(บาท)"] || 0);
 
-            const labels = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+    monthly[month] = (monthly[month] || 0) + cost;
+  });
 
-            const drawChart = (ctx, chartId, label, data, color, type) => {
-                if(charts[chartId]) charts[chartId].destroy();
-                charts[chartId] = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 4 }] },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false,
-                        onHover: (e, el) => e.native.target.style.cursor = el[0] ? 'pointer' : 'default',
-                        onClick: (e, els) => { if(els.length > 0) showDrillDown(type, els[0].index, year); },
-                        scales: { x: { grid: {display:false}, ticks: {color: textColor} }, y: { ticks: {color: textColor} } }
-                    }
-                });
-            };
+  const labels = Object.keys(monthly).sort();
+  const values = labels.map(m => monthly[m]);
 
-            drawChart(ctxFuel, 'dashFuel', 'ค่าน้ำมัน (บาท)', fMonth, '#3b82f6', 'dashFuel');
-            drawChart(ctxMaint, 'dashMaint', 'ค่าซ่อม (บาท)', mMonth, '#9333ea', 'dashMaint');
-        }
+  if (fuelChart) fuelChart.destroy();
 
-        // --- DRILL DOWN LOGIC ---
-        function showDrillDown(type, monthIdx, year) {
-            const modal = document.getElementById('drilldown-modal');
-            const title = document.getElementById('drilldown-title');
-            const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-            
-            let source = (type === 'dashFuel') ? rawData.fuel : rawData.maint;
-            let filtered = source.filter(r => r.dateObj.getMonth() === monthIdx);
-            if(year !== 'ALL') filtered = filtered.filter(r => r.dateObj.getFullYear() == year);
+  fuelChart = new Chart(document.getElementById("fuelChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "ค่าใช้จ่าย (บาท)",
+        data: values
+      }]
+    }
+  });
+}
 
-            const carSum = {};
-            filtered.forEach(r => {
-                const id = r['ทะเบียนรถ'];
-                const val = cleanNum(type === 'dashFuel' ? r['ราคารวม'] : r['ค่าใช้จ่าย']);
-                carSum[id] = (carSum[id] || 0) + val;
-            });
+// =========================
+// 🛠 Maintenance Chart (Monthly Sum)
+// =========================
+function renderMaintenanceChart() {
+  const monthly = {};
 
-            const sorted = Object.keys(carSum).sort((a,b) => carSum[b] - carSum[a]).slice(0, 10);
-            
-            title.innerText = `Top 10 ${type==='dashFuel'?'น้ำมัน':'ซ่อมบำรุง'} - ${months[monthIdx]}`;
-            modal.classList.remove('hidden');
+  dataStore.maintenance.forEach(m => {
+    if (!m["วันที่เริ่มซ่อม"]) return;
+    const month = m["วันที่เริ่มซ่อม"].slice(0, 7);
+    const cost = Number(m["ค่าใช้จ่าย(บาท)"] || 0);
 
-            const ctx = document.getElementById('drilldownChart').getContext('2d');
-            if(charts.drilldown) charts.drilldown.destroy();
-            charts.drilldown = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sorted,
-                    datasets: [{ label: 'บาท', data: sorted.map(c => carSum[c]), backgroundColor: type==='dashFuel'?'#3b82f6':'#9333ea', borderRadius: 4 }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    onClick: (e, els) => {
-                        if(els.length > 0) {
-                            const carId = charts.drilldown.data.labels[els[0].index];
-                            drillDownRedirect(carId, type === 'dashFuel' ? 'fuel' : 'maintenance');
-                        }
-                    },
-                    onHover: (e, el) => e.native.target.style.cursor = el[0] ? 'pointer' : 'default'
-                }
-            });
-        }
+    monthly[month] = (monthly[month] || 0) + cost;
+  });
 
-        function drillDownRedirect(carId, type) {
-            closeModal('drilldown-modal');
-            const targetTab = type; 
-            const selectId = type === 'fuel' ? 'fuel-car-select' : 'maint-car-select';
-            
-            switchTab(targetTab);
-            document.getElementById(selectId).value = carId;
-            if(type === 'fuel') renderFuel(); else renderMaintenance();
-        }
+  const labels = Object.keys(monthly).sort();
+  const values = labels.map(m => monthly[m]);
 
-        // --- ALERTS ---
-        function openAlertModal(type, statusFilter) {
-            const modal = document.getElementById('alert-modal');
-            const title = document.getElementById('alert-modal-title');
-            const tbody = document.getElementById('alert-modal-body');
-            
-            let list = (type === 'ภาษี') ? alertData.tax : alertData.ins;
-            list = list.filter(x => x.status === statusFilter);
+  if (maintChart) maintChart.destroy();
 
-            title.innerText = `รายการ${type} (${statusFilter==='expired'?'หมดอายุ':'ใกล้หมด'})`;
-            tbody.innerHTML = '';
+  maintChart = new Chart(document.getElementById("maintChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "ค่าใช้จ่าย (บาท)",
+        data: values
+      }]
+    }
+  });
+}
 
-            if(list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-slate-400">ไม่พบรายการ</td></tr>`;
-            } else {
-                list.sort((a,b) => a.date - b.date).forEach(c => {
-                    const color = statusFilter === 'expired' ? 'text-red-500' : 'text-orange-500';
-                    tbody.innerHTML += `
-                        <tr class="border-b border-slate-100 dark:border-slate-700">
-                            <td class="px-6 py-3 font-bold">${c['ทะเบียนรถ']}</td>
-                            <td class="px-6 py-3">${formatDate(c.date)}</td>
-                            <td class="px-6 py-3 text-center font-bold ${color}">${statusFilter==='expired'?'ขาดแล้ว':'ใกล้หมด'}</td>
-                        </tr>`;
-                });
-            }
-            modal.classList.remove('hidden');
-        }
+// =========================
+// 🔘 Events
+// =========================
+document.getElementById("reloadBtn").addEventListener("click", loadData);
 
-        // --- POPUP CAR TABLE ---
-        function openAllCarsModal() {
-            renderPopupCarTable("");
-            document.getElementById('all-cars-modal').classList.remove('hidden');
-        }
+// Auto load
+loadData();
+</script>
 
-        function renderPopupCarTable(search) {
-            const tbody = document.getElementById('popup-car-table');
-            tbody.innerHTML = '';
-            
-            const filtered = rawData.cars.filter(c => c['ทะเบียนรถ'].toLowerCase().includes(search.toLowerCase()));
-            
-            if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
-            } else {
-                filtered.forEach(c => {
-                    const st = c['สถานะ (ใช้งาน/ซ่อม)'];
-                    const color = st === 'ใช้งาน' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700">
-                            <td class="px-6 py-3 font-bold text-slate-700 dark:text-slate-200">${c['ทะเบียนรถ']}</td>
-                            <td class="px-6 py-3 text-slate-500">${c['ยี่ห้อ/รุ่น']}</td>
-                            <td class="px-6 py-3">${c['วันหมดอายุภาษี']}</td>
-                            <td class="px-6 py-3">${c['วันหมดอายุประกัน']}</td>
-                            <td class="px-6 py-3 text-center"><span class="text-xs px-2 py-1 rounded-full font-bold ${color}">${st}</span></td>
-                        </tr>`;
-                });
-            }
-        }
-
-        function renderStatusChart(active, repair) {
-            const ctx = document.getElementById('dashStatusChart').getContext('2d');
-            if(charts.status) charts.status.destroy();
-            charts.status = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: ['ใช้งาน', 'ซ่อม'], datasets: [{ data: [active, repair], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
-            });
-        }
-
-        // --- 2. MAINTENANCE PAGE ---
-        function renderMaintenance() {
-            const carId = document.getElementById('maint-car-select').value;
-            const year = document.getElementById('global-year-filter').value;
-            const month = document.getElementById('global-month-filter').value;
-
-            let data = rawData.maint;
-            if(year !== 'ALL') data = data.filter(r => r.dateObj.getFullYear() == year);
-            if(month !== 'ALL' && year !== 'ALL') data = data.filter(r => r.dateObj.getMonth() == month);
-            if(carId) data = data.filter(r => r['ทะเบียนรถ'] === carId);
-
-            const cost = data.reduce((s,r)=>s+cleanNum(r['ค่าใช้จ่าย']),0);
-            document.getElementById('maint-kpi-total').innerText = formatMoney(cost);
-            document.getElementById('maint-kpi-count').innerText = data.length;
-            document.getElementById('maint-kpi-avg').innerText = formatMoney(data.length ? cost/data.length : 0);
-
-            const ctx = document.getElementById('maintDetailChart').getContext('2d');
-            if(charts.maintDet) charts.maintDet.destroy();
-            
-            if(carId) {
-                const monthly = new Array(12).fill(0);
-                data.forEach(r => monthly[r.dateObj.getMonth()] += cleanNum(r['ค่าใช้จ่าย']));
-                charts.maintDet = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."], datasets: [{ label: 'ค่าซ่อม (บาท)', data: monthly, backgroundColor: '#9333ea', borderRadius:4 }] },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            } else {
-                const typeSum = {};
-                data.forEach(r => { const t = r['ประเภทการซ่อม']; typeSum[t] = (typeSum[t]||0) + cleanNum(r['ค่าใช้จ่าย']); });
-                charts.maintDet = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels: Object.keys(typeSum), datasets: [{ data: Object.values(typeSum), backgroundColor: ['#ef4444','#f97316','#f59e0b','#84cc16','#10b981','#06b6d4','#3b82f6','#8b5cf6'], borderWidth:0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-                });
-            }
-
-            const tbody = document.getElementById('maint-table-body');
-            tbody.innerHTML = '';
-            data.sort((a,b) => b.dateObj - a.dateObj).slice(0, 50).forEach(r => {
-                tbody.innerHTML += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700"><td class="px-4 py-3 font-mono text-slate-500">${formatDate(r.dateObj)}</td><td class="px-4 py-3 font-bold">${r['ทะเบียนรถ']}</td><td class="px-4 py-3 text-sm">${r['ประเภทการซ่อม']}</td><td class="px-4 py-3 text-right font-bold text-slate-700 dark:text-slate-200">${formatMoney(r['ค่าใช้จ่าย'])}</td><td class="px-4 py-3 text-xs text-slate-400">${r['ร้าน/ศูนย์บริการ']||'-'}</td></tr>`;
-            });
-        }
-
-        // --- 3. FUEL PAGE ---
-        function renderFuel() {
-            const carId = document.getElementById('fuel-car-select').value;
-            const year = document.getElementById('global-year-filter').value;
-            const month = document.getElementById('global-month-filter').value;
-
-            let data = rawData.fuel;
-            if(year !== 'ALL') data = data.filter(r => r.dateObj.getFullYear() == year);
-            if(month !== 'ALL' && year !== 'ALL') data = data.filter(r => r.dateObj.getMonth() == month);
-            if(carId) data = data.filter(r => r['ทะเบียนรถ'] === carId);
-
-            const cost = data.reduce((s,r)=>s+cleanNum(r['ราคารวม']),0);
-            const liters = data.reduce((s,r)=>s+cleanNum(r['จำนวนลิตร']),0);
-            let dist = 0;
-            if(carId && data.length > 1) {
-                const odos = data.map(r=>cleanNum(r['เลขไมล์ (Odometer)'])).filter(o=>o>0);
-                if(odos.length > 1) dist = Math.max(...odos) - Math.min(...odos);
-            }
-
-            document.getElementById('fuel-kpi-cost').innerText = formatMoney(cost);
-            document.getElementById('fuel-kpi-liters').innerText = liters.toLocaleString() + ' L';
-            document.getElementById('fuel-kpi-dist').innerText = dist ? dist.toLocaleString() + ' km' : '-';
-            document.getElementById('fuel-kpi-rate').innerText = dist ? `เฉลี่ย ${(cost/dist).toFixed(2)} บ./กม.` : '';
-
-            const ctx = document.getElementById('fuelDetailChart').getContext('2d');
-            if(charts.fuelDet) charts.fuelDet.destroy();
-            const textColor = document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b';
-
-            if(!carId) {
-                const carSum = {};
-                data.forEach(r => carSum[r['ทะเบียนรถ']] = (carSum[r['ทะเบียนรถ']]||0) + cleanNum(r['ราคารวม']));
-                const sorted = Object.keys(carSum).sort((a,b) => carSum[b]-carSum[a]).slice(0, 10);
-                charts.fuelDet = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: sorted, datasets: [{ label: 'บาท', data: sorted.map(c=>carSum[c]), backgroundColor: '#3b82f6', borderRadius: 4 }] },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false,
-                        onClick: (e, els, c) => {
-                            if(els.length > 0) {
-                                const id = c.data.labels[els[0].index];
-                                document.getElementById('fuel-car-select').value = id;
-                                renderFuel();
-                            }
-                        },
-                        onHover: (e, el) => e.native.target.style.cursor = el[0] ? 'pointer' : 'default'
-                    }
-                });
-            } else {
-                const monthly = new Array(12).fill(0);
-                data.forEach(r => monthly[r.dateObj.getMonth()] += cleanNum(r['ราคารวม']));
-                charts.fuelDet = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."], datasets: [{ label: 'บาท', data: monthly, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 }] },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }
-
-            const tbody = document.getElementById('fuel-table-body');
-            tbody.innerHTML = '';
-            data.sort((a,b) => b.dateObj - a.dateObj).slice(0, 50).forEach(r => {
-                tbody.innerHTML += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700"><td class="px-4 py-3 font-mono text-slate-500">${formatDate(r.dateObj)}</td><td class="px-4 py-3 font-bold">${r['ทะเบียนรถ']}</td><td class="px-4 py-3 text-right font-mono">${cleanNum(r['เลขไมล์ (Odometer)']).toLocaleString()}</td><td class="px-4 py-3 text-right">${cleanNum(r['จำนวนลิตร'])}</td><td class="px-4 py-3 text-right">${cleanNum(r['ราคาต่อลิตร'])}</td><td class="px-4 py-3 text-right font-bold text-slate-700 dark:text-slate-200">${formatMoney(r['ราคารวม'])}</td></tr>`;
-            });
-        }
-
-        // --- 4. INSURANCE PAGE ---
-        function renderInsurance() {
-            const carId = document.getElementById('ins-car-select').value;
-            const container = document.getElementById('ins-content');
-            if(!carId) { container.classList.add('hidden'); return; }
-            container.classList.remove('hidden');
-
-            const deals = rawData.ins.filter(r => r['ทะเบียนรถ'] === carId);
-            let best=null, maxScore=-1;
-            deals.forEach(d => {
-                const cost = cleanNum(d['ค่าเบี้ยประกัน']);
-                const cover = cleanNum(d['ทุนประกัน']);
-                const score = cost>0 ? cover/cost : 0;
-                d.score = score;
-                if(score > maxScore) { maxScore=score; best=d; }
-            });
-
-            if(best) {
-                document.getElementById('ins-best-name').innerText = best['บริษัทประกัน (ที่เสนอราคา)'];
-                document.getElementById('ins-best-desc').innerText = `เบี้ย ${formatMoney(best['ค่าเบี้ยประกัน'])} / ทุน ${formatMoney(best['ทุนประกัน'])}`;
-            }
-
-            const ctx = document.getElementById('insChart').getContext('2d');
-            if(charts.ins) charts.ins.destroy();
-            charts.ins = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: deals.map(d => d['บริษัทประกัน (ที่เสนอราคา)']),
-                    datasets: [
-                        { label:'เบี้ย (จ่าย)', data:deals.map(d=>cleanNum(d['ค่าเบี้ยประกัน'])), backgroundColor:'#ef4444' },
-                        { label:'ทุน', data:deals.map(d=>cleanNum(d['ทุนประกัน'])), backgroundColor:'#10b981' }
-                    ]
-                },
-                options: { responsive:true, maintainAspectRatio:false }
-            });
-
-            const tbody = document.getElementById('ins-table-body');
-            tbody.innerHTML = '';
-            deals.forEach(d => {
-                tbody.innerHTML += `<tr class="border-b border-slate-100 dark:border-slate-700"><td class="px-4 py-3 font-bold">${d['บริษัทประกัน (ที่เสนอราคา)']}</td><td class="px-4 py-3 text-right text-slate-500">${formatMoney(d['ทุนประกัน'])}</td><td class="px-4 py-3 text-right font-bold text-slate-700 dark:text-white">${formatMoney(d['ค่าเบี้ยประกัน'])}</td></tr>`;
-            });
-        }
-
-        // --- UTILS ---
-        function setDeviceView(mode) { 
-            const w = document.getElementById('main-wrapper'); 
-            // Update Active Button
-            ['desktop','tablet','mobile'].forEach(m => {
-                const btn = document.getElementById('btn-view-'+m);
-                btn.className = (m === mode) ? "p-1.5 rounded bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm transition-all" : "p-1.5 rounded text-slate-400 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-600 transition-all";
-            });
-            if(mode==='mobile') w.className="max-w-[480px] mx-auto border-x border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-300"; 
-            else if(mode==='tablet') w.className="max-w-[768px] mx-auto border-x border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-300"; 
-            else w.className="w-full mx-auto transition-all duration-300"; 
-        }
-
-        function switchTab(tab) {
-            ['main','maintenance','fuel','insurance'].forEach(t => {
-                document.getElementById('view-'+t).classList.add('hidden');
-                document.getElementById('btn-'+t).className = "px-5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all flex items-center gap-2";
-            });
-            document.getElementById('view-'+tab).classList.remove('hidden');
-            document.getElementById('btn-'+tab).className = "px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white shadow-md transition-all flex items-center gap-2";
-        }
-        function toggleDarkMode() { document.documentElement.classList.toggle('dark'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function cleanNum(v) { if(typeof v==='number') return v; return parseFloat(String(v).replace(/,/g,'')) || 0; }
-        function formatMoney(v) { return '฿'+cleanNum(v).toLocaleString(undefined,{maximumFractionDigits:0}); }
-        function formatDate(d) { return d ? d.toLocaleDateString('th-TH') : '-'; }
-        function parseDate(str) { 
-            if(!str) return null; 
-            if(str.includes('-')) { const p=str.split('-'); return new Date(p[0], p[1]-1, p[2]); } 
-            return new Date(str); 
-        }
-    </script>
 </body>
 </html>
