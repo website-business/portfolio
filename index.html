@@ -1,169 +1,79 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>🚜 FleetManager — V3 (Analytics + Alerts)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚜 FleetManager — V3.2 (Dark UI)</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    darkMode: 'class'
+  }
+</script>
+
+<style>
+body { transition: background .3s; }
+.card { border-radius:1rem; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+.kpi-blue{background:linear-gradient(135deg,#2563eb,#1e40af)}
+.kpi-green{background:linear-gradient(135deg,#16a34a,#065f46)}
+.kpi-red{background:linear-gradient(135deg,#dc2626,#7f1d1d)}
+.kpi-orange{background:linear-gradient(135deg,#f97316,#7c2d12)}
+</style>
 </head>
-<body class="bg-slate-100 text-slate-800">
 
-<div class="max-w-7xl mx-auto p-3">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
 
-<header class="flex items-center justify-between mb-3">
-  <h1 class="text-xl font-bold">🚜 FleetManager <span class="text-sm text-gray-500">V3 — Analytics + Alerts</span></h1>
-  <button id="reloadBtn" class="px-3 py-1 rounded bg-blue-600 text-white">🔄 Reload</button>
-</header>
-
-<!-- NAV -->
-<nav class="grid grid-cols-6 gap-2 mb-3">
-  <button class="tabBtn bg-blue-600 text-white rounded p-2" data-tab="dashboard">📊 ภาพรวม</button>
-  <button class="tabBtn bg-white rounded p-2" data-tab="machines">🚜 รถ</button>
-  <button class="tabBtn bg-white rounded p-2" data-tab="fuel">⛽ น้ำมัน</button>
-  <button class="tabBtn bg-white rounded p-2" data-tab="maintenance">🛠 ซ่อม</button>
-  <button class="tabBtn bg-white rounded p-2" data-tab="location">📍 สถานที่</button>
-  <button class="tabBtn bg-white rounded p-2" data-tab="insurance">🛡 ประกัน</button>
-</nav>
-
-<!-- DASHBOARD -->
-<section id="tab-dashboard" class="tab">
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-    <div class="bg-white p-3 rounded shadow">ทั้งหมด<div id="kpiTotal" class="text-xl font-bold">-</div></div>
-    <div class="bg-white p-3 rounded shadow">ใช้งาน<div id="kpiActive" class="text-xl font-bold">-</div></div>
-    <div class="bg-white p-3 rounded shadow">ซ่อม<div id="kpiRepair" class="text-xl font-bold">-</div></div>
-    <div class="bg-white p-3 rounded shadow">Idle > 30 วัน<div id="kpiIdleLong" class="text-xl font-bold text-red-600">-</div></div>
-  </div>
-
-  <div class="bg-yellow-100 border border-yellow-300 p-3 rounded mb-3">
-    <div class="font-semibold mb-1">⏰ Alert ใกล้หมดอายุ (30 วัน)</div>
-    <ul id="alertBox" class="text-sm list-disc ml-4"></ul>
-  </div>
-
-  <div class="grid md:grid-cols-2 gap-3">
-    <div class="bg-white p-3 rounded shadow">
-      <div class="font-semibold mb-1">ค่าใช้จ่ายน้ำมัน (คลิกเพื่อ Drilldown)</div>
-      <canvas id="fuelChart"></canvas>
+<!-- TOP BAR -->
+<div class="sticky top-0 z-50 backdrop-blur bg-white/80 dark:bg-slate-800/80 shadow">
+  <div class="max-w-7xl mx-auto flex justify-between items-center p-3">
+    <div class="flex items-center gap-3">
+      <div class="bg-blue-600 text-white p-2 rounded-xl"><i class="fa-solid fa-truck"></i></div>
+      <div>
+        <div class="font-bold">FleetManager</div>
+        <div class="text-xs opacity-60">V3.2 Dark UI</div>
+      </div>
     </div>
-    <div class="bg-white p-3 rounded shadow">
-      <div class="font-semibold mb-1">ค่าใช้จ่ายซ่อม (คลิกเพื่อ Drilldown)</div>
-      <canvas id="maintChart"></canvas>
+
+    <div class="flex gap-2">
+      <button id="darkToggle" class="px-3 py-1 rounded bg-slate-200 dark:bg-slate-700">🌙</button>
+      <button id="reloadBtn" class="px-3 py-1 rounded bg-blue-600 text-white">🔄</button>
     </div>
   </div>
-</section>
 
-<!-- MACHINES -->
-<section id="tab-machines" class="tab hidden">
-  <div class="flex gap-2 mb-2">
-    <select id="machineFilter" class="border p-1 rounded">
-      <option value="">-- เลือกรถ --</option>
-    </select>
-    <button id="sortLatestBtn" class="px-3 py-1 bg-gray-200 rounded">⏱ เรียงล่าสุด</button>
+  <!-- FLOAT FILTER BAR -->
+  <div class="max-w-7xl mx-auto px-3 pb-2">
+    <div class="flex gap-2 overflow-auto">
+      <select id="machineFilter" class="px-3 py-1 rounded dark:bg-slate-700">
+        <option value="">🚜 ทุกคัน</option>
+      </select>
+      <input id="yearFilter" type="number" placeholder="ปี" class="px-3 py-1 rounded dark:bg-slate-700 w-24" />
+      <input id="monthFilter" type="number" placeholder="เดือน" class="px-3 py-1 rounded dark:bg-slate-700 w-24" />
+      <button id="applyFilter" class="px-3 py-1 rounded bg-blue-600 text-white">กรอง</button>
+    </div>
   </div>
-
-  <div class="bg-white p-3 rounded shadow overflow-auto max-h-[65vh]">
-    <table class="w-full text-sm border">
-      <thead class="bg-slate-200 sticky top-0">
-        <tr>
-          <th class="p-1 border">รหัส</th>
-          <th class="p-1 border">ชื่อ</th>
-          <th class="p-1 border">ประเภท</th>
-          <th class="p-1 border">สถานะ</th>
-          <th class="p-1 border">สถานที่</th>
-          <th class="p-1 border">ชั่วโมง</th>
-        </tr>
-      </thead>
-      <tbody id="machineTable"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- FUEL -->
-<section id="tab-fuel" class="tab hidden">
-  <div class="flex gap-2 mb-2">
-    <input id="fuelYear" type="number" placeholder="ปี" class="border p-1 rounded w-24" />
-    <input id="fuelMonth" type="number" placeholder="เดือน" class="border p-1 rounded w-24" />
-    <button id="fuelFilterBtn" class="px-3 py-1 bg-blue-600 text-white rounded">กรอง</button>
-  </div>
-
-  <div class="bg-white p-3 rounded shadow overflow-auto max-h-[65vh]">
-    <table class="w-full text-sm border">
-      <thead class="bg-slate-200 sticky top-0">
-        <tr>
-          <th class="p-1 border">วันที่</th>
-          <th class="p-1 border">รหัส</th>
-          <th class="p-1 border">ลิตร</th>
-          <th class="p-1 border">บาท</th>
-          <th class="p-1 border">สถานที่</th>
-        </tr>
-      </thead>
-      <tbody id="fuelTable"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- MAINT -->
-<section id="tab-maintenance" class="tab hidden">
-  <div class="flex gap-2 mb-2">
-    <input id="maintYear" type="number" placeholder="ปี" class="border p-1 rounded w-24" />
-    <input id="maintMonth" type="number" placeholder="เดือน" class="border p-1 rounded w-24" />
-    <button id="maintFilterBtn" class="px-3 py-1 bg-blue-600 text-white rounded">กรอง</button>
-  </div>
-
-  <div class="bg-white p-3 rounded shadow overflow-auto max-h-[65vh]">
-    <table class="w-full text-sm border">
-      <thead class="bg-slate-200 sticky top-0">
-        <tr>
-          <th class="p-1 border">เริ่มซ่อม</th>
-          <th class="p-1 border">รหัส</th>
-          <th class="p-1 border">อาการ</th>
-          <th class="p-1 border">ค่าใช้จ่าย</th>
-          <th class="p-1 border">ผู้รับเหมา</th>
-        </tr>
-      </thead>
-      <tbody id="maintTable"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- LOCATION -->
-<section id="tab-location" class="tab hidden">
-  <div class="bg-white p-3 rounded shadow overflow-auto max-h-[70vh]">
-    <table class="w-full text-sm border">
-      <thead class="bg-slate-200 sticky top-0">
-        <tr>
-          <th class="p-1 border">รหัส</th>
-          <th class="p-1 border">สถานที่</th>
-          <th class="p-1 border">โครงการ</th>
-          <th class="p-1 border">เข้า</th>
-          <th class="p-1 border">ออก</th>
-        </tr>
-      </thead>
-      <tbody id="locationTable"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- INSURANCE -->
-<section id="tab-insurance" class="tab hidden">
-  <div class="bg-white p-3 rounded shadow overflow-auto max-h-[70vh]">
-    <table class="w-full text-sm border">
-      <thead class="bg-slate-200 sticky top-0">
-        <tr>
-          <th class="p-1 border">รหัส</th>
-          <th class="p-1 border">บริษัท</th>
-          <th class="p-1 border">หมดประกัน</th>
-          <th class="p-1 border">หมดภาษี</th>
-        </tr>
-      </thead>
-      <tbody id="insuranceTable"></tbody>
-    </table>
-  </div>
-</section>
-
 </div>
+
+<!-- KPI -->
+<div class="max-w-7xl mx-auto p-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+  <div class="card kpi-blue text-white">ทั้งหมด<div id="kpiTotal" class="text-3xl font-bold">-</div></div>
+  <div class="card kpi-green text-white">ใช้งาน<div id="kpiActive" class="text-3xl font-bold">-</div></div>
+  <div class="card kpi-red text-white">ซ่อม<div id="kpiRepair" class="text-3xl font-bold">-</div></div>
+  <div class="card kpi-orange text-white">Idle >30 วัน<div id="kpiIdleLong" class="text-3xl font-bold">-</div></div>
+</div>
+
+<!-- CHARTS -->
+<div class="max-w-7xl mx-auto px-3 grid md:grid-cols-2 gap-3">
+  <div class="card bg-white dark:bg-slate-800"><canvas id="fuelChart"></canvas></div>
+  <div class="card bg-white dark:bg-slate-800"><canvas id="maintChart"></canvas></div>
+</div>
+
+<!-- MOBILE CARD LIST -->
+<div id="listArea" class="max-w-7xl mx-auto p-3 grid gap-3"></div>
 
 <script>
 const SHEETS = {
@@ -174,238 +84,78 @@ const SHEETS = {
   insurance: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1698787286&single=true&output=csv"
 };
 
-const dataStore = { machines:[], fuel:[], maintenance:[], location:[], insurance:[] };
-let fuelChart, maintChart;
+const store={machines:[],fuel:[],maintenance:[],location:[],insurance:[]};
+let fuelChart,maintChart;
 
-function loadCSV(url) {
-  return new Promise(resolve => {
-    Papa.parse(url, { download:true, header:true, skipEmptyLines:true, transformHeader:h=>(h||'').trim(), complete:r=>resolve(r.data) });
-  });
+function loadCSV(url){return new Promise(res=>Papa.parse(url,{download:true,header:true,complete:r=>res(r.data)}));}
+
+async function loadData(){
+ const [m,f,ma,l,i]=await Promise.all([
+  loadCSV(SHEETS.machines),loadCSV(SHEETS.fuel),loadCSV(SHEETS.maintenance),loadCSV(SHEETS.location),loadCSV(SHEETS.insurance)
+ ]);
+ store.machines=m;store.fuel=f;store.maintenance=ma;store.location=l;store.insurance=i;
+ buildFilters();renderAll();
 }
 
-async function loadData() {
-  const [m,f,ma,l,i] = await Promise.all([
-    loadCSV(SHEETS.machines), loadCSV(SHEETS.fuel), loadCSV(SHEETS.maintenance), loadCSV(SHEETS.location), loadCSV(SHEETS.insurance)
-  ]);
-
-  Object.assign(dataStore,{ machines:m, fuel:f, maintenance:ma, location:l, insurance:i });
-  buildMachineFilter();
-  renderAll();
+function buildFilters(){
+ machineFilter.innerHTML='<option value="">🚜 ทุกคัน</option>';
+ store.machines.forEach(r=>{
+  const op=document.createElement('option');op.value=r['รหัสเครื่อง'];op.textContent=r['รหัสเครื่อง'];machineFilter.appendChild(op);
+ });
 }
 
-function renderAll(){
-  renderKPI();
-  renderAlerts();
-  renderMachineTable();
-  renderFuelTable();
-  renderMaintTable();
-  renderLocation();
-  renderInsurance();
-  renderFuelChart();
-  renderMaintChart();
-}
+function renderAll(){renderKPI();renderCharts();renderCards();}
 
-// KPI + Idle >30d
 function renderKPI(){
-  const total = dataStore.machines.length;
-  const active = dataStore.machines.filter(m=>m['สถานะ']==='ใช้งาน').length;
-  const repair = dataStore.machines.filter(m=>m['สถานะ']==='ซ่อม').length;
-
-  const today = new Date();
-  const idleLong = dataStore.location.filter(r=>!r['วันที่ออก']).filter(r=>{
-    const d = new Date(r['วันที่เข้า']);
-    return (today-d)/86400000 > 30;
-  }).length;
-
-  kpiTotal.innerText = total;
-  kpiActive.innerText = active;
-  kpiRepair.innerText = repair;
-  kpiIdleLong.innerText = idleLong;
+ kpiTotal.innerText=store.machines.length;
+ kpiActive.innerText=store.machines.filter(r=>r['สถานะ']==='ใช้งาน').length;
+ kpiRepair.innerText=store.machines.filter(r=>r['สถานะ']==='ซ่อม').length;
+ const today=new Date();
+ kpiIdleLong.innerText=store.location.filter(r=>!r['วันที่ออก']).filter(r=>((today-new Date(r['วันที่เข้า']))/86400000)>30).length;
 }
 
-// Alerts Insurance
-function renderAlerts(){
-  alertBox.innerHTML='';
-  const today = new Date();
-  dataStore.insurance.forEach(r=>{
-    const exp = new Date(r['วันหมดประกัน']);
-    const diff = (exp-today)/86400000;
-    if(diff>0 && diff<30){
-      const li = document.createElement('li');
-      li.textContent = `${r['รหัสเครื่อง']} หมดประกันใน ${Math.ceil(diff)} วัน`;
-      alertBox.appendChild(li);
-    }
-  });
+function renderCards(){
+ listArea.innerHTML='';
+ let rows=store.machines;
+ if(machineFilter.value) rows=rows.filter(r=>r['รหัสเครื่อง']===machineFilter.value);
+
+ rows.forEach(r=>{
+  const div=document.createElement('div');
+  div.className='card bg-white dark:bg-slate-800';
+  div.innerHTML=`
+   <div class='flex justify-between'>
+     <div class='font-bold'>${r['รหัสเครื่อง']} - ${r['ชื่อเครื่อง']}</div>
+     <div>${r['สถานะ']}</div>
+   </div>
+   <div class='text-sm opacity-70 mt-1'>${r['ประเภท']} | ${r['สถานที่ปัจจุบัน']}</div>
+   <div class='text-right mt-2 font-semibold'>⏱ ${r['ชั่วโมงทำงาน']} ชม.</div>
+  `;
+  listArea.appendChild(div);
+ });
 }
 
-// Machines
-function buildMachineFilter(){
-  machineFilter.innerHTML='<option value="">-- เลือกรถ --</option>';
-  dataStore.machines.forEach(m=>{
-    const op=document.createElement('option');
-    op.value=m['รหัสเครื่อง'];
-    op.textContent=m['รหัสเครื่อง'];
-    machineFilter.appendChild(op);
-  });
+function renderCharts(){
+ const agg=(arr,dateField,valField)=>{
+  const o={};arr.forEach(r=>{if(!r[dateField])return;const m=r[dateField].slice(0,7);o[m]=(o[m]||0)+Number(r[valField]||0);});return o;}
+ const fAgg=agg(store.fuel,'วันที่','ค่าใช้จ่าย(บาท)');
+ const mAgg=agg(store.maintenance,'วันที่เริ่มซ่อม','ค่าใช้จ่าย(บาท)');
+
+ const fLabels=Object.keys(fAgg).sort();const fVals=fLabels.map(k=>fAgg[k]);
+ const mLabels=Object.keys(mAgg).sort();const mVals=mLabels.map(k=>mAgg[k]);
+
+ if(fuelChart)fuelChart.destroy();
+ fuelChart=new Chart(fuelChart,{type:'bar',data:{labels:fLabels,datasets:[{data:fVals}]}});
+
+ if(maintChart)maintChart.destroy();
+ maintChart=new Chart(maintChart,{type:'bar',data:{labels:mLabels,datasets:[{data:mVals}]}});
 }
 
-function renderMachineTable(){
-  machineTable.innerHTML='';
-  let rows = dataStore.machines;
-  if(machineFilter.value) rows = rows.filter(r=>r['รหัสเครื่อง']===machineFilter.value);
+// Dark Mode Toggle
+const toggle=document.getElementById('darkToggle');
+toggle.onclick=()=>document.documentElement.classList.toggle('dark');
 
-  rows.forEach(m=>{
-    machineTable.innerHTML += `<tr>
-      <td class='border p-1'>${m['รหัสเครื่อง']}</td>
-      <td class='border p-1'>${m['ชื่อเครื่อง']}</td>
-      <td class='border p-1'>${m['ประเภท']}</td>
-      <td class='border p-1'>${m['สถานะ']}</td>
-      <td class='border p-1'>${m['สถานที่ปัจจุบัน']}</td>
-      <td class='border p-1 text-right'>${m['ชั่วโมงทำงาน']}</td>
-    </tr>`;
-  });
-}
-
-sortLatestBtn.onclick = ()=>{
-  dataStore.machines.sort((a,b)=>Number(b['ชั่วโมงทำงาน']||0)-Number(a['ชั่วโมงทำงาน']||0));
-  renderMachineTable();
-};
-
-machineFilter.onchange = renderMachineTable;
-
-// Fuel
-function renderFuelTable(){
-  fuelTable.innerHTML='';
-  let rows = dataStore.fuel;
-  if(fuelYear.value) rows = rows.filter(r=>r['วันที่']?.startsWith(fuelYear.value));
-  if(fuelMonth.value) rows = rows.filter(r=>r['วันที่']?.slice(5,7)===fuelMonth.value.padStart(2,'0'));
-
-  rows.slice(-300).forEach(r=>{
-    fuelTable.innerHTML += `<tr>
-      <td class='border p-1'>${r['วันที่']}</td>
-      <td class='border p-1'>${r['รหัสเครื่อง']}</td>
-      <td class='border p-1 text-right'>${r['ปริมาณ(ลิตร)']}</td>
-      <td class='border p-1 text-right'>${r['ค่าใช้จ่าย(บาท)']}</td>
-      <td class='border p-1'>${r['สถานที่']}</td>
-    </tr>`;
-  });
-}
-
-fuelFilterBtn.onclick = renderFuelTable;
-
-// Maintenance
-function renderMaintTable(){
-  maintTable.innerHTML='';
-  let rows = dataStore.maintenance;
-  if(maintYear.value) rows = rows.filter(r=>r['วันที่เริ่มซ่อม']?.startsWith(maintYear.value));
-  if(maintMonth.value) rows = rows.filter(r=>r['วันที่เริ่มซ่อม']?.slice(5,7)===maintMonth.value.padStart(2,'0'));
-
-  rows.slice(-300).forEach(r=>{
-    maintTable.innerHTML += `<tr>
-      <td class='border p-1'>${r['วันที่เริ่มซ่อม']}</td>
-      <td class='border p-1'>${r['รหัสเครื่อง']}</td>
-      <td class='border p-1'>${r['อาการเสีย']}</td>
-      <td class='border p-1 text-right'>${r['ค่าใช้จ่าย(บาท)']}</td>
-      <td class='border p-1'>${r['ผู้รับเหมา']}</td>
-    </tr>`;
-  });
-}
-
-maintFilterBtn.onclick = renderMaintTable;
-
-// Location
-function renderLocation(){
-  locationTable.innerHTML='';
-  dataStore.location.slice(-500).forEach(r=>{
-    locationTable.innerHTML += `<tr>
-      <td class='border p-1'>${r['รหัสเครื่อง']}</td>
-      <td class='border p-1'>${r['สถานที่']}</td>
-      <td class='border p-1'>${r['โครงการ']}</td>
-      <td class='border p-1'>${r['วันที่เข้า']}</td>
-      <td class='border p-1'>${r['วันที่ออก']||'-'}</td>
-    </tr>`;
-  });
-}
-
-// Insurance
-function renderInsurance(){
-  insuranceTable.innerHTML='';
-  dataStore.insurance.forEach(r=>{
-    insuranceTable.innerHTML += `<tr>
-      <td class='border p-1'>${r['รหัสเครื่อง']}</td>
-      <td class='border p-1'>${r['บริษัทประกัน']}</td>
-      <td class='border p-1'>${r['วันหมดประกัน']}</td>
-      <td class='border p-1'>${r['วันหมดภาษี']}</td>
-    </tr>`;
-  });
-}
-
-// Charts + Drilldown
-function renderFuelChart(){
-  const monthly={};
-  dataStore.fuel.forEach(f=>{
-    if(!f['วันที่'])return;
-    const m=f['วันที่'].slice(0,7);
-    monthly[m]=(monthly[m]||0)+Number(f['ค่าใช้จ่าย(บาท)']||0);
-  });
-  const labels=Object.keys(monthly).sort();
-  const values=labels.map(k=>monthly[k]);
-  if(fuelChart)fuelChart.destroy();
-  fuelChart=new Chart(fuelChartCanvas,{
-    type:'bar',
-    data:{labels,datasets:[{label:'บาท',data:values}]},
-    options:{onClick:(e,els)=>{
-      if(!els.length)return;
-      const month=labels[els[0].index];
-      fuelYear.value = month.slice(0,4);
-      fuelMonth.value = month.slice(5,7);
-      renderFuelTable();
-      switchTab('fuel');
-    }}
-  });
-}
-
-function renderMaintChart(){
-  const monthly={};
-  dataStore.maintenance.forEach(f=>{
-    if(!f['วันที่เริ่มซ่อม'])return;
-    const m=f['วันที่เริ่มซ่อม'].slice(0,7);
-    monthly[m]=(monthly[m]||0)+Number(f['ค่าใช้จ่าย(บาท)']||0);
-  });
-  const labels=Object.keys(monthly).sort();
-  const values=labels.map(k=>monthly[k]);
-  if(maintChart)maintChart.destroy();
-  maintChart=new Chart(maintChartCanvas,{
-    type:'bar',
-    data:{labels,datasets:[{label:'บาท',data:values}]},
-    options:{onClick:(e,els)=>{
-      if(!els.length)return;
-      const month=labels[els[0].index];
-      maintYear.value = month.slice(0,4);
-      maintMonth.value = month.slice(5,7);
-      renderMaintTable();
-      switchTab('maintenance');
-    }}
-  });
-}
-
-// Navigation
-const tabs=document.querySelectorAll('.tab');
-function switchTab(name){
-  document.querySelectorAll('.tabBtn').forEach(b=>b.classList.replace('bg-blue-600','bg-white'));
-  document.querySelector(`[data-tab=${name}]`).classList.replace('bg-white','bg-blue-600');
-  tabs.forEach(t=>t.classList.add('hidden'));
-  document.getElementById('tab-'+name).classList.remove('hidden');
-}
-
-document.querySelectorAll('.tabBtn').forEach(btn=>{
-  btn.onclick=()=>switchTab(btn.dataset.tab);
-});
-
-reloadBtn.onclick = loadData;
-
-const fuelChartCanvas=document.getElementById('fuelChart');
-const maintChartCanvas=document.getElementById('maintChart');
+applyFilter.onclick=renderCards;
+reloadBtn.onclick=loadData;
 
 loadData();
 </script>
