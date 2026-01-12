@@ -1,613 +1,575 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FleetManager V2.27 (Fixed Popups)</title>
-    
-    <!-- Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font & Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>FleetManager V2.28 (Project Analytics)</title>
+   
+   <!-- Libraries -->
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <!-- Font & Icons -->
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
-        
-        /* Modern Card */
-        .card-modern { 
-            background: white; 
-            border-radius: 16px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid #f1f5f9;
-            transition: transform 0.2s, box-shadow 0.2s;
-            /* REMOVED overflow: hidden to prevent clipping of child popups if any */
-        }
-        .card-modern:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        
-        /* Clickable Section Effect */
-        .card-section-clickable { cursor: pointer; transition: background-color 0.2s; position: relative; }
-        .card-section-clickable:hover { background-color: #f8fafc; }
-        .card-section-clickable:active { background-color: #f1f5f9; }
+   <style>
+       body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+       
+       /* Modern Card */
+       .card-modern {
+           background: white;
+           border-radius: 16px;
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+           border: 1px solid #f1f5f9;
+           transition: transform 0.2s, box-shadow 0.2s;
+       }
+       .card-modern:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+       
+       /* Clickable Section Effect */
+       .card-section-clickable { cursor: pointer; transition: background-color 0.2s; position: relative; }
+       .card-section-clickable:hover { background-color: #f8fafc; }
+       .card-section-clickable:active { background-color: #f1f5f9; }
 
-        /* Loading */
-        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+       /* Loading */
+       .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
-        .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); } 
-        .animate-zoom-in { animation: zoomIn 0.2s ease-out; } 
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+       /* Animations */
+       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+       @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+       @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+       
+       .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+       .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+       .animate-zoom-in { animation: zoomIn 0.2s ease-out; }
+       
+       /* Custom Scrollbar */
+       ::-webkit-scrollbar { width: 6px; height: 6px; }
+       ::-webkit-scrollbar-track { background: transparent; }
+       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+       ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Toggle Card Styles */
-        .stat-card { transition: all 0.2s ease; border: 2px solid transparent; }
-        .stat-card.active { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .stat-card.active-fuel { border-color: #3b82f6; background-color: #eff6ff; }
-        .stat-card.active-repair { border-color: #ef4444; background-color: #fef2f2; }
-        
-        .filter-badge { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #eff6ff; color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; border: 1px solid #dbeafe; }
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-        .clickable-chart { cursor: pointer; }
-    </style>
+       /* Styles */
+       .stat-card { transition: all 0.2s ease; border: 2px solid transparent; }
+       .stat-card.active { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+       .stat-card.active-fuel { border-color: #3b82f6; background-color: #eff6ff; }
+       .stat-card.active-repair { border-color: #ef4444; background-color: #fef2f2; }
+       
+       .filter-badge { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #eff6ff; color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; border: 1px solid #dbeafe; }
+       .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+       .clickable-chart { cursor: pointer; }
+   </style>
 </head>
 <body class="text-slate-800">
 
 <div id="app" class="min-h-screen flex flex-col relative">
-    
-    <!-- Loading Screen -->
-    <div v-if="loading" class="loading-overlay">
-        <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <h3 class="text-lg font-bold text-slate-700 animate-pulse">กำลังโหลดข้อมูล...</h3>
-    </div>
+   
+   <!-- Loading Screen -->
+   <div v-if="loading" class="loading-overlay">
+       <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+       <h3 class="text-lg font-bold text-slate-700 animate-pulse">กำลังโหลดข้อมูล...</h3>
+   </div>
 
-    <!-- Navbar -->
-    <nav class="glass border-b border-slate-200 sticky top-0 z-40 px-4 py-3 shadow-sm">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-br from-blue-600 to-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-                    <i class="fas fa-network-wired"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight text-slate-800">FleetManager</h1>
-                    <p class="text-[10px] text-slate-500 font-bold tracking-wider">SYSTEM V2.27</p>
-                </div>
-            </div>
-            
-            <!-- Desktop Menu -->
-            <div class="hidden md:flex gap-3 items-center">
-                <button @click="loadData" class="flex items-center text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-bold transition hover:bg-slate-50">
-                    <i class="fas fa-sync-alt mr-2" :class="{'fa-spin': loading}"></i> รีเฟรช
-                </button>
-                <div class="h-6 w-px bg-slate-300 mx-2"></div>
-                <button @click="activeModal = 'fuel'" class="flex items-center bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-600 hover:text-white transition shadow-sm">
-                    <i class="fas fa-gas-pump mr-2"></i> บันทึกน้ำมัน
-                </button>
-                <button @click="activeModal = 'repair'" class="flex items-center bg-red-50 text-red-700 border border-red-200 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 hover:text-white transition shadow-sm">
-                    <i class="fas fa-tools mr-2"></i> แจ้งซ่อม
-                </button>
-            </div>
+   <!-- Navbar -->
+   <nav class="glass border-b border-slate-200 sticky top-0 z-40 px-4 py-3 shadow-sm">
+       <div class="max-w-7xl mx-auto flex justify-between items-center">
+           <div class="flex items-center gap-3">
+               <div class="bg-gradient-to-br from-blue-600 to-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                   <i class="fas fa-network-wired"></i>
+               </div>
+               <div>
+                   <h1 class="font-bold text-lg leading-tight text-slate-800">FleetManager</h1>
+                   <p class="text-[10px] text-slate-500 font-bold tracking-wider">SYSTEM V2.28</p>
+               </div>
+           </div>
+           
+           <!-- Desktop Menu -->
+           <div class="hidden md:flex gap-3 items-center">
+               <button @click="loadData" class="flex items-center text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-bold transition hover:bg-slate-50">
+                   <i class="fas fa-sync-alt mr-2" :class="{'fa-spin': loading}"></i> รีเฟรช
+               </button>
+               <div class="h-6 w-px bg-slate-300 mx-2"></div>
+               <!-- Project Button (New) -->
+               <button @click="openProjectList" class="flex items-center text-slate-600 hover:text-purple-600 px-3 py-2 rounded-lg text-sm font-bold transition hover:bg-purple-50">
+                   <i class="fas fa-building mr-2"></i> โครงการ
+               </button>
+               <div class="h-6 w-px bg-slate-300 mx-2"></div>
+               <button @click="activeModal = 'fuel'" class="flex items-center bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-600 hover:text-white transition shadow-sm">
+                   <i class="fas fa-gas-pump mr-2"></i> บันทึกน้ำมัน
+               </button>
+               <button @click="activeModal = 'repair'" class="flex items-center bg-red-50 text-red-700 border border-red-200 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 hover:text-white transition shadow-sm">
+                   <i class="fas fa-tools mr-2"></i> แจ้งซ่อม
+               </button>
+           </div>
 
-            <!-- Mobile Menu Toggle -->
-            <button class="md:hidden text-slate-500 p-2 hover:bg-slate-100 rounded-lg transition" @click="loadData">
-                <i class="fas fa-sync-alt" :class="{'fa-spin': loading}"></i>
-            </button>
-        </div>
-    </nav>
+           <!-- Mobile Menu Toggle -->
+           <div class="md:hidden flex gap-2">
+               <button class="text-slate-500 p-2 hover:bg-slate-100 rounded-lg transition" @click="openProjectList">
+                   <i class="fas fa-building text-purple-500"></i>
+               </button>
+               <button class="text-slate-500 p-2 hover:bg-slate-100 rounded-lg transition" @click="loadData">
+                   <i class="fas fa-sync-alt" :class="{'fa-spin': loading}"></i>
+               </button>
+           </div>
+       </div>
+   </nav>
 
-    <!-- Main Content -->
-    <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-        
-        <!-- Mobile Action Buttons -->
-        <div class="grid grid-cols-2 gap-3 md:hidden">
-            <button @click="activeModal = 'fuel'" class="bg-blue-600 text-white py-3 rounded-xl shadow-lg shadow-blue-200 font-bold flex justify-center items-center gap-2 text-sm active:scale-95 transition">
-                <i class="fas fa-gas-pump"></i> เติมน้ำมัน
-            </button>
-            <button @click="activeModal = 'repair'" class="bg-red-600 text-white py-3 rounded-xl shadow-lg shadow-red-200 font-bold flex justify-center items-center gap-2 text-sm active:scale-95 transition">
-                <i class="fas fa-tools"></i> แจ้งซ่อม
-            </button>
-        </div>
+   <!-- Main Content -->
+   <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+       
+       <!-- Mobile Action Buttons -->
+       <div class="grid grid-cols-2 gap-3 md:hidden">
+           <button @click="activeModal = 'fuel'" class="bg-blue-600 text-white py-3 rounded-xl shadow-lg shadow-blue-200 font-bold flex justify-center items-center gap-2 text-sm active:scale-95 transition">
+               <i class="fas fa-gas-pump"></i> เติมน้ำมัน
+           </button>
+           <button @click="activeModal = 'repair'" class="bg-red-600 text-white py-3 rounded-xl shadow-lg shadow-red-200 font-bold flex justify-center items-center gap-2 text-sm active:scale-95 transition">
+               <i class="fas fa-tools"></i> แจ้งซ่อม
+           </button>
+       </div>
 
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            
-            <!-- Combined Status Card -->
-            <div class="card-modern flex flex-col sm:flex-row border-b-4 border-b-slate-300">
-                <div class="flex flex-row w-full divide-x divide-slate-100">
-                    <div @click="openMachineList('all')" class="flex-1 p-4 card-section-clickable group flex flex-col justify-center items-center text-center">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ทั้งหมด</p>
-                        <h2 class="text-2xl font-extrabold text-slate-700 mt-1 group-hover:scale-110 transition">{{ machines.length }}</h2>
-                        <i class="fas fa-cubes text-slate-200 text-lg mt-2 group-hover:text-slate-400 transition"></i>
-                    </div>
-                    <div @click="openMachineList('active')" class="flex-1 p-4 card-section-clickable group flex flex-col justify-center items-center text-center">
-                        <p class="text-[10px] font-bold text-green-600/70 uppercase tracking-wider">พร้อมใช้</p>
-                        <h2 class="text-2xl font-extrabold text-green-600 mt-1 group-hover:scale-110 transition">{{ activeMachines }}</h2>
-                        <i class="fas fa-check-circle text-green-100 text-lg mt-2 group-hover:text-green-300 transition"></i>
-                    </div>
-                    <div @click="openMachineList('repair')" class="flex-1 p-4 card-section-clickable group flex flex-col justify-center items-center text-center">
-                        <p class="text-[10px] font-bold text-red-600/70 uppercase tracking-wider">ซ่อม</p>
-                        <h2 class="text-2xl font-extrabold text-red-600 mt-1 group-hover:scale-110 transition">{{ repairMachines }}</h2>
-                        <i class="fas fa-wrench text-red-100 text-lg mt-2 group-hover:text-red-300 transition"></i>
-                    </div>
-                </div>
-            </div>
+       <!-- KPI Cards -->
+       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+           <!-- Status Card -->
+           <div class="card-modern flex flex-col sm:flex-row border-b-4 border-b-slate-300">
+               <div class="flex flex-row w-full divide-x divide-slate-100">
+                   <div @click="openMachineList('all')" class="flex-1 p-4 card-section-clickable group flex flex-col justify-center items-center text-center">
+                       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ทั้งหมด</p>
+                       <h2 class="text-2xl font-extrabold text-slate-700 mt-1 group-hover:scale-110 transition">{{ machines.length }}</h2>
+                       <i class="fas fa-cubes text-slate-200 text-lg mt-2 group-hover:text-slate-400 transition"></i>
+                   </div>
+                   <div @click="openMachineList('active')" class="flex-1 p-4 card-section-clickable group flex flex-col justify-center items-center text-center">
+                       <p class="text-[10px] font-bold text-green-600/70 uppercase tracking-wider">พร้อมใช้</p>
+                       <h2 class="text-2xl font-extrabold text-green-600 mt-1 group-hover:scale-110 transition">{{ activeMachines }}</h2>
+                       <i class="fas fa-check-circle text-green-100 text-lg mt-2 group-hover:text-green-300 transition"></i>
+                   </div>
+                   <div @click="openMachineList('repair')" class="flex-1 p-4 card-section-clickable group flex flex-col justify-center items-center text-center">
+                       <p class="text-[10px] font-bold text-red-600/70 uppercase tracking-wider">ซ่อม</p>
+                       <h2 class="text-2xl font-extrabold text-red-600 mt-1 group-hover:scale-110 transition">{{ repairMachines }}</h2>
+                       <i class="fas fa-wrench text-red-100 text-lg mt-2 group-hover:text-red-300 transition"></i>
+                   </div>
+               </div>
+           </div>
 
-            <!-- Alert Card -->
-            <div class="card-modern p-5 flex items-center justify-between card-section-clickable hover:bg-orange-50 border-b-4 border-b-orange-400 group" @click="openAllAlerts()">
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">แจ้งเตือนเอกสาร</p>
-                    <h2 class="text-3xl font-extrabold text-orange-500 mt-1 group-hover:translate-x-1 transition">{{ totalAlerts }} <span class="text-sm text-slate-400 font-medium">รายการ</span></h2>
-                    <div class="flex gap-2 mt-2">
-                        <span class="text-[10px] px-2 py-0.5 bg-red-100 text-red-600 rounded-md font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ขาด {{ countExpired }}</span>
-                        <span class="text-[10px] px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-md font-bold">เตือน {{ countWarning }}</span>
-                    </div>
-                </div>
-                <div class="w-16 h-16 rounded-2xl bg-orange-100 text-orange-500 flex items-center justify-center text-3xl shadow-inner group-hover:rotate-12 transition duration-300">
-                    <i class="fas fa-bell"></i>
-                </div>
-            </div>
-        </div>
+           <!-- Alert Card -->
+           <div class="card-modern p-5 flex items-center justify-between card-section-clickable hover:bg-orange-50 border-b-4 border-b-orange-400 group" @click="openAllAlerts()">
+               <div>
+                   <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">แจ้งเตือนเอกสาร</p>
+                   <h2 class="text-3xl font-extrabold text-orange-500 mt-1 group-hover:translate-x-1 transition">{{ totalAlerts }} <span class="text-sm text-slate-400 font-medium">รายการ</span></h2>
+                   <div class="flex gap-2 mt-2">
+                       <span class="text-[10px] px-2 py-0.5 bg-red-100 text-red-600 rounded-md font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ขาด {{ countExpired }}</span>
+                       <span class="text-[10px] px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-md font-bold">เตือน {{ countWarning }}</span>
+                   </div>
+               </div>
+               <div class="w-16 h-16 rounded-2xl bg-orange-100 text-orange-500 flex items-center justify-center text-3xl shadow-inner group-hover:rotate-12 transition duration-300">
+                   <i class="fas fa-bell"></i>
+               </div>
+           </div>
+       </div>
 
-        <!-- Charts Section (Auto Responsive Grid) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- Fuel Chart Card -->
-            <div class="card-modern p-5 flex flex-col min-h-[350px]">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> ค่าน้ำมันรวม
-                        </p>
-                        <h3 class="text-2xl font-extrabold text-slate-800">{{ formatNumber(mainChartFuelTotal) }} <span class="text-sm text-slate-400 font-normal">บาท</span></h3>
-                        <p class="text-xs text-slate-400 mt-1 bg-slate-100 inline-block px-2 py-0.5 rounded">{{ getMainChartSubtitle(fuelState) }}</p>
-                    </div>
-                    <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                        <button v-if="fuelState.level !== 'year'" @click="switchView('fuel')" class="w-8 h-8 rounded-md flex items-center justify-center transition text-xs" :class="fuelState.viewType==='rank' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"><i class="fas" :class="fuelState.viewType==='rank' ? 'fa-chart-bar' : 'fa-trophy'"></i></button>
-                        <button v-if="fuelState.level !== 'year'" @click="backChart('fuel')" class="w-8 h-8 rounded-md hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-600 flex items-center justify-center transition text-xs"><i class="fas fa-arrow-left"></i></button>
-                    </div>
-                </div>
-                <div class="flex-grow relative w-full h-[250px]"><canvas id="mainFuelChart" class="clickable-chart"></canvas></div>
-                <p v-if="fuelState.viewType==='trend'" class="text-[10px] text-slate-400 text-center mt-4"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p>
-            </div>
+       <!-- Charts Section -->
+       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+           <!-- Fuel Chart -->
+           <div class="card-modern p-5 flex flex-col min-h-[350px]">
+               <div class="flex justify-between items-start mb-4">
+                   <div>
+                       <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> ค่าน้ำมันรวม</p>
+                       <h3 class="text-2xl font-extrabold text-slate-800">{{ formatNumber(mainChartFuelTotal) }} <span class="text-sm text-slate-400 font-normal">บาท</span></h3>
+                       <p class="text-xs text-slate-400 mt-1 bg-slate-100 inline-block px-2 py-0.5 rounded">{{ getMainChartSubtitle(fuelState) }}</p>
+                   </div>
+                   <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                       <button v-if="fuelState.level !== 'year'" @click="switchView('fuel')" class="w-8 h-8 rounded-md flex items-center justify-center transition text-xs" :class="fuelState.viewType==='rank' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"><i class="fas" :class="fuelState.viewType==='rank' ? 'fa-chart-bar' : 'fa-trophy'"></i></button>
+                       <button v-if="fuelState.level !== 'year'" @click="backChart('fuel')" class="w-8 h-8 rounded-md hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-600 flex items-center justify-center transition text-xs"><i class="fas fa-arrow-left"></i></button>
+                   </div>
+               </div>
+               <div class="flex-grow relative w-full h-[250px]"><canvas id="mainFuelChart" class="clickable-chart"></canvas></div>
+               <p v-if="fuelState.viewType==='trend'" class="text-[10px] text-slate-400 text-center mt-4"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p>
+           </div>
 
-            <!-- Repair Chart Card -->
-            <div class="card-modern p-5 flex flex-col min-h-[350px]">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-red-500"></span> ค่าซ่อมรวม
-                        </p>
-                        <h3 class="text-2xl font-extrabold text-slate-800">{{ formatNumber(mainChartRepairTotal) }} <span class="text-sm text-slate-400 font-normal">บาท</span></h3>
-                        <p class="text-xs text-slate-400 mt-1 bg-slate-100 inline-block px-2 py-0.5 rounded">{{ getMainChartSubtitle(repairState) }}</p>
-                    </div>
-                    <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                        <button v-if="repairState.level !== 'year'" @click="switchView('repair')" class="w-8 h-8 rounded-md flex items-center justify-center transition text-xs" :class="repairState.viewType==='rank' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"><i class="fas" :class="repairState.viewType==='rank' ? 'fa-chart-bar' : 'fa-trophy'"></i></button>
-                        <button v-if="repairState.level !== 'year'" @click="backChart('repair')" class="w-8 h-8 rounded-md hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-600 flex items-center justify-center transition text-xs"><i class="fas fa-arrow-left"></i></button>
-                    </div>
-                </div>
-                <div class="flex-grow relative w-full h-[250px]"><canvas id="mainRepairChart" class="clickable-chart"></canvas></div>
-                <p v-if="repairState.viewType==='trend'" class="text-[10px] text-slate-400 text-center mt-4"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p>
-            </div>
+           <!-- Repair Chart -->
+           <div class="card-modern p-5 flex flex-col min-h-[350px]">
+               <div class="flex justify-between items-start mb-4">
+                   <div>
+                       <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-500"></span> ค่าซ่อมรวม</p>
+                       <h3 class="text-2xl font-extrabold text-slate-800">{{ formatNumber(mainChartRepairTotal) }} <span class="text-sm text-slate-400 font-normal">บาท</span></h3>
+                       <p class="text-xs text-slate-400 mt-1 bg-slate-100 inline-block px-2 py-0.5 rounded">{{ getMainChartSubtitle(repairState) }}</p>
+                   </div>
+                   <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                       <button v-if="repairState.level !== 'year'" @click="switchView('repair')" class="w-8 h-8 rounded-md flex items-center justify-center transition text-xs" :class="repairState.viewType==='rank' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"><i class="fas" :class="repairState.viewType==='rank' ? 'fa-chart-bar' : 'fa-trophy'"></i></button>
+                       <button v-if="repairState.level !== 'year'" @click="backChart('repair')" class="w-8 h-8 rounded-md hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-600 flex items-center justify-center transition text-xs"><i class="fas fa-arrow-left"></i></button>
+                   </div>
+               </div>
+               <div class="flex-grow relative w-full h-[250px]"><canvas id="mainRepairChart" class="clickable-chart"></canvas></div>
+               <p v-if="repairState.viewType==='trend'" class="text-[10px] text-slate-400 text-center mt-4"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p>
+           </div>
+       </div>
+   </main>
 
-        </div>
-    </main>
+   <!-- PROJECT LIST MODAL (NEW) -->
+   <div v-if="activeModal === 'projectList'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center sm:p-4">
+       <div class="bg-white w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
+           <div class="bg-white p-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+               <div class="flex items-center gap-3">
+                   <button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 md:hidden"><i class="fas fa-arrow-left"></i></button>
+                   <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500 text-white shadow-md shadow-purple-500/30 shrink-0"><i class="fas fa-building"></i></div>
+                   <div><h2 class="text-xl font-black text-slate-800 leading-tight">โครงการทั้งหมด</h2><p class="text-xs text-slate-400 font-bold mt-1">จำนวน {{ projectDataList.length }} โครงการ</p></div>
+               </div>
+               <button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl hidden md:flex items-center justify-center text-slate-400 transition"><i class="fas fa-times"></i></button>
+           </div>
+           
+           <div class="flex-grow overflow-auto bg-slate-50 p-4">
+               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                   <div v-for="proj in projectDataList" :key="proj.name" @click="openProjectDetail(proj)" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-[0.98] group">
+                       <div class="flex justify-between items-start mb-3">
+                           <h3 class="font-bold text-slate-700 text-lg group-hover:text-purple-600 transition">{{ proj.name }}</h3>
+                           <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded font-bold">{{ proj.machineCount }} คัน</span>
+                       </div>
+                       <div class="space-y-2">
+                           <div class="flex justify-between text-xs">
+                               <span class="text-slate-400">ค่าน้ำมันรวม</span>
+                               <span class="font-bold text-blue-600">{{ formatNumber(proj.totalFuel) }} บ.</span>
+                           </div>
+                           <div class="flex justify-between text-xs">
+                               <span class="text-slate-400">ค่าซ่อมรวม</span>
+                               <span class="font-bold text-red-600">{{ formatNumber(proj.totalRepair) }} บ.</span>
+                           </div>
+                           <div class="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden flex">
+                               <div class="bg-blue-500 h-full" :style="{width: (proj.totalFuel / (proj.totalFuel + proj.totalRepair + 1) * 100) + '%'}"></div>
+                               <div class="bg-red-500 h-full" :style="{width: (proj.totalRepair / (proj.totalFuel + proj.totalRepair + 1) * 100) + '%'}"></div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
 
-    <!-- MODALS SECTION -->
-    
-    <!-- Machine List Modal -->
-    <div v-if="activeModal === 'machineList'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center sm:p-4">
-        <div class="bg-white w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
-            <div class="bg-white p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center sticky top-0 z-10 shrink-0">
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 md:hidden"><i class="fas fa-arrow-left"></i></button>
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md shrink-0" :class="filterStatus === 'all' ? 'bg-slate-700' : (filterStatus === 'active' ? 'bg-green-500' : 'bg-red-500')"><i class="fas" :class="filterStatus === 'all' ? 'fa-cubes' : (filterStatus === 'active' ? 'fa-check' : 'fa-wrench')"></i></div>
-                    <div><h2 class="text-xl font-black text-slate-800 leading-tight">{{ filterStatus === 'all' ? 'เครื่องจักรทั้งหมด' : (filterStatus === 'active' ? 'รถพร้อมใช้งาน' : 'รถกำลังซ่อม') }}</h2><p class="text-xs text-slate-400 font-bold mt-1">จำนวน {{ filteredMachines.length }} คัน</p></div>
-                </div>
-                <div class="flex w-full md:w-auto gap-2 relative">
-                    <i class="fas fa-search absolute left-4 top-3 text-slate-400 text-sm"></i>
-                    <input v-model="searchQuery" type="text" placeholder="ค้นหา..." class="w-full md:w-64 pl-10 pr-4 py-2.5 text-sm border-0 bg-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500 transition">
-                    <button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl hidden md:flex items-center justify-center text-slate-400 transition"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            
-            <div class="flex-grow overflow-auto bg-slate-50 p-2 md:p-0">
-                <!-- Desktop Table -->
-                <table class="w-full text-left border-collapse hidden md:table"><thead class="bg-white text-slate-400 text-[10px] uppercase font-bold tracking-wider sticky top-0 z-0 shadow-sm"><tr><th class="p-4">รหัส / ชื่อ</th><th class="p-4">รุ่น</th><th class="p-4 text-center">สถานะ</th><th class="p-4">สถานที่ล่าสุด</th><th class="p-4"></th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="mc in filteredMachines" :key="mc.id" @click="selectMachine(mc)" class="bg-white hover:bg-blue-50/50 transition cursor-pointer"><td class="p-4"><div class="font-black text-blue-600 text-base">{{ mc.id }}</div><div class="text-xs text-slate-500 font-medium">{{ mc.name }}</div></td><td class="p-4 text-xs text-slate-500">{{ mc.model }}</td><td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-[10px] font-bold border" :class="mc.status==='Active'?'bg-green-100 text-green-700 border-green-200':'bg-red-100 text-red-700 border-red-200'">{{ mc.status==='Active'?'พร้อมใช้':'ซ่อม' }}</span></td><td class="p-4 text-xs text-slate-500">{{ mc.location }}</td><td class="p-4 text-right text-slate-300"><i class="fas fa-chevron-right"></i></td></tr></tbody></table>
-                
-                <!-- Mobile List Cards -->
-                <div class="md:hidden space-y-2">
-                    <div v-for="mc in filteredMachines" :key="mc.id" @click="selectMachine(mc)" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between active:scale-[0.98] transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0" :class="mc.status==='Active'?'bg-green-500':'bg-red-500'">{{ mc.id.replace('MC','') }}</div>
-                            <div>
-                                <div class="font-bold text-slate-700 text-sm">{{ mc.id }}</div>
-                                <div class="text-[10px] text-slate-500">{{ mc.name }}</div>
-                                <div class="text-[10px] text-slate-400 mt-0.5"><i class="fas fa-map-marker-alt"></i> {{ mc.location }}</div>
-                            </div>
-                        </div>
-                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   <!-- PROJECT DETAIL MODAL (NEW) -->
+   <div v-if="selectedProject" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-end md:items-center justify-center sm:p-4">
+       <div class="bg-white w-full h-[95vh] md:h-[90vh] md:max-w-5xl rounded-t-3xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
+           <!-- Header -->
+           <div class="bg-white p-5 border-b border-slate-100 flex justify-between items-center shrink-0">
+               <div class="flex items-center gap-3">
+                   <button @click="selectedProject = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 md:hidden"><i class="fas fa-arrow-left"></i></button>
+                   <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl shadow-inner"><i class="fas fa-project-diagram"></i></div>
+                   <div>
+                       <h2 class="text-lg md:text-2xl font-black text-slate-800 leading-tight line-clamp-1">{{ selectedProject.name }}</h2>
+                       <p class="text-xs text-slate-400 mt-1">รายละเอียดการใช้งานเครื่องจักร</p>
+                   </div>
+               </div>
+               <button @click="selectedProject = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl hidden md:flex items-center justify-center text-slate-400 transition"><i class="fas fa-times"></i></button>
+           </div>
 
-    <!-- Alert List Modal -->
-    <div v-if="activeModal === 'alerts'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center sm:p-4">
-        <div class="bg-white w-full h-[85vh] md:h-[80vh] md:max-w-lg rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
-            <div class="bg-white p-5 border-b border-slate-100 flex justify-between items-center shrink-0">
-                <div class="flex gap-3 items-center">
-                    <div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-xl shadow-inner"><i class="fas fa-bell"></i></div>
-                    <div><h2 class="text-xl font-black text-slate-800 leading-none">แจ้งเตือน</h2><p class="text-xs text-slate-400 mt-1">เอกสารหมดอายุ</p></div>
-                </div>
-                <button @click="activeModal = null" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 transition"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="bg-white px-5 border-b border-slate-100 flex gap-2 shrink-0 py-2"><button v-for="tab in ['all', 'tax', 'insurance']" :key="tab" @click="alertTab = tab" class="flex-1 py-2 text-xs font-bold rounded-lg transition" :class="alertTab === tab ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'">{{ tab === 'all' ? 'ทั้งหมด' : (tab === 'tax' ? 'ภาษี' : 'ประกัน') }}</button></div>
-            <div class="overflow-y-auto p-4 space-y-2 bg-slate-50 flex-grow custom-scrollbar">
-                <div v-for="(item, idx) in filteredAlertList" :key="idx" @click="openMachineFromAlert(item.id)" class="bg-white p-4 rounded-2xl cursor-pointer flex justify-between items-center border border-slate-100 shadow-sm hover:shadow-md hover:scale-[1.02] transition duration-200 group">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 shadow-inner" :class="item.docType==='ภาษี' ? 'bg-blue-50 text-blue-600' : 'bg-indigo-50 text-indigo-600'"><i class="fas" :class="item.docType==='ภาษี' ? 'fa-file-invoice-dollar' : 'fa-shield-alt'"></i></div>
-                        <div>
-                            <div class="flex items-center gap-2"><span class="font-bold text-slate-700 group-hover:text-orange-600 transition">{{ item.id }}</span><span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider" :class="item.docType==='ภาษี'?'bg-blue-100 text-blue-600':'bg-indigo-100 text-indigo-600'">{{ item.docType }}</span></div>
-                            <p class="text-xs text-slate-400 mt-1">หมดอายุ: {{ formatDateThai(item.date) }}</p>
-                        </div>
-                    </div>
-                    <span class="text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-sm" :class="item.level === 'expired' ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-yellow-400 text-white shadow-yellow-400/30'">{{ item.days }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Forms -->
-    <div v-if="activeModal === 'fuel'" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl animate-zoom-in relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div><h3 class="font-black text-2xl mb-6 text-slate-800 flex items-center gap-3"><i class="fas fa-gas-pump text-blue-500"></i> บันทึกน้ำมัน</h3><form @submit.prevent="submitFuel" class="space-y-4"><input v-model="formFuel.date" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><input v-model="formFuel.id" list="allMachines" placeholder="รหัสรถ" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold uppercase"><div class="grid grid-cols-2 gap-3"><input v-model="formFuel.liters" placeholder="ลิตร" type="number" step="0.01" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 transition font-bold text-blue-600"><input v-model="formFuel.cost" placeholder="บาท" type="number" step="0.01" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 transition font-bold text-slate-700"></div><div class="pt-4 flex gap-3"><button type="button" @click="activeModal = null" class="flex-1 py-3.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition">ยกเลิก</button><button type="submit" :disabled="isSubmitting" class="flex-1 py-3.5 rounded-xl text-sm font-bold text-white bg-blue-600 shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:scale-105 transition transform">{{ isSubmitting?'บันทึก...':'ยืนยัน' }}</button></div></form></div></div>
-    <div v-if="activeModal === 'repair'" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-zoom-in"><div class="flex border-b border-slate-100"><button @click="repairTab='open'" class="flex-1 py-4 text-sm font-bold transition relative" :class="repairTab==='open'?'text-red-600 bg-red-50/50':'text-slate-400 hover:bg-slate-50'">แจ้งซ่อม <div v-if="repairTab==='open'" class="absolute bottom-0 left-0 w-full h-1 bg-red-500 rounded-t-full"></div></button><button @click="repairTab='close'" class="flex-1 py-4 text-sm font-bold transition relative" :class="repairTab==='close'?'text-green-600 bg-green-50/50':'text-slate-400 hover:bg-slate-50'">ปิดงาน <div v-if="repairTab==='close'" class="absolute bottom-0 left-0 w-full h-1 bg-green-500 rounded-t-full"></div></button></div><div class="p-8"><form v-if="repairTab==='open'" @submit.prevent="submitRepairOpen" class="space-y-4"><div class="grid grid-cols-2 gap-3"><input v-model="formRepairOpen.dateStart" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><input v-model="formRepairOpen.id" list="allMachines" placeholder="รหัส" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold uppercase"></div><textarea v-model="formRepairOpen.issue" rows="3" placeholder="อาการเสีย..." required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 focus:ring-2 focus:ring-red-500 transition"></textarea><button type="submit" :disabled="isSubmitting" class="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-red-600 shadow-lg shadow-red-500/30 hover:bg-red-700 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'แจ้งซ่อมทันที' }}</button></form><form v-if="repairTab==='close'" @submit.prevent="submitRepairClose" class="space-y-4"><select v-model="formRepairClose.id" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><option value="" disabled>-- เลือกรถ --</option><option v-for="mc in machines.filter(m => m.status !== 'Active')" :value="mc.id">{{ mc.id }} - {{ mc.name }}</option></select><div v-if="formRepairClose.id" class="space-y-4"><input v-model="formRepairClose.dateEnd" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><textarea v-model="formRepairClose.fix" rows="2" placeholder="วิธีแก้ไข..." required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3"></textarea><div class="flex gap-2"><input v-model="formRepairClose.cost" placeholder="ค่าซ่อม" type="number" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-red-600"><input v-model="formRepairClose.downtime" placeholder="วันหยุด" type="number" class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"></div><button type="submit" :disabled="isSubmitting" class="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-green-600 shadow-lg shadow-green-500/30 hover:bg-green-700 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'ปิดงานซ่อม' }}</button></div></form></div><div class="bg-slate-50 p-4 text-center"><button @click="activeModal = null" class="text-xs text-slate-400 hover:text-slate-600 underline">ปิดหน้าต่าง</button></div></div></div>
+           <div class="flex-grow overflow-y-auto bg-slate-50 p-4 md:p-6 custom-scrollbar">
+               
+               <!-- Stats Row -->
+               <div class="grid grid-cols-3 gap-3 mb-6">
+                   <div class="bg-white p-3 md:p-4 rounded-xl border border-slate-100 shadow-sm text-center">
+                       <p class="text-[10px] text-slate-400 font-bold uppercase">ค่าน้ำมัน</p>
+                       <h3 class="text-sm md:text-xl font-black text-blue-600 mt-1">{{ formatNumber(selectedProject.totalFuel) }}</h3>
+                   </div>
+                   <div class="bg-white p-3 md:p-4 rounded-xl border border-slate-100 shadow-sm text-center">
+                       <p class="text-[10px] text-slate-400 font-bold uppercase">ค่าซ่อม</p>
+                       <h3 class="text-sm md:text-xl font-black text-red-600 mt-1">{{ formatNumber(selectedProject.totalRepair) }}</h3>
+                   </div>
+                   <div class="bg-white p-3 md:p-4 rounded-xl border border-slate-100 shadow-sm text-center">
+                       <p class="text-[10px] text-slate-400 font-bold uppercase">เครื่องจักร</p>
+                       <h3 class="text-sm md:text-xl font-black text-slate-700 mt-1">{{ selectedProject.machineCount }} <span class="text-xs font-normal text-slate-400">คัน</span></h3>
+                   </div>
+               </div>
 
-    <!-- DETAIL MODAL -->
-    <div v-if="selectedMachine" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] flex items-end md:items-center justify-center sm:p-4">
-        <div class="bg-white w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
-            <!-- Header -->
-            <div class="bg-white p-4 md:p-6 border-b border-slate-100 flex justify-between items-start shrink-0 z-10 shadow-sm">
-                <div class="flex gap-4 items-center">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-2xl md:text-3xl shadow-lg shadow-blue-500/30 shrink-0"><i class="fas fa-truck-moving"></i></div>
-                    <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="text-xl md:text-3xl font-black text-slate-800 leading-none">{{ selectedMachine.name }}</h2>
-                            <span v-if="machineFilter" class="filter-badge text-[10px]"><i class="fas fa-filter"></i> {{ machineFilter.year }} <span v-if="machineFilter.month !== null">/ {{ getMonthName(machineFilter.month) }}</span><button @click="clearMachineFilter" class="hover:text-blue-800 ml-1"><i class="fas fa-times"></i></button></span>
-                        </div>
-                        <div class="flex gap-3 mt-1 text-xs md:text-sm text-slate-500 font-medium">
-                            <span class="bg-slate-100 px-2 py-0.5 rounded-md font-mono text-slate-600">{{ selectedMachine.id }}</span>
-                            <span class="flex items-center gap-1"><i class="fas fa-tag text-slate-400"></i> {{ selectedMachine.model }}</span>
-                        </div>
-                    </div>
-                </div>
-                <button @click="selectedMachine = null" class="w-8 h-8 md:w-10 md:h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-full flex items-center justify-center text-slate-400 transition"><i class="fas fa-times text-lg"></i></button>
-            </div>
-            
-            <!-- Content -->
-            <div class="flex-grow overflow-y-auto bg-slate-50/50 p-4 md:p-6 custom-scrollbar">
-                
-                <!-- Insurance (Top) -->
-                <div class="mb-6">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">สถานะความคุ้มครอง</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                         <div v-for="doc in getMachineDocs(selectedMachine.id)" class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-start gap-4">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shrink-0"><i class="fas fa-shield-alt"></i></div>
-                            <div class="flex-grow min-w-0">
-                                <div class="flex justify-between items-center mb-1"><span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-bold border border-indigo-100 truncate">{{ doc['บริษัทประกัน'] }}</span></div>
-                                <p class="font-bold text-slate-700 text-sm mb-2 truncate">{{ doc['เลขกรมธรรม์'] }}</p>
-                                <div class="flex flex-col xl:flex-row gap-1 xl:gap-4 text-[11px] font-medium text-slate-500">
-                                    <span class="truncate">ประกัน: <b :class="getExpireStatus(doc['วันหมดประกัน']).color">{{ formatDateThai(doc['วันหมดประกัน']) }}</b></span>
-                                    <span class="truncate">ภาษี: <b :class="getExpireStatus(doc['วันหมดภาษี']).color">{{ formatDateThai(doc['วันหมดภาษี']) }}</b></span>
-                                </div>
-                            </div>
-                         </div>
-                         <div v-if="getMachineDocs(selectedMachine.id).length === 0" class="text-center p-6 text-sm text-slate-400 bg-white rounded-2xl border-2 border-dashed border-slate-200">ไม่พบข้อมูลประกันภัย</div>
-                    </div>
-                </div>
+               <!-- Machine List in Project -->
+               <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1"><i class="fas fa-list mr-1"></i> รายการเครื่องจักรในโครงการ</h4>
+               
+               <!-- Desktop Table -->
+               <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                   <table class="w-full text-sm text-left">
+                       <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider"><tr><th class="p-4">รหัส / ชื่อ</th><th class="p-4 text-right text-blue-600">ใช้น้ำมัน (บาท)</th><th class="p-4 text-right text-red-600">ค่าซ่อม (บาท)</th></tr></thead>
+                       <tbody class="divide-y divide-slate-50"><tr v-for="mc in selectedProject.machines" :key="mc.id" class="hover:bg-slate-50"><td class="p-4"><div class="font-bold text-slate-700">{{ mc.id }}</div><div class="text-xs text-slate-500">{{ mc.name }}</div></td><td class="p-4 text-right font-mono text-slate-700">{{ formatNumber(mc.fuelCost) }}</td><td class="p-4 text-right font-mono text-slate-700">{{ formatNumber(mc.repairCost) }}</td></tr></tbody>
+                   </table>
+               </div>
 
-                <!-- Chart Card -->
-                <div class="bg-white p-5 md:p-8 rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 flex flex-col mb-8 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-red-400"></div>
-                    
-                    <!-- Toggles -->
-                    <div class="grid grid-cols-2 gap-4 mb-6 md:w-2/3 lg:w-1/2">
-                         <div @click="switchDetailChartType('fuel')" class="stat-card p-4 rounded-2xl cursor-pointer border flex items-center justify-between group" :class="detailViewType === 'fuel' ? 'active active-fuel' : 'border-slate-100 hover:border-blue-300 bg-slate-50/50'">
-                            <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">ค่าน้ำมันรวม</p><h3 class="text-lg md:text-xl font-black" :class="detailViewType === 'fuel' ? 'text-blue-600' : 'text-slate-700'">{{ formatNumber(currentMachineFuelCost) }}</h3></div>
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors" :class="detailViewType === 'fuel' ? 'bg-blue-500 text-white' : 'bg-white text-slate-300'"><i class="fas fa-gas-pump"></i></div>
-                         </div>
-                         <div @click="switchDetailChartType('repair')" class="stat-card p-4 rounded-2xl cursor-pointer border flex items-center justify-between group" :class="detailViewType === 'repair' ? 'active active-repair' : 'border-slate-100 hover:border-red-300 bg-slate-50/50'">
-                            <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">ค่าซ่อมรวม</p><h3 class="text-lg md:text-xl font-black" :class="detailViewType === 'repair' ? 'text-red-600' : 'text-slate-700'">{{ formatNumber(currentMachineRepairCost) }}</h3></div>
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors" :class="detailViewType === 'repair' ? 'bg-red-500 text-white' : 'bg-white text-slate-300'"><i class="fas fa-tools"></i></div>
-                         </div>
-                    </div>
-                    
-                    <!-- Chart -->
-                    <div class="relative">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-bold text-slate-700 text-sm">กราฟแสดงแนวโน้ม ({{ detailViewType === 'fuel' ? 'น้ำมัน' : 'ซ่อมบำรุง' }})</h4>
-                            <button v-if="machineFilter" @click="detailChartBack" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold flex items-center gap-2 transition"><i class="fas fa-arrow-left"></i> ย้อนกลับ</button>
-                        </div>
-                        <div class="h-[200px] md:h-[250px] w-full relative"><canvas id="detailMainChart" class="clickable-chart"></canvas></div>
-                        <p class="text-[10px] text-slate-400 text-center mt-4 bg-slate-50 inline-block mx-auto px-3 py-1 rounded-full border border-slate-100" v-if="!machineFilter || machineFilter.month === null"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p>
-                    </div>
-                </div>
+               <!-- Mobile Cards -->
+               <div class="md:hidden space-y-3">
+                   <div v-for="mc in selectedProject.machines" :key="mc.id" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                       <div class="flex justify-between items-start mb-3">
+                           <div><span class="font-bold text-slate-800 text-sm">{{ mc.id }}</span><p class="text-xs text-slate-500">{{ mc.name }}</p></div>
+                       </div>
+                       <div class="grid grid-cols-2 gap-2 text-xs">
+                           <div class="bg-blue-50 p-2 rounded-lg"><span class="text-slate-500 block text-[9px]">น้ำมัน</span><span class="font-bold text-blue-600">{{ formatNumber(mc.fuelCost) }}</span></div>
+                           <div class="bg-red-50 p-2 rounded-lg"><span class="text-slate-500 block text-[9px]">ซ่อม</span><span class="font-bold text-red-600">{{ formatNumber(mc.repairCost) }}</span></div>
+                       </div>
+                   </div>
+               </div>
 
-                <!-- History List (Responsive Switcher) -->
-                <div class="mb-8">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2"><i class="fas fa-list"></i> รายละเอียด: {{ detailViewType === 'fuel' ? 'ประวัติการเติมน้ำมัน' : 'ประวัติการซ่อมบำรุง' }}</h4>
-                    
-                    <!-- 1. Desktop Table (Hidden on Mobile) -->
-                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider"><tr><th class="p-4">วันที่</th><th class="p-4" v-if="detailViewType==='fuel'">ลิตร</th><th class="p-4" v-if="detailViewType==='repair'">อาการเสีย</th><th class="p-4 text-right">ค่าใช้จ่าย</th><th class="p-4 text-right" v-if="detailViewType==='fuel'">สถานที่</th><th class="p-4 text-right" v-if="detailViewType==='repair'">การแก้ไข</th></tr></thead>
-                            <tbody class="divide-y divide-slate-50"><tr v-for="(log, idx) in currentDetailList" :key="idx" class="hover:bg-blue-50/50 transition"><td class="p-4 text-xs font-bold text-slate-600">{{ formatDateThai(log[detailDateKey]) }}</td><td class="p-4 font-bold text-xs" v-if="detailViewType==='fuel'"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{{ log['ปริมาณ(ลิตร)'] }}</span></td><td class="p-4 text-xs font-bold text-red-500" v-if="detailViewType==='repair'">{{ log['อาการเสีย'] }}</td><td class="p-4 text-right font-mono font-bold text-xs text-slate-700">{{ formatNumber(log['ค่าใช้จ่าย(บาท)']) }}</td><td class="p-4 text-right text-xs text-slate-400" v-if="detailViewType==='fuel'">{{ log['สถานที่'] }}</td><td class="p-4 text-right text-xs text-slate-500" v-if="detailViewType==='repair'">{{ log['การแก้ไข'] }}</td></tr><tr v-if="currentDetailList.length === 0"><td colspan="5" class="p-8 text-center text-slate-300 text-sm">ไม่พบข้อมูล</td></tr></tbody>
-                        </table>
-                    </div>
+           </div>
+       </div>
+   </div>
 
-                    <!-- 2. Mobile Cards (Hidden on Desktop) -->
-                    <div class="md:hidden space-y-3">
-                        <div v-for="(log, idx) in currentDetailList" :key="idx" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-3"><span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">{{ formatDateThai(log[detailDateKey]) }}</span><span class="text-base font-black" :class="detailViewType==='fuel'?'text-blue-600':'text-red-600'">{{ formatNumber(log['ค่าใช้จ่าย(บาท)']) }} <span class="text-[10px] text-slate-400 font-normal">บ.</span></span></div>
-                            <div v-if="detailViewType==='fuel'" class="flex justify-between text-xs font-medium text-slate-500"><span><i class="fas fa-gas-pump mr-1.5 text-blue-300"></i> {{ log['ปริมาณ(ลิตร)'] }} ลิตร</span><span><i class="fas fa-map-marker-alt mr-1.5 text-red-300"></i> {{ log['สถานที่'] }}</span></div>
-                            <div v-if="detailViewType==='repair'"><p class="text-xs font-bold text-red-500 mb-1.5 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> {{ log['อาการเสีย'] }}</p><p class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 leading-relaxed"><i class="fas fa-wrench mr-1.5 text-slate-400"></i> {{ log['การแก้ไข'] }}</p></div>
-                        </div>
-                        <div v-if="currentDetailList.length === 0" class="p-8 text-center text-slate-300 text-sm bg-white rounded-2xl border-2 border-dashed border-slate-100">ไม่พบข้อมูล</div>
-                    </div>
+   <!-- Machine List Modal (Existing) -->
+   <div v-if="activeModal === 'machineList'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center sm:p-4">
+       <div class="bg-white w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
+           <div class="bg-white p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center sticky top-0 z-10 shrink-0">
+               <div class="flex items-center gap-3 w-full md:w-auto">
+                   <button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 md:hidden"><i class="fas fa-arrow-left"></i></button>
+                   <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md shrink-0" :class="filterStatus === 'all' ? 'bg-slate-700' : (filterStatus === 'active' ? 'bg-green-500' : 'bg-red-500')"><i class="fas" :class="filterStatus === 'all' ? 'fa-cubes' : (filterStatus === 'active' ? 'fa-check' : 'fa-wrench')"></i></div>
+                   <div><h2 class="text-xl font-black text-slate-800 leading-tight">{{ filterStatus === 'all' ? 'เครื่องจักรทั้งหมด' : (filterStatus === 'active' ? 'รถพร้อมใช้งาน' : 'รถกำลังซ่อม') }}</h2><p class="text-xs text-slate-400 font-bold mt-1">จำนวน {{ filteredMachines.length }} คัน</p></div>
+               </div>
+               <div class="flex w-full md:w-auto gap-2 relative"><i class="fas fa-search absolute left-4 top-3 text-slate-400 text-sm"></i><input v-model="searchQuery" type="text" placeholder="ค้นหา..." class="w-full md:w-64 pl-10 pr-4 py-2.5 text-sm border-0 bg-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500 transition"><button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl hidden md:flex items-center justify-center text-slate-400 transition"><i class="fas fa-times"></i></button></div>
+           </div>
+           <div class="flex-grow overflow-auto bg-slate-50 p-2 md:p-0">
+               <table class="w-full text-left border-collapse hidden md:table"><thead class="bg-white text-slate-400 text-[10px] uppercase font-bold tracking-wider sticky top-0 z-0 shadow-sm"><tr><th class="p-4">รหัส / ชื่อ</th><th class="p-4">รุ่น</th><th class="p-4 text-center">สถานะ</th><th class="p-4">สถานที่ล่าสุด</th><th class="p-4"></th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="mc in filteredMachines" :key="mc.id" @click="selectMachine(mc)" class="bg-white hover:bg-blue-50/50 transition cursor-pointer"><td class="p-4"><div class="font-black text-blue-600 text-base">{{ mc.id }}</div><div class="text-xs text-slate-500 font-medium">{{ mc.name }}</div></td><td class="p-4 text-xs text-slate-500">{{ mc.model }}</td><td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-[10px] font-bold border" :class="mc.status==='Active'?'bg-green-100 text-green-700 border-green-200':'bg-red-100 text-red-700 border-red-200'">{{ mc.status==='Active'?'พร้อมใช้':'ซ่อม' }}</span></td><td class="p-4 text-xs text-slate-500">{{ mc.location }}</td><td class="p-4 text-right text-slate-300"><i class="fas fa-chevron-right"></i></td></tr></tbody></table>
+               <div class="md:hidden space-y-2"><div v-for="mc in filteredMachines" :key="mc.id" @click="selectMachine(mc)" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between active:scale-[0.98] transition"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0" :class="mc.status==='Active'?'bg-green-500':'bg-red-500'">{{ mc.id.replace('MC','') }}</div><div><div class="font-bold text-slate-700 text-sm">{{ mc.id }}</div><div class="text-[10px] text-slate-500">{{ mc.name }}</div><div class="text-[10px] text-slate-400 mt-0.5"><i class="fas fa-map-marker-alt"></i> {{ mc.location }}</div></div></div><i class="fas fa-chevron-right text-slate-300 text-xs"></i></div></div>
+           </div>
+       </div>
+   </div>
 
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <datalist id="allMachines"><option v-for="mc in machines" :value="mc.id">{{ mc.name }}</option></datalist>
+   <!-- Alert List Modal -->
+   <div v-if="activeModal === 'alerts'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center sm:p-4">
+       <div class="bg-white w-full h-[85vh] md:h-[80vh] md:max-w-lg rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
+           <div class="bg-white p-5 border-b border-slate-100 flex justify-between items-center shrink-0"><div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-xl shadow-inner"><i class="fas fa-bell"></i></div><div><h2 class="text-xl font-black text-slate-800 leading-none">แจ้งเตือน</h2><p class="text-xs text-slate-400 mt-1">เอกสารหมดอายุ</p></div></div><button @click="activeModal = null" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 transition"><i class="fas fa-times"></i></button></div>
+           <div class="bg-white px-5 border-b border-slate-100 flex gap-2 shrink-0 py-2"><button v-for="tab in ['all', 'tax', 'insurance']" :key="tab" @click="alertTab = tab" class="flex-1 py-2 text-xs font-bold rounded-lg transition" :class="alertTab === tab ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'">{{ tab === 'all' ? 'ทั้งหมด' : (tab === 'tax' ? 'ภาษี' : 'ประกัน') }}</button></div>
+           <div class="overflow-y-auto p-4 space-y-2 bg-slate-50 flex-grow custom-scrollbar"><div v-for="(item, idx) in filteredAlertList" :key="idx" @click="openMachineFromAlert(item.id)" class="bg-white p-4 rounded-2xl cursor-pointer flex justify-between items-center border border-slate-100 shadow-sm hover:shadow-md hover:scale-[1.02] transition duration-200 group"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 shadow-inner" :class="item.docType==='ภาษี' ? 'bg-blue-50 text-blue-600' : 'bg-indigo-50 text-indigo-600'"><i class="fas" :class="item.docType==='ภาษี' ? 'fa-file-invoice-dollar' : 'fa-shield-alt'"></i></div><div><div class="flex items-center gap-2"><span class="font-bold text-slate-700 group-hover:text-orange-600 transition">{{ item.id }}</span><span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider" :class="item.docType==='ภาษี'?'bg-blue-100 text-blue-600':'bg-indigo-100 text-indigo-600'">{{ item.docType }}</span></div><p class="text-xs text-slate-400 mt-1">หมดอายุ: {{ formatDateThai(item.date) }}</p></div></div><span class="text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-sm" :class="item.level === 'expired' ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-yellow-400 text-white shadow-yellow-400/30'">{{ item.days }}</span></div></div>
+       </div>
+   </div>
+   
+   <!-- Forms -->
+   <div v-if="activeModal === 'fuel'" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl animate-zoom-in relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div><h3 class="font-black text-2xl mb-6 text-slate-800 flex items-center gap-3"><i class="fas fa-gas-pump text-blue-500"></i> บันทึกน้ำมัน</h3><form @submit.prevent="submitFuel" class="space-y-4"><input v-model="formFuel.date" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><input v-model="formFuel.id" list="allMachines" placeholder="รหัสรถ" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold uppercase"><div class="grid grid-cols-2 gap-3"><input v-model="formFuel.liters" placeholder="ลิตร" type="number" step="0.01" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 transition font-bold text-blue-600"><input v-model="formFuel.cost" placeholder="บาท" type="number" step="0.01" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 transition font-bold text-slate-700"></div><div class="pt-4 flex gap-3"><button type="button" @click="activeModal = null" class="flex-1 py-3.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition">ยกเลิก</button><button type="submit" :disabled="isSubmitting" class="flex-1 py-3.5 rounded-xl text-sm font-bold text-white bg-blue-600 shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:scale-105 transition transform">{{ isSubmitting?'บันทึก...':'ยืนยัน' }}</button></div></form></div></div>
+   <div v-if="activeModal === 'repair'" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-zoom-in"><div class="flex border-b border-slate-100"><button @click="repairTab='open'" class="flex-1 py-4 text-sm font-bold transition relative" :class="repairTab==='open'?'text-red-600 bg-red-50/50':'text-slate-400 hover:bg-slate-50'">แจ้งซ่อม <div v-if="repairTab==='open'" class="absolute bottom-0 left-0 w-full h-1 bg-red-500 rounded-t-full"></div></button><button @click="repairTab='close'" class="flex-1 py-4 text-sm font-bold transition relative" :class="repairTab==='close'?'text-green-600 bg-green-50/50':'text-slate-400 hover:bg-slate-50'">ปิดงาน <div v-if="repairTab==='close'" class="absolute bottom-0 left-0 w-full h-1 bg-green-500 rounded-t-full"></div></button></div><div class="p-8"><form v-if="repairTab==='open'" @submit.prevent="submitRepairOpen" class="space-y-4"><div class="grid grid-cols-2 gap-3"><input v-model="formRepairOpen.dateStart" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><input v-model="formRepairOpen.id" list="allMachines" placeholder="รหัส" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold uppercase"></div><textarea v-model="formRepairOpen.issue" rows="3" placeholder="อาการเสีย..." required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 focus:ring-2 focus:ring-red-500 transition"></textarea><button type="submit" :disabled="isSubmitting" class="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-red-600 shadow-lg shadow-red-500/30 hover:bg-red-700 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'แจ้งซ่อมทันที' }}</button></form><form v-if="repairTab==='close'" @submit.prevent="submitRepairClose" class="space-y-4"><select v-model="formRepairClose.id" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><option value="" disabled>-- เลือกรถ --</option><option v-for="mc in machines.filter(m => m.status !== 'Active')" :value="mc.id">{{ mc.id }} - {{ mc.name }}</option></select><div v-if="formRepairClose.id" class="space-y-4"><input v-model="formRepairClose.dateEnd" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"><textarea v-model="formRepairClose.fix" rows="2" placeholder="วิธีแก้ไข..." required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3"></textarea><div class="flex gap-2"><input v-model="formRepairClose.cost" placeholder="ค่าซ่อม" type="number" required class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-red-600"><input v-model="formRepairClose.downtime" placeholder="วันหยุด" type="number" class="w-full text-sm border-0 bg-slate-100 rounded-xl p-3 font-bold text-slate-700"></div><button type="submit" :disabled="isSubmitting" class="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-green-600 shadow-lg shadow-green-500/30 hover:bg-green-700 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'ปิดงานซ่อม' }}</button></div></form></div><div class="bg-slate-50 p-4 text-center"><button @click="activeModal = null" class="text-xs text-slate-400 hover:text-slate-600 underline">ปิดหน้าต่าง</button></div></div></div>
+
+   <!-- DETAIL MODAL -->
+   <div v-if="selectedMachine" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] flex items-end md:items-center justify-center sm:p-4">
+       <div class="bg-white w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in">
+           <div class="bg-white p-4 md:p-6 border-b border-slate-100 flex justify-between items-start shrink-0 z-10 shadow-sm"><div class="flex gap-4 items-center"><div class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-2xl md:text-3xl shadow-lg shadow-blue-500/30 shrink-0"><i class="fas fa-truck-moving"></i></div><div><div class="flex flex-wrap items-center gap-2"><h2 class="text-xl md:text-3xl font-black text-slate-800 leading-none">{{ selectedMachine.name }}</h2><span v-if="machineFilter" class="filter-badge text-[10px]"><i class="fas fa-filter"></i> {{ machineFilter.year }} <span v-if="machineFilter.month !== null">/ {{ getMonthName(machineFilter.month) }}</span><button @click="clearMachineFilter" class="hover:text-blue-800 ml-1"><i class="fas fa-times"></i></button></span></div><div class="flex gap-3 mt-1 text-xs md:text-sm text-slate-500 font-medium"><span class="bg-slate-100 px-2 py-0.5 rounded-md font-mono text-slate-600">{{ selectedMachine.id }}</span><span class="flex items-center gap-1"><i class="fas fa-tag text-slate-400"></i> {{ selectedMachine.model }}</span></div></div></div><button @click="selectedMachine = null" class="w-8 h-8 md:w-10 md:h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-full flex items-center justify-center text-slate-400 transition"><i class="fas fa-times text-lg"></i></button></div>
+           <div class="flex-grow overflow-y-auto bg-slate-50/50 p-4 md:p-6 custom-scrollbar">
+               <div class="mb-6"><h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">สถานะความคุ้มครอง</h4><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div v-for="doc in getMachineDocs(selectedMachine.id)" class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-start gap-4"><div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shrink-0"><i class="fas fa-shield-alt"></i></div><div class="flex-grow min-w-0"><div class="flex justify-between items-center mb-1"><span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-bold border border-indigo-100 truncate">{{ doc['บริษัทประกัน'] }}</span></div><p class="font-bold text-slate-700 text-sm mb-2 truncate">{{ doc['เลขกรมธรรม์'] }}</p><div class="flex flex-col xl:flex-row gap-1 xl:gap-4 text-[11px] font-medium text-slate-500"><span class="truncate">ประกัน: <b :class="getExpireStatus(doc['วันหมดประกัน']).color">{{ formatDateThai(doc['วันหมดประกัน']) }}</b></span><span class="truncate">ภาษี: <b :class="getExpireStatus(doc['วันหมดภาษี']).color">{{ formatDateThai(doc['วันหมดภาษี']) }}</b></span></div></div></div><div v-if="getMachineDocs(selectedMachine.id).length === 0" class="text-center p-6 text-sm text-slate-400 bg-white rounded-2xl border-2 border-dashed border-slate-200">ไม่พบข้อมูลประกันภัย</div></div></div>
+               <div class="bg-white p-5 md:p-8 rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 flex flex-col mb-8 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-red-400"></div><div class="grid grid-cols-2 gap-4 mb-6 md:w-2/3 lg:w-1/2"><div @click="switchDetailChartType('fuel')" class="stat-card p-4 rounded-2xl cursor-pointer border flex items-center justify-between group" :class="detailViewType === 'fuel' ? 'active active-fuel' : 'border-slate-100 hover:border-blue-300 bg-slate-50/50'"><div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">ค่าน้ำมันรวม</p><h3 class="text-lg md:text-xl font-black" :class="detailViewType === 'fuel' ? 'text-blue-600' : 'text-slate-700'">{{ formatNumber(currentMachineFuelCost) }}</h3></div><div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors" :class="detailViewType === 'fuel' ? 'bg-blue-500 text-white' : 'bg-white text-slate-300'"><i class="fas fa-gas-pump"></i></div></div><div @click="switchDetailChartType('repair')" class="stat-card p-4 rounded-2xl cursor-pointer border flex items-center justify-between group" :class="detailViewType === 'repair' ? 'active active-repair' : 'border-slate-100 hover:border-red-300 bg-slate-50/50'"><div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">ค่าซ่อมรวม</p><h3 class="text-lg md:text-xl font-black" :class="detailViewType === 'repair' ? 'text-red-600' : 'text-slate-700'">{{ formatNumber(currentMachineRepairCost) }}</h3></div><div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors" :class="detailViewType === 'repair' ? 'bg-red-500 text-white' : 'bg-white text-slate-300'"><i class="fas fa-tools"></i></div></div></div><div class="relative"><div class="flex justify-between items-center mb-2"><h4 class="font-bold text-slate-700 text-sm">กราฟแสดงแนวโน้ม ({{ detailViewType === 'fuel' ? 'น้ำมัน' : 'ซ่อมบำรุง' }})</h4><button v-if="machineFilter" @click="detailChartBack" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold flex items-center gap-2 transition"><i class="fas fa-arrow-left"></i> ย้อนกลับ</button></div><div class="h-[200px] md:h-[250px] w-full relative"><canvas id="detailMainChart" class="clickable-chart"></canvas></div><p class="text-[10px] text-slate-400 text-center mt-4 bg-slate-50 inline-block mx-auto px-3 py-1 rounded-full border border-slate-100" v-if="!machineFilter || machineFilter.month === null"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p></div></div>
+               <div class="mb-8"><h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2"><i class="fas fa-list"></i> รายละเอียด: {{ detailViewType === 'fuel' ? 'ประวัติการเติมน้ำมัน' : 'ประวัติการซ่อมบำรุง' }}</h4>
+                   <!-- Desktop Table -->
+                   <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><table class="w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider"><tr><th class="p-4">วันที่</th><th class="p-4" v-if="detailViewType==='fuel'">ลิตร</th><th class="p-4" v-if="detailViewType==='repair'">อาการเสีย</th><th class="p-4 text-right">ค่าใช้จ่าย</th><th class="p-4 text-right" v-if="detailViewType==='fuel'">สถานที่</th><th class="p-4 text-right" v-if="detailViewType==='repair'">การแก้ไข</th></tr></thead><tbody class="divide-y divide-slate-50"><tr v-for="(log, idx) in currentDetailList" :key="idx" class="hover:bg-blue-50/50 transition"><td class="p-4 text-xs font-bold text-slate-600">{{ formatDateThai(log[detailDateKey]) }}</td><td class="p-4 font-bold text-xs" v-if="detailViewType==='fuel'"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{{ log['ปริมาณ(ลิตร)'] }}</span></td><td class="p-4 text-xs font-bold text-red-500" v-if="detailViewType==='repair'">{{ log['อาการเสีย'] }}</td><td class="p-4 text-right font-mono font-bold text-xs text-slate-700">{{ formatNumber(log['ค่าใช้จ่าย(บาท)']) }}</td><td class="p-4 text-right text-xs text-slate-400" v-if="detailViewType==='fuel'">{{ log['สถานที่'] }}</td><td class="p-4 text-right text-xs text-slate-500" v-if="detailViewType==='repair'">{{ log['การแก้ไข'] }}</td></tr><tr v-if="currentDetailList.length === 0"><td colspan="5" class="p-8 text-center text-slate-300 text-sm">ไม่พบข้อมูล</td></tr></tbody></table></div>
+                   <!-- Mobile Cards -->
+                   <div class="md:hidden space-y-3"><div v-for="(log, idx) in currentDetailList" :key="idx" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><div class="flex justify-between items-start mb-3"><span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">{{ formatDateThai(log[detailDateKey]) }}</span><span class="text-base font-black" :class="detailViewType==='fuel'?'text-blue-600':'text-red-600'">{{ formatNumber(log['ค่าใช้จ่าย(บาท)']) }} <span class="text-[10px] text-slate-400 font-normal">บ.</span></span></div><div v-if="detailViewType==='fuel'" class="flex justify-between text-xs font-medium text-slate-500"><span><i class="fas fa-gas-pump mr-1.5 text-blue-300"></i> {{ log['ปริมาณ(ลิตร)'] }} ลิตร</span><span><i class="fas fa-map-marker-alt mr-1.5 text-red-300"></i> {{ log['สถานที่'] }}</span></div><div v-if="detailViewType==='repair'"><p class="text-xs font-bold text-red-500 mb-1.5 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> {{ log['อาการเสีย'] }}</p><p class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 leading-relaxed"><i class="fas fa-wrench mr-1.5 text-slate-400"></i> {{ log['การแก้ไข'] }}</p></div></div><div v-if="currentDetailList.length === 0" class="p-8 text-center text-slate-300 text-sm bg-white rounded-2xl border-2 border-dashed border-slate-100">ไม่พบข้อมูล</div></div>
+               </div>
+           </div>
+       </div>
+   </div>
+
+   <!-- Forms (Modals) -->
+   <!-- ... Same forms as before ... -->
+   
+   <datalist id="allMachines"><option v-for="mc in machines" :value="mc.id">{{ mc.name }}</option></datalist>
 
 </div>
 
 <script>
-    const { createApp, markRaw } = Vue;
-    createApp({
-        data() {
-            return {
-                // Simplified modal state - activeModal string 'machineList' | 'alerts' | 'fuel' | 'repair' | null
-                activeModal: null, 
-                scriptUrl: 'https://script.google.com/macros/s/AKfycbztjM-F4ZethjkayAW57LHAOnLOoAa6Krzd6LD-6Aquknx4ftZYvtxTd3mByJ2R6U3H/exec',
-                machinesRaw: [], fuelLogs: [], repairLogs: [], historyLogs: [], insuranceLogs: [],
-                loading: true, searchQuery: '', filterStatus: 'all', selectedMachine: null,
-                machineFilter: null, 
-                repairTab: 'open', isSubmitting: false,
-                formFuel: { date: new Date().toISOString().split('T')[0], id: '', liters: '', cost: '', dist: '', location: '' },
-                formRepairOpen: { dateStart: new Date().toISOString().split('T')[0], id: '', issue: '' },
-                formRepairClose: { id: '', dateEnd: new Date().toISOString().split('T')[0], fix: '', cost: '', downtime: '', vendor: '' },
-                
-                mainFuelChart: null, mainRepairChart: null, 
-                detailMainChart: null,
-                detailViewType: 'fuel', 
-                currentMachineFuelCost: 0, currentMachineRepairCost: 0,
-                
-                fuelState: { level: 'year', viewType: 'trend', selectedYear: null, selectedMonth: null },
-                repairState: { level: 'year', viewType: 'trend', selectedYear: null, selectedMonth: null },
-                
-                mainChartFuelTotal: 0, mainChartRepairTotal: 0,
-                alertTab: 'all'
-            }
-        },
-        // Using `modals` object for backward compatibility in templates (proxy to activeModal)
-        computed: {
-            modals() {
-                return {
-                    machineList: { isOpen: this.activeModal === 'machineList' },
-                    alerts: { isOpen: this.activeModal === 'alerts', list: this.rawAlertList }, // List is computed
-                    fuel: this.activeModal === 'fuel',
-                    repair: this.activeModal === 'repair'
-                }
-            },
-            machines() {
-                return this.machinesRaw.map(mc => {
-                    const id = mc['รหัสเครื่อง']; if (!id) return null;
-                    const repairs = this.repairLogs.filter(r => r['รหัสเครื่อง'] === id);
-                    let status = 'Active';
-                    const ongoing = repairs.find(r => r['วันที่เริ่มซ่อม'] && (!r['วันที่ซ่อมเสร็จ'] || r['วันที่ซ่อมเสร็จ'] === ''));
-                    if (ongoing) status = 'Repair';
-                    const moves = this.historyLogs.filter(h => h['รหัสเครื่อง'] === id).sort((a,b) => this.parseDate(b['วันที่เข้า']) - this.parseDate(a['วันที่เข้า']));
-                    const location = moves.length > 0 ? moves[0]['สถานที่'] : (mc['สถานที่ปัจจุบัน'] || '-');
-                    return { id, name: mc['ชื่อเครื่อง'], model: mc['รุ่น'], status, location };
-                }).filter(m => m !== null);
-            },
-            filteredMachines() {
-                return this.machines.filter(mc => {
-                    const matchesSearch = (mc.id+mc.name+mc.location).toLowerCase().includes(this.searchQuery.toLowerCase());
-                    const matchesStatus = this.filterStatus === 'all' ? true : (this.filterStatus === 'active' ? mc.status === 'Active' : mc.status !== 'Active');
-                    return matchesSearch && matchesStatus;
-                });
-            },
-            activeMachines() { return this.machines.filter(m => m.status === 'Active').length; },
-            repairMachines() { return this.machines.filter(m => m.status !== 'Active').length; },
-            
-            rawAlertList() {
-                const list = []; const today = new Date(); const warnDate = new Date(); warnDate.setDate(today.getDate()+45);
-                this.insuranceLogs.forEach(row => {
-                    if(!row['รหัสเครื่อง']) return;
-                    if(row['วันหมดภาษี']) {
-                        const d = this.parseDate(row['วันหมดภาษี']);
-                        if(d) {
-                            const diff = Math.ceil((d-today)/(1000*60*60*24));
-                            if (d<today) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดภาษี'], level: 'expired', days: `ขาด ${Math.abs(diff)} วัน`, docType: 'ภาษี' });
-                            else if (d<=warnDate) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดภาษี'], level: 'warning', days: `เหลือ ${diff} วัน`, docType: 'ภาษี' });
-                        }
-                    }
-                    if(row['วันหมดประกัน']) {
-                        const d = this.parseDate(row['วันหมดประกัน']);
-                        if(d) {
-                            const diff = Math.ceil((d-today)/(1000*60*60*24));
-                            if (d<today) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดประกัน'], level: 'expired', days: `ขาด ${Math.abs(diff)} วัน`, docType: 'ประกันภัย' });
-                            else if (d<=warnDate) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดประกัน'], level: 'warning', days: `เหลือ ${diff} วัน`, docType: 'ประกันภัย' });
-                        }
-                    }
-                });
-                return list.sort((a,b) => {
-                    if (a.level === 'expired' && b.level !== 'expired') return -1;
-                    if (a.level !== 'expired' && b.level === 'expired') return 1;
-                    return this.parseDate(a.date) - this.parseDate(b.date);
-                });
-            },
-            totalAlerts() { return this.rawAlertList.length; },
-            countExpired() { return this.rawAlertList.filter(a => a.level === 'expired').length; },
-            countWarning() { return this.rawAlertList.filter(a => a.level === 'warning').length; },
-            filteredAlertList() {
-                if (this.alertTab === 'all') return this.rawAlertList;
-                return this.rawAlertList.filter(a => a.docType === (this.alertTab === 'tax' ? 'ภาษี' : 'ประกันภัย'));
-            },
-            
-            detailDateKey() { return this.detailViewType === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; },
-            currentDetailList() {
-                if(!this.selectedMachine) return [];
-                const id = this.selectedMachine.id; const filter = this.machineFilter; const logs = this.detailViewType === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = this.detailDateKey;
-                let filtered = logs.filter(l => {
-                    if (l['รหัสเครื่อง'] !== id) return false;
-                    if (filter) {
-                        const d = this.parseDate(l[dateKey]); if (!d) return false;
-                        const matchYear = d.getFullYear() === filter.year;
-                        const matchMonth = filter.month !== null ? d.getMonth() === filter.month : true;
-                        return matchYear && matchMonth;
-                    }
-                    return true;
-                });
-                return filtered.sort((a,b) => this.parseDate(b[dateKey]) - this.parseDate(a[dateKey]));
-            },
-        },
-        watch: {
-            selectedMachine(val) {
-                if (val) {
-                    this.$nextTick(() => {
-                        this.calculateDetailTotals();
-                        this.resetDetailChart();
-                        this.renderDetailMainChart();
-                    });
-                } else { if (this.detailMainChart) { this.detailMainChart.destroy(); this.detailMainChart = null; } }
-            },
-        },
-        mounted() { this.loadData(); },
-        methods: {
-            async loadData() {
-                this.loading = true;
-                const urls = {
-                    machine: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=2036292301&single=true&output=csv',
-                    fuel: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1215465404&single=true&output=csv',
-                    repair: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=513299430&single=true&output=csv',
-                    history: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=613103968&single=true&output=csv',
-                    insurance: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1698787286&single=true&output=csv'
-                };
-                const fetchCSV = (url) => new Promise(resolve => Papa.parse(url, { download: true, header: true, complete: res => resolve(res.data) }));
-                try {
-                    const [mc, fu, re, hi, ins] = await Promise.all([fetchCSV(urls.machine), fetchCSV(urls.fuel), fetchCSV(urls.repair), fetchCSV(urls.history), fetchCSV(urls.insurance)]);
-                    this.machinesRaw = mc; this.fuelLogs = fu; this.repairLogs = re; this.historyLogs = hi; this.insuranceLogs = ins;
-                    this.loading = false;
-                    this.$nextTick(() => setTimeout(() => { this.renderMainCharts(); }, 500));
-                } catch(e) { alert('โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต'); this.loading = false; }
-            },
-            parseDate(dateStr) { if (!dateStr) return null; if (String(dateStr).indexOf('/') > -1) { const parts = String(dateStr).split('/'); if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); } const d = new Date(dateStr); return isNaN(d.getTime()) ? null : d; },
-            getYear(dateStr) { const d = this.parseDate(dateStr); return d ? d.getFullYear() : null; },
-            getMainChartSubtitle(state) { if (state.level === 'year') return 'รายปี (ทั้งหมด)'; else if (state.level === 'month') return `รายเดือน (${state.selectedYear})`; else return `รายวัน (${this.getMonthName(state.selectedMonth)})`; },
-            openAllAlerts() { this.alertTab = 'all'; this.activeModal = 'alerts'; },
-            openMachineList(status) { this.filterStatus = status; this.searchQuery = ''; this.activeModal = 'machineList'; },
-            openMachineFromAlert(id) { const mc = this.machines.find(m=>m.id===id); if(mc) { this.activeModal = null; this.selectMachine(mc); } },
-            openFuelModal() { this.activeModal = 'fuel'; }, openRepairModal() { this.repairTab='open'; this.activeModal = 'repair'; },
-            selectMachine(mc, filter = null) { this.selectedMachine = mc; this.machineFilter = filter; this.detailViewType = 'fuel'; },
-            clearMachineFilter() { this.machineFilter = null; this.resetDetailChart(); this.renderDetailMainChart(); },
-            switchView(type) {
-                const state = type === 'fuel' ? this.fuelState : this.repairState;
-                state.viewType = (state.viewType === 'trend') ? 'rank' : 'trend';
-                this.renderSpecificChart(type, type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart', type === 'fuel' ? 'mainChartFuelTotal' : 'mainChartRepairTotal', type === 'fuel' ? '#3b82f6' : '#ef4444');
-            },
-            backChart(type) {
-                const state = type === 'fuel' ? this.fuelState : this.repairState;
-                if (state.level === 'day') { state.level = 'month'; state.selectedMonth = null; } 
-                else if (state.level === 'month') { state.level = 'year'; state.selectedYear = null; }
-                state.viewType = 'trend'; 
-                this.renderSpecificChart(type, type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart', type === 'fuel' ? 'mainChartFuelTotal' : 'mainChartRepairTotal', type === 'fuel' ? '#3b82f6' : '#ef4444');
-            },
-            renderMainCharts() {
-                this.renderSpecificChart('fuel', 'mainFuelChart', 'mainChartFuelTotal', '#3b82f6');
-                this.renderSpecificChart('repair', 'mainRepairChart', 'mainChartRepairTotal', '#ef4444');
-            },
-            renderSpecificChart(type, canvasId, totalProp, color) {
-                const state = type === 'fuel' ? this.fuelState : this.repairState;
-                const logs = type === 'fuel' ? this.fuelLogs : this.repairLogs;
-                const dateKey = type === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม';
-                const chartPropName = type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart';
-                let labels = [], values = [], title = '', totalCost = 0;
+   const { createApp, markRaw } = Vue;
+   createApp({
+       data() {
+           return {
+               activeModal: null, // 'machineList', 'alerts', 'fuel', 'repair', 'projectList'
+               scriptUrl: 'https://script.google.com/macros/s/AKfycbztjM-F4ZethjkayAW57LHAOnLOoAa6Krzd6LD-6Aquknx4ftZYvtxTd3mByJ2R6U3H/exec',
+               machinesRaw: [], fuelLogs: [], repairLogs: [], historyLogs: [], insuranceLogs: [],
+               loading: true, searchQuery: '', filterStatus: 'all',
+               selectedMachine: null, machineFilter: null,
+               repairTab: 'open', isSubmitting: false,
+               formFuel: { date: new Date().toISOString().split('T')[0], id: '', liters: '', cost: '', dist: '', location: '' },
+               formRepairOpen: { dateStart: new Date().toISOString().split('T')[0], id: '', issue: '' },
+               formRepairClose: { id: '', dateEnd: new Date().toISOString().split('T')[0], fix: '', cost: '', downtime: '', vendor: '' },
+               
+               mainFuelChart: null, mainRepairChart: null, detailMainChart: null,
+               detailViewType: 'fuel',
+               currentMachineFuelCost: 0, currentMachineRepairCost: 0,
+               
+               fuelState: { level: 'year', viewType: 'trend', selectedYear: null, selectedMonth: null },
+               repairState: { level: 'year', viewType: 'trend', selectedYear: null, selectedMonth: null },
+               mainChartFuelTotal: 0, mainChartRepairTotal: 0,
+               alertTab: 'all',
+               
+               // Project Data
+               selectedProject: null
+           }
+       },
+       created() {
+           this.mainFuelChart = null; this.mainRepairChart = null; this.detailMainChart = null;
+       },
+       computed: {
+           // ... (Same computed as V2.27)
+           machines() { return this.machinesRaw.map(mc => { const id = mc['รหัสเครื่อง']; if (!id) return null; const repairs = this.repairLogs.filter(r => r['รหัสเครื่อง'] === id); let status = 'Active'; const ongoing = repairs.find(r => r['วันที่เริ่มซ่อม'] && (!r['วันที่ซ่อมเสร็จ'] || r['วันที่ซ่อมเสร็จ'] === '')); if (ongoing) status = 'Repair'; const moves = this.historyLogs.filter(h => h['รหัสเครื่อง'] === id).sort((a,b) => this.parseDate(b['วันที่เข้า']) - this.parseDate(a['วันที่เข้า'])); const location = moves.length > 0 ? moves[0]['สถานที่'] : (mc['สถานที่ปัจจุบัน'] || '-'); return { id, name: mc['ชื่อเครื่อง'], model: mc['รุ่น'], status, location }; }).filter(m => m !== null); },
+           filteredMachines() { return this.machines.filter(mc => (mc.id+mc.name+mc.location).toLowerCase().includes(this.searchQuery.toLowerCase()) && (this.filterStatus === 'all' ? true : (this.filterStatus === 'all' ? true : (this.filterStatus === 'active' ? mc.status === 'Active' : mc.status !== 'Active')))); },
+           activeMachines() { return this.machines.filter(m => m.status === 'Active').length; },
+           repairMachines() { return this.machines.filter(m => m.status !== 'Active').length; },
+           rawAlertList() { const list = []; const today = new Date(); const warnDate = new Date(); warnDate.setDate(today.getDate()+45); this.insuranceLogs.forEach(row => { if(!row['รหัสเครื่อง']) return; if(row['วันหมดภาษี']) { const d = this.parseDate(row['วันหมดภาษี']); if(d) { const diff = Math.ceil((d-today)/(1000*60*60*24)); if (d<today) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดภาษี'], level: 'expired', days: `ขาด ${Math.abs(diff)} วัน`, docType: 'ภาษี' }); else if (d<=warnDate) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดภาษี'], level: 'warning', days: `เหลือ ${diff} วัน`, docType: 'ภาษี' }); } } if(row['วันหมดประกัน']) { const d = this.parseDate(row['วันหมดประกัน']); if(d) { const diff = Math.ceil((d-today)/(1000*60*60*24)); if (d<today) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดประกัน'], level: 'expired', days: `ขาด ${Math.abs(diff)} วัน`, docType: 'ประกันภัย' }); else if (d<=warnDate) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดประกัน'], level: 'warning', days: `เหลือ ${diff} วัน`, docType: 'ประกันภัย' }); } } }); return list.sort((a,b) => { if (a.level === 'expired' && b.level !== 'expired') return -1; if (a.level !== 'expired' && b.level === 'expired') return 1; return this.parseDate(a.date) - this.parseDate(b.date); }); },
+           totalAlerts() { return this.rawAlertList.length; }, countExpired() { return this.rawAlertList.filter(a => a.level === 'expired').length; }, countWarning() { return this.rawAlertList.filter(a => a.level === 'warning').length; },
+           filteredAlertList() { if (this.alertTab === 'all') return this.rawAlertList; return this.rawAlertList.filter(a => a.docType === (this.alertTab === 'tax' ? 'ภาษี' : 'ประกันภัย')); },
+           detailDateKey() { return this.detailViewType === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; },
+           currentDetailList() {
+               if(!this.selectedMachine) return [];
+               const id = this.selectedMachine.id; const filter = this.machineFilter; const logs = this.detailViewType === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = this.detailDateKey;
+               let filtered = logs.filter(l => { if (l['รหัสเครื่อง'] !== id) return false; if (filter) { const d = this.parseDate(l[dateKey]); if (!d) return false; const matchYear = d.getFullYear() === filter.year; const matchMonth = filter.month !== null ? d.getMonth() === filter.month : true; return matchYear && matchMonth; } return true; });
+               return filtered.sort((a,b) => this.parseDate(b[dateKey]) - this.parseDate(a[dateKey]));
+           },
+           
+           // PROJECT ANALYTICS DATA
+           projectDataList() {
+               const projects = {}; // { 'ProjectName': { name: '', totalFuel: 0, totalRepair: 0, machines: Set() } }
+               
+               // 1. Process History to identify projects and timeframes
+               // Structure: Machine -> [ { project: 'A', start: date, end: date } ]
+               const machineProjectHistory = {};
+               
+               this.historyLogs.forEach(h => {
+                   const projName = h['โครงการ'];
+                   if (!projName) return;
+                   
+                   if (!projects[projName]) projects[projName] = { name: projName, totalFuel: 0, totalRepair: 0, machines: new Set() };
+                   
+                   const machineId = h['รหัสเครื่อง'];
+                   if (!machineProjectHistory[machineId]) machineProjectHistory[machineId] = [];
+                   
+                   machineProjectHistory[machineId].push({
+                       project: projName,
+                       start: this.parseDate(h['วันที่เข้า']),
+                       end: h['วันที่ออก'] ? this.parseDate(h['วันที่ออก']) : new Date() // If no end date, assume active (now)
+                   });
+               });
+               
+               // Helper to find project for a machine at a specific date
+               const getProjectAtDate = (machineId, dateObj) => {
+                   if (!machineProjectHistory[machineId] || !dateObj) return null;
+                   return machineProjectHistory[machineId].find(p => dateObj >= p.start && dateObj <= p.end);
+               };
 
-                if (state.level === 'year') {
-                    const years = {}; logs.forEach(l => { const y = this.getYear(l[dateKey]); if(y) { const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0; years[y] = (years[y]||0) + cost; } });
-                    labels = Object.keys(years).sort().reverse(); values = labels.map(y => years[y]); title = 'รายปี'; totalCost = values.reduce((a,b)=>a+b,0);
-                    if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, (idx, label) => { state.level = 'month'; state.selectedYear = parseInt(label); this.renderSpecificChart(type, canvasId, totalProp, color); });
-                    else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, null, null, color, totalProp);
-                } 
-                else if (state.level === 'month') {
-                    const months = Array(12).fill(0); logs.forEach(l => { const d = this.parseDate(l[dateKey]); if(d && d.getFullYear() === state.selectedYear) months[d.getMonth()] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0); });
-                    labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; values = months; title = `รายเดือน ${state.selectedYear}`; totalCost = values.reduce((a,b)=>a+b,0);
-                    if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, (idx, label) => { state.level = 'day'; state.selectedMonth = idx; this.renderSpecificChart(type, canvasId, totalProp, color); });
-                    else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, state.selectedYear, null, color, totalProp);
-                } 
-                else if (state.level === 'day') {
-                    const daysInMonth = new Date(state.selectedYear, state.selectedMonth + 1, 0).getDate(); const days = Array(daysInMonth).fill(0);
-                    logs.forEach(l => { const d = this.parseDate(l[dateKey]); if(d && d.getFullYear() === state.selectedYear && d.getMonth() === state.selectedMonth) { const day = d.getDate() - 1; if(day >= 0 && day < daysInMonth) days[day] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0); } });
-                    labels = Array.from({length: daysInMonth}, (_, i) => String(i+1)); values = days; title = `รายวัน ${this.getMonthName(state.selectedMonth)}`; totalCost = values.reduce((a,b)=>a+b,0);
-                    if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, null);
-                    else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, state.selectedYear, state.selectedMonth, color, totalProp);
-                }
-                this[totalProp] = totalCost;
-            },
-            renderTop10(type, canvasId, chartObjProp, logs, dateKey, year, month, color, totalProp) {
-                const costs = {}; let totalCost = 0;
-                logs.forEach(l => { const d = this.parseDate(l[dateKey]); let match = true; if (year !== null && (!d || d.getFullYear() !== year)) match = false; if (month !== null && (!d || d.getMonth() !== month)) match = false; if (match) { const id = l['รหัสเครื่อง']; const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0; costs[id] = (costs[id]||0) + cost; totalCost += cost; } });
-                const sorted = Object.keys(costs).map(id => ({ id, cost: costs[id] })).sort((a,b) => b.cost - a.cost).slice(0, 10);
-                const labels = sorted.map(i => i.id); const values = sorted.map(i => i.cost);
-                this[totalProp] = totalCost;
-                this.drawChart(canvasId, chartObjProp, 'bar', labels, values, 'Top 10', color, (idx, machineId) => { const mc = this.machines.find(m => m.id === machineId); if (mc) this.selectMachine(mc, { year: year, month: month }); }, true);
-            },
-            switchDetailChartType(type) { this.detailViewType = type; this.renderDetailMainChart(); },
-            resetDetailChart() { if (this.detailMainChart) { this.detailMainChart.destroy(); this.detailMainChart = null; } },
-            calculateDetailTotals() { const id = this.selectedMachine.id; this.currentMachineFuelCost = this.fuelLogs.filter(l => l['รหัสเครื่อง'] === id).reduce((sum, l) => sum + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0), 0); this.currentMachineRepairCost = this.repairLogs.filter(l => l['รหัสเครื่อง'] === id).reduce((sum, l) => sum + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0), 0); },
-            detailChartBack() { if (this.machineFilter && this.machineFilter.month !== null) { this.machineFilter.month = null; } else if (this.machineFilter) { this.machineFilter = null; } this.renderDetailMainChart(); },
-            renderDetailMainChart() {
-                const id = this.selectedMachine.id; const filter = this.machineFilter; const type = this.detailViewType; const logs = type === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = type === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; const color = type === 'fuel' ? '#3b82f6' : '#ef4444';
-                let isYearly = !filter, isMonthly = filter && filter.month === null, isDaily = filter && filter.month !== null;
-                const filteredData = logs.filter(l => { if (l['รหัสเครื่อง'] !== id) return false; if (filter) { const d = this.parseDate(l[dateKey]); if (!d) return false; const matchYear = d.getFullYear() === filter.year; const matchMonth = filter.month !== null ? d.getMonth() === filter.month : true; return matchYear && matchMonth; } return true; });
-                let labels = [], values = [];
-                if (isDaily) { const daysInMonth = new Date(filter.year, filter.month + 1, 0).getDate(); const days = Array(daysInMonth).fill(0); filteredData.forEach(l => { const d = this.parseDate(l[dateKey]); if(d) days[d.getDate()-1] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); }); labels = Array.from({length: daysInMonth}, (_,i)=>String(i+1)); values = days; }
-                else if (isMonthly) { const months = Array(12).fill(0); filteredData.forEach(l => { const d = this.parseDate(l[dateKey]); if(d) months[d.getMonth()] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); }); labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; values = months; }
-                else { const years = {}; filteredData.forEach(l => { const y = this.getYear(l[dateKey]); if(y) years[y] = (years[y]||0) + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); }); labels = Object.keys(years).sort(); values = labels.map(y => years[y]); }
-                const clickHandler = (index, label) => { if (isYearly) { this.machineFilter = { year: parseInt(label), month: null }; this.renderDetailMainChart(); } else if (isMonthly) { this.machineFilter = { ...this.machineFilter, month: index }; this.renderDetailMainChart(); } };
-                this.drawChart('detailMainChart', 'detailMainChart', 'bar', labels, values, 'ค่าใช้จ่าย', color, !isDaily ? clickHandler : null);
-            },
-            drawChart(canvasId, chartProperty, type, labels, data, label, color, clickHandler, isHorizontal=false) { const canvas = document.getElementById(canvasId); if(!canvas) return; if (this[chartProperty]) { this[chartProperty].destroy(); } const config = { type: type, data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 4, hoverBackgroundColor: color }] }, options: { indexAxis: isHorizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, plugins: { legend: {display: false}, tooltip: {callbacks: {label: (c)=>c.raw.toLocaleString()+' บาท'}, titleFont:{family:'Sarabun'}, bodyFont:{family:'Sarabun'}} }, scales: { y: { grid: {display: true, color:'#f1f5f9'}, ticks: {font:{family:'Sarabun'}} }, x: { grid: {display: false}, ticks: {font:{size:10, family:'Sarabun'}} } } } }; if(clickHandler) config.options.onClick = (e, els) => { if(els.length>0) clickHandler(els[0].index, labels[els[0].index]); }; this[chartProperty] = markRaw(new Chart(canvas, config)); },
-            submitFuel() { this.sendToScript({ sheet: 'บันทึกน้ำมัน', ...this.formFuel }, () => this.activeModal = null); },
-            submitRepairOpen() { this.sendToScript({ sheet: 'บันทึกซ่อมบำรุง', ...this.formRepairOpen }, () => { this.activeModal = null; this.formRepairOpen={dateStart:new Date().toISOString().split('T')[0], id:'', issue:''}; }); },
-            submitRepairClose() { this.sendToScript({ action: 'close_repair', ...this.formRepairClose }, () => { this.activeModal = null; this.formRepairClose={id:'', dateEnd:new Date().toISOString().split('T')[0], fix:'', cost:'', downtime:'', vendor:''}; }); },
-            sendToScript(pl, cb) { this.isSubmitting=true;
-                const fd = new FormData(); for(let k in pl) fd.append(k, pl[k]);
-                fetch(this.scriptUrl, {method:'POST', body:fd}).then(r=>r.text()).then(t=>{ if(t.includes('Success')||t.includes('Updated')) { alert('✅ บันทึกสำเร็จ'); cb(); this.loadData(); } else alert('❌ '+t); }).finally(()=>this.isSubmitting=false);
-            },
-            formatNumber(n) { return parseInt(n||0).toLocaleString(); },
-            formatDateThai(d) { if(!d) return '-'; const date = this.parseDate(d); return (date && !isNaN(date.getTime())) ? date.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'}) : d; },
-            getMachineDocs(id) { return this.insuranceLogs.filter(l => l['รหัสเครื่อง'] === id); },
-            getExpireStatus(dStr) { if(!dStr) return {color:'text-gray-400'}; const d=this.parseDate(dStr); if(!d) return {color:'text-gray-400'}; const t=new Date(); return d<t?{color:'text-red-600'}:(d<new Date(t.getTime()+45*86400000)?{color:'text-yellow-600'}:{color:'text-green-600'}); },
-            getMonthName(idx) { return ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][idx]; },
-            filterAlerts(type, level) { return []; } 
-        }
-    }).mount('#app');
+               // 2. Process Fuel Logs
+               this.fuelLogs.forEach(log => {
+                   const machineId = log['รหัสเครื่อง'];
+                   const date = this.parseDate(log['วันที่']);
+                   const cost = parseInt(String(log['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0;
+                   
+                   const projInfo = getProjectAtDate(machineId, date);
+                   if (projInfo) {
+                       const pName = projInfo.project;
+                       if (projects[pName]) {
+                           projects[pName].totalFuel += cost;
+                           projects[pName].machines.add(machineId);
+                       }
+                   }
+               });
+
+               // 3. Process Repair Logs
+               this.repairLogs.forEach(log => {
+                   const machineId = log['รหัสเครื่อง'];
+                   const date = this.parseDate(log['วันที่เริ่มซ่อม']);
+                   const cost = parseInt(String(log['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0;
+                   
+                   const projInfo = getProjectAtDate(machineId, date);
+                   if (projInfo) {
+                       const pName = projInfo.project;
+                       if (projects[pName]) {
+                           projects[pName].totalRepair += cost;
+                           projects[pName].machines.add(machineId);
+                       }
+                   }
+               });
+
+               // 4. Convert to Array and Calculate machine details for detail view
+               return Object.values(projects).map(p => {
+                   return {
+                       ...p,
+                       machineCount: p.machines.size,
+                       machinesArray: Array.from(p.machines) // Keep ID list for detail expansion
+                   };
+               }).sort((a,b) => (b.totalFuel + b.totalRepair) - (a.totalFuel + a.totalRepair));
+           }
+       },
+       watch: {
+           selectedMachine(val) { if (val) { this.$nextTick(() => { this.calculateDetailTotals(); this.resetDetailChart(); this.renderDetailMainChart(); }); } else { if (this.detailMainChart) { this.detailMainChart.destroy(); this.detailMainChart = null; } } }
+       },
+       mounted() { this.loadData(); },
+       methods: {
+           // ... (Load Data & Date Parsers same as before)
+           async loadData() { this.loading = true; const urls = { machine: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=2036292301&single=true&output=csv', fuel: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1215465404&single=true&output=csv', repair: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=513299430&single=true&output=csv', history: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=613103968&single=true&output=csv', insurance: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1698787286&single=true&output=csv' }; const fetchCSV = (url) => new Promise(resolve => Papa.parse(url, { download: true, header: true, complete: res => resolve(res.data) })); try { const [mc, fu, re, hi, ins] = await Promise.all([fetchCSV(urls.machine), fetchCSV(urls.fuel), fetchCSV(urls.repair), fetchCSV(urls.history), fetchCSV(urls.insurance)]); this.machinesRaw = mc; this.fuelLogs = fu; this.repairLogs = re; this.historyLogs = hi; this.insuranceLogs = ins; this.loading = false; this.$nextTick(() => setTimeout(() => { this.renderMainCharts(); }, 500)); } catch(e) { alert('โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต'); this.loading = false; } },
+           parseDate(dateStr) { if (!dateStr) return null; if (String(dateStr).indexOf('/') > -1) { const parts = String(dateStr).split('/'); if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); } const d = new Date(dateStr); return isNaN(d.getTime()) ? null : d; },
+           getYear(dateStr) { const d = this.parseDate(dateStr); return d ? d.getFullYear() : null; },
+           
+           // PROJECT LOGIC
+           openProjectList() { this.activeModal = 'projectList'; },
+           openProjectDetail(proj) {
+               // Calculate per-machine stats for this project
+               const machineStats = [];
+               const historyMap = {};
+               
+               // Build lookup for this project only
+               this.historyLogs.forEach(h => {
+                   if (h['โครงการ'] === proj.name) {
+                       const mid = h['รหัสเครื่อง'];
+                       if (!historyMap[mid]) historyMap[mid] = [];
+                       historyMap[mid].push({
+                           start: this.parseDate(h['วันที่เข้า']),
+                           end: h['วันที่ออก'] ? this.parseDate(h['วันที่ออก']) : new Date()
+                       });
+                   }
+               });
+
+               proj.machinesArray.forEach(mid => {
+                   const machineName = (this.machines.find(m => m.id === mid) || {}).name || mid;
+                   let fCost = 0, rCost = 0;
+
+                   // Filter logs that fall within project dates
+                   const ranges = historyMap[mid] || [];
+                   
+                   const isInProject = (date) => ranges.some(r => date >= r.start && date <= r.end);
+
+                   this.fuelLogs.forEach(l => {
+                       if (l['รหัสเครื่อง'] === mid && isInProject(this.parseDate(l['วันที่']))) {
+                           fCost += parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0;
+                       }
+                   });
+                   this.repairLogs.forEach(l => {
+                       if (l['รหัสเครื่อง'] === mid && isInProject(this.parseDate(l['วันที่เริ่มซ่อม']))) {
+                           rCost += parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0;
+                       }
+                   });
+
+                   machineStats.push({ id: mid, name: machineName, fuelCost: fCost, repairCost: rCost });
+               });
+
+               this.selectedProject = { ...proj, machines: machineStats.sort((a,b) => (b.fuelCost+b.repairCost) - (a.fuelCost+a.repairCost)) };
+           },
+
+           // ... (Rest of existing methods: openAllAlerts, openMachineList, selectMachine, charts etc.)
+           getMainChartSubtitle(state) { if (state.level === 'year') return 'รายปี (ทั้งหมด)'; else if (state.level === 'month') return `รายเดือน (${state.selectedYear})`; else return `รายวัน (${this.getMonthName(state.selectedMonth)})`; },
+           openAllAlerts() { this.alertTab = 'all'; this.activeModal = 'alerts'; },
+           openMachineList(status) { this.filterStatus = status; this.searchQuery = ''; this.activeModal = 'machineList'; },
+           openMachineFromAlert(id) { const mc = this.machines.find(m=>m.id===id); if(mc) { this.activeModal = null; this.selectMachine(mc); } },
+           openFuelModal() { this.activeModal = 'fuel'; }, openRepairModal() { this.repairTab='open'; this.activeModal = 'repair'; },
+           selectMachine(mc, filter = null) { this.selectedMachine = mc; this.machineFilter = filter; this.detailViewType = 'fuel'; },
+           clearMachineFilter() { this.machineFilter = null; this.resetDetailChart(); this.renderDetailMainChart(); },
+           switchView(type) { const state = type === 'fuel' ? this.fuelState : this.repairState; state.viewType = (state.viewType === 'trend') ? 'rank' : 'trend'; this.renderSpecificChart(type, type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart', type === 'fuel' ? 'mainChartFuelTotal' : 'mainChartRepairTotal', type === 'fuel' ? '#3b82f6' : '#ef4444'); },
+           backChart(type) { const state = type === 'fuel' ? this.fuelState : this.repairState; if (state.level === 'day') { state.level = 'month'; state.selectedMonth = null; } else if (state.level === 'month') { state.level = 'year'; state.selectedYear = null; } state.viewType = 'trend'; this.renderSpecificChart(type, type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart', type === 'fuel' ? 'mainChartFuelTotal' : 'mainChartRepairTotal', type === 'fuel' ? '#3b82f6' : '#ef4444'); },
+           renderMainCharts() { this.renderSpecificChart('fuel', 'mainFuelChart', 'mainChartFuelTotal', '#3b82f6'); this.renderSpecificChart('repair', 'mainRepairChart', 'mainChartRepairTotal', '#ef4444'); },
+           renderSpecificChart(type, canvasId, totalProp, color) { const state = type === 'fuel' ? this.fuelState : this.repairState; const logs = type === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = type === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; const chartPropName = type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart'; let labels = [], values = [], title = '', totalCost = 0; if (state.level === 'year') { const years = {}; logs.forEach(l => { const y = this.getYear(l[dateKey]); if(y) { const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0; years[y] = (years[y]||0) + cost; } }); labels = Object.keys(years).sort().reverse(); values = labels.map(y => years[y]); title = 'รายปี'; totalCost = values.reduce((a,b)=>a+b,0); if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, (idx, label) => { state.level = 'month'; state.selectedYear = parseInt(label); this.renderSpecificChart(type, canvasId, totalProp, color); }); else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, null, null, color, totalProp); } else if (state.level === 'month') { const months = Array(12).fill(0); logs.forEach(l => { const d = this.parseDate(l[dateKey]); if(d && d.getFullYear() === state.selectedYear) months[d.getMonth()] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0); }); labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; values = months; title = `รายเดือน ${state.selectedYear}`; totalCost = values.reduce((a,b)=>a+b,0); if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, (idx, label) => { state.level = 'day'; state.selectedMonth = idx; this.renderSpecificChart(type, canvasId, totalProp, color); }); else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, state.selectedYear, null, color, totalProp); } else if (state.level === 'day') { const daysInMonth = new Date(state.selectedYear, state.selectedMonth + 1, 0).getDate(); const days = Array(daysInMonth).fill(0); logs.forEach(l => { const d = this.parseDate(l[dateKey]); if(d && d.getFullYear() === state.selectedYear && d.getMonth() === state.selectedMonth) { const day = d.getDate() - 1; if(day >= 0 && day < daysInMonth) days[day] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0); } }); labels = Array.from({length: daysInMonth}, (_, i) => String(i+1)); values = days; title = `รายวัน ${this.getMonthName(state.selectedMonth)}`; totalCost = values.reduce((a,b)=>a+b,0); if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, null); else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, state.selectedYear, state.selectedMonth, color, totalProp); } this[totalProp] = totalCost; },
+           renderTop10(type, canvasId, chartObjProp, logs, dateKey, year, month, color, totalProp) { const costs = {}; let totalCost = 0; logs.forEach(l => { const d = this.parseDate(l[dateKey]); let match = true; if (year !== null && (!d || d.getFullYear() !== year)) match = false; if (month !== null && (!d || d.getMonth() !== month)) match = false; if (match) { const id = l['รหัสเครื่อง']; const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0; costs[id] = (costs[id]||0) + cost; totalCost += cost; } }); const sorted = Object.keys(costs).map(id => ({ id, cost: costs[id] })).sort((a,b) => b.cost - a.cost).slice(0, 10); const labels = sorted.map(i => i.id); const values = sorted.map(i => i.cost); this[totalProp] = totalCost; this.drawChart(canvasId, chartObjProp, 'bar', labels, values, 'Top 10', color, (idx, machineId) => { const mc = this.machines.find(m => m.id === machineId); if (mc) this.selectMachine(mc, { year: year, month: month }); }, true); },
+           switchDetailChartType(type) { this.detailViewType = type; this.renderDetailMainChart(); },
+           resetDetailChart() { if (this.detailMainChart) { this.detailMainChart.destroy(); this.detailMainChart = null; } },
+           calculateDetailTotals() { const id = this.selectedMachine.id; this.currentMachineFuelCost = this.fuelLogs.filter(l => l['รหัสเครื่อง'] === id).reduce((sum, l) => sum + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0), 0); this.currentMachineRepairCost = this.repairLogs.filter(l => l['รหัสเครื่อง'] === id).reduce((sum, l) => sum + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0), 0); },
+           detailChartBack() { if (this.machineFilter && this.machineFilter.month !== null) { this.machineFilter.month = null; } else if (this.machineFilter) { this.machineFilter = null; } this.renderDetailMainChart(); },
+           renderDetailMainChart() { const id = this.selectedMachine.id; const filter = this.machineFilter; const type = this.detailViewType; const logs = type === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = type === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; const color = type === 'fuel' ? '#3b82f6' : '#ef4444'; let isYearly = !filter, isMonthly = filter && filter.month === null, isDaily = filter && filter.month !== null; const filteredData = logs.filter(l => { if (l['รหัสเครื่อง'] !== id) return false; if (filter) { const d = this.parseDate(l[dateKey]); if (!d) return false; const matchYear = d.getFullYear() === filter.year; const matchMonth = filter.month !== null ? d.getMonth() === filter.month : true; return matchYear && matchMonth; } return true; }); let labels = [], values = []; if (isDaily) { const daysInMonth = new Date(filter.year, filter.month + 1, 0).getDate(); const days = Array(daysInMonth).fill(0); filteredData.forEach(l => { const d = this.parseDate(l[dateKey]); if(d) days[d.getDate()-1] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); }); labels = Array.from({length: daysInMonth}, (_,i)=>String(i+1)); values = days; } else if (isMonthly) { const months = Array(12).fill(0); filteredData.forEach(l => { const d = this.parseDate(l[dateKey]); if(d) months[d.getMonth()] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); }); labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; values = months; } else { const years = {}; filteredData.forEach(l => { const y = this.getYear(l[dateKey]); if(y) years[y] = (years[y]||0) + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); }); labels = Object.keys(years).sort(); values = labels.map(y => years[y]); } const clickHandler = (index, label) => { if (isYearly) { this.machineFilter = { year: parseInt(label), month: null }; this.renderDetailMainChart(); } else if (isMonthly) { this.machineFilter = { ...this.machineFilter, month: index }; this.renderDetailMainChart(); } }; this.drawChart('detailMainChart', 'detailMainChart', 'bar', labels, values, 'ค่าใช้จ่าย', color, !isDaily ? clickHandler : null); },
+           drawChart(canvasId, chartProperty, type, labels, data, label, color, clickHandler, isHorizontal=false) { const canvas = document.getElementById(canvasId); if(!canvas) return; if (this[chartProperty]) { this[chartProperty].destroy(); } const config = { type: type, data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 4, hoverBackgroundColor: color }] }, options: { indexAxis: isHorizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, plugins: { legend: {display: false}, tooltip: {callbacks: {label: (c)=>c.raw.toLocaleString()+' บาท'}, titleFont:{family:'Sarabun'}, bodyFont:{family:'Sarabun'}} }, scales: { y: { grid: {display: true, color:'#f1f5f9'}, ticks: {font:{family:'Sarabun'}} }, x: { grid: {display: false}, ticks: {font:{size:10, family:'Sarabun'}} } } } }; if(clickHandler) config.options.onClick = (e, els) => { if(els.length>0) clickHandler(els[0].index, labels[els[0].index]); }; this[chartProperty] = markRaw(new Chart(canvas, config)); },
+           submitFuel() { this.sendToScript({ sheet: 'บันทึกน้ำมัน', ...this.formFuel }, () => this.activeModal = null); },
+           submitRepairOpen() { this.sendToScript({ sheet: 'บันทึกซ่อมบำรุง', ...this.formRepairOpen }, () => { this.activeModal = null; this.formRepairOpen={dateStart:new Date().toISOString().split('T')[0], id:'', issue:''}; }); },
+           submitRepairClose() { this.sendToScript({ action: 'close_repair', ...this.formRepairClose }, () => { this.activeModal = null; this.formRepairClose={id:'', dateEnd:new Date().toISOString().split('T')[0], fix:'', cost:'', downtime:'', vendor:''}; }); },
+           sendToScript(pl, cb) { this.isSubmitting=true;
+               const fd = new FormData(); for(let k in pl) fd.append(k, pl[k]);
+               fetch(this.scriptUrl, {method:'POST', body:fd}).then(r=>r.text()).then(t=>{ if(t.includes('Success')||t.includes('Updated')) { alert('✅ บันทึกสำเร็จ'); cb(); this.loadData(); } else alert('❌ '+t); }).finally(()=>this.isSubmitting=false);
+           },
+           formatNumber(n) { return parseInt(n||0).toLocaleString(); },
+           formatDateThai(d) { if(!d) return '-'; const date = this.parseDate(d); return (date && !isNaN(date.getTime())) ? date.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'}) : d; },
+           getMachineDocs(id) { return this.insuranceLogs.filter(l => l['รหัสเครื่อง'] === id); },
+           getExpireStatus(dStr) { if(!dStr) return {color:'text-gray-400'}; const d=this.parseDate(dStr); if(!d) return {color:'text-gray-400'}; const t=new Date(); return d<t?{color:'text-red-600'}:(d<new Date(t.getTime()+45*86400000)?{color:'text-yellow-600'}:{color:'text-green-600'}); },
+           getMonthName(idx) { return ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][idx]; },
+           filterAlerts(type, level) { return []; }
+       }
+   }).mount('#app');
 </script>
 </body>
 </html>
