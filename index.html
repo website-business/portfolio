@@ -1,842 +1,862 @@
-!DOCTYPE html>
-<html lang="th">
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>FleetManager V2.32 (Ultimate UI)</title>
-   
-   <!-- Libraries -->
-   <script src="https://cdn.tailwindcss.com"></script>
-   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบควบคุมไซต์งานเครื่องจักรกลหนัก</title>
+    
+    <!-- CSS Framework: Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart Library: Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CSV Parser: PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-   <style>
-       /* --- CORE THEME --- */
-       body {
-           font-family: 'Sarabun', sans-serif;
-           background-color: #f0f4f8;
-           /* Mesh Gradient Background */
-           background-image:
-               radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-               radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
-               radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-               radial-gradient(at 0% 100%, rgba(34, 197, 94, 0.15) 0px, transparent 50%);
-           background-attachment: fixed;
-           color: #1e293b;
-       }
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Saira+Stencil+One&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-       /* --- GLASSMORPHISM & CARDS --- */
-       .glass-panel {
-           background: rgba(255, 255, 255, 0.85);
-           backdrop-filter: blur(12px);
-           -webkit-backdrop-filter: blur(12px);
-           border: 1px solid rgba(255, 255, 255, 0.6);
-           box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-       }
-       
-       .card-hover {
-           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-       }
-       .card-hover:hover {
-           transform: translateY(-5px) scale(1.01);
-           box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-           z-index: 10;
-       }
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: linear-gradient(145deg, #1e293b, #0f172a);
+            --bg-panel: #1e293b;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --safety-yellow: #fbbf24;
+            --safety-orange: #f97316;
+            --hazard-stripe-1: #111;
+            --hazard-stripe-2: #fbbf24;
+            --chart-grid: rgba(255,255,255,0.1);
+            --chart-text: #94a3b8;
+            
+            --status-blue: #3b82f6;
+            --status-red: #ef4444;
+            --status-green: #22c55e;
+            --status-purple: #a855f7;
+        }
 
-       /* --- ANIMATIONS --- */
-       @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-       .animate-float { animation: float 3s ease-in-out infinite; }
-       
-       @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-       .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: linear-gradient(145deg, #ffffff, #f8fafc);
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --safety-yellow: #d97706; /* Darker yellow for visibility */
+            --safety-orange: #ea580c;
+            --hazard-stripe-1: #e2e8f0;
+            --hazard-stripe-2: #fbbf24;
+            --chart-grid: rgba(0,0,0,0.1);
+            --chart-text: #475569;
 
-       @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-       .stagger-enter { animation: slideInUp 0.4s ease-out forwards; }
-       
-       /* --- UI ELEMENTS --- */
-       .btn-gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
-       .btn-gradient-blue:hover { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5); }
-       
-       .btn-gradient-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
-       .btn-gradient-purple:hover { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); }
-       
-       .btn-gradient-red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
-       .btn-gradient-red:hover { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
+            --status-blue: #2563eb;
+            --status-red: #dc2626;
+            --status-green: #16a34a;
+            --status-purple: #9333ea;
+        }
 
-       .btn-glass { background: rgba(255,255,255,0.8); border: 1px solid rgba(203, 213, 225, 0.5); color: #475569; }
-       .btn-glass:hover { background: white; border-color: #94a3b8; color: #2563eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-body);
+            /* Blueprint Grid Pattern */
+            background-image: 
+                linear-gradient(rgba(100, 116, 139, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 116, 139, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
 
-       .gradient-text { background-clip: text; -webkit-background-clip: text; color: transparent; background-image: linear-gradient(to right, #2563eb, #7c3aed); }
-       
-       /* --- CUSTOM SCROLLBAR --- */
-       ::-webkit-scrollbar { width: 8px; height: 8px; }
-       ::-webkit-scrollbar-track { background: rgba(241, 245, 249, 0.5); }
-       ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #cbd5e1, #94a3b8); border-radius: 4px; }
-       ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        h1, h2, h3, .stat-value, .brand-font {
+            font-family: 'Saira Stencil One', cursive;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-       /* --- LOADING SPINNER --- */
-       .loader-ring { display: inline-block; width: 64px; height: 64px; }
-       .loader-ring:after { content: " "; display: block; width: 50px; height: 50px; margin: 8px; border-radius: 50%; border: 6px solid #3b82f6; border-color: #3b82f6 transparent #3b82f6 transparent; animation: loader-ring 1.2s linear infinite; }
-       @keyframes loader-ring { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* --- Hazard Stripes Animation --- */
+        .hazard-stripe {
+            background: repeating-linear-gradient(
+                45deg,
+                var(--hazard-stripe-1),
+                var(--hazard-stripe-1) 10px,
+                var(--hazard-stripe-2) 10px,
+                var(--hazard-stripe-2) 20px
+            );
+            border-bottom: 4px solid var(--border-color);
+        }
 
-       /* Chart Container */
-       .chart-container {
-           background: rgba(255, 255, 255, 0.4);
-           border-radius: 16px;
-           border: 1px solid rgba(255,255,255,0.5);
-           padding: 10px;
-       }
-   </style>
+        /* --- Industrial Card --- */
+        .industrial-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            position: relative;
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 15px), 
+                calc(100% - 15px) 100%, 
+                0 100%
+            );
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        .industrial-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 15px; height: 15px;
+            background: var(--safety-yellow);
+            clip-path: polygon(0 100%, 100% 0, 100% 100%);
+        }
+
+        .card-interactive:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.3);
+            border-color: var(--safety-yellow);
+        }
+        
+        .card-interactive:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+        }
+
+        /* Status Colors */
+        .status-blue { border-left: 4px solid var(--status-blue); }
+        .status-red { border-left: 4px solid var(--status-red); }
+        .status-yellow { border-left: 4px solid #eab308; }
+        .status-green { border-left: 4px solid var(--status-green); }
+        .status-purple { border-left: 4px solid var(--status-purple); }
+
+        .card-selected {
+            background: var(--bg-panel);
+            border: 2px solid var(--safety-yellow);
+        }
+        .card-selected::before {
+            content: 'เลือกแล้ว';
+            position: absolute;
+            top: 0; right: 0;
+            background: var(--safety-yellow);
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 6px;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        /* --- Buttons --- */
+        .construct-btn {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-family: 'Prompt', sans-serif;
+            font-weight: 600;
+            padding: 4px 12px;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .construct-btn:hover {
+            background: var(--border-color);
+            color: var(--text-main);
+        }
+        .construct-btn.active {
+            background: var(--safety-yellow);
+            color: white;
+            border-color: var(--safety-orange);
+        }
+
+        /* --- Loading Screen --- */
+        .loading-overlay {
+            position: fixed; inset: 0; background: var(--bg-body); z-index: 999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .loader-gear {
+            font-size: 60px; color: var(--safety-yellow);
+            animation: spin-gear 4s infinite linear;
+        }
+        @keyframes spin-gear { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(2px);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content {
+            background: var(--bg-panel);
+            border: 2px solid var(--safety-yellow);
+            width: 95%; max-width: 600px; max-height: 80vh;
+            display: flex; flex-direction: column;
+            transform: scale(0.95); transition: transform 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            color: var(--text-main);
+        }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+
+        /* Chart Styling */
+        .blueprint-container {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 9999px;
+            background-color: var(--border-color);
+            position: relative;
+            width: 48px;
+            height: 24px;
+            transition: background-color 0.3s;
+        }
+        .theme-toggle-circle {
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            transition: transform 0.3s;
+        }
+        [data-theme="light"] .theme-toggle-circle {
+            transform: translateX(24px);
+        }
+
+    </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-purple-200 selection:text-purple-900">
+<body class="antialiased text-sm">
 
-<div id="app" class="min-h-screen flex flex-col relative overflow-x-hidden">
-   
-   <!-- Loading Overlay with Blur -->
-   <div v-if="loading" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] flex flex-col justify-center items-center transition-all duration-500">
-       <div class="loader-ring"></div>
-       <h3 class="mt-4 text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 animate-pulse-soft">กำลังเชื่อมต่อข้อมูล...</h3>
-   </div>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-overlay">
+        <i class="fas fa-cog loader-gear mb-4"></i>
+        <div class="text-xl font-bold text-[var(--safety-yellow)] tracking-widest font-[Black Ops One]">กำลังโหลดข้อมูล...</div>
+        <div class="text-[var(--text-muted)] font-mono mt-1 text-xs">เชื่อมต่อฐานข้อมูลเครื่องจักร...</div>
+    </div>
 
-   <!-- Navbar -->
-   <nav class="glass-panel sticky top-4 mx-4 md:mx-auto max-w-7xl rounded-2xl z-40 px-6 py-4 mt-4 mb-6 flex justify-between items-center transition-all hover:shadow-lg hover:shadow-blue-500/10">
-       <div class="flex items-center gap-4">
-           <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-blue-500/30 animate-float">
-               <i class="fas fa-network-wired"></i>
-           </div>
-           <div>
-               <h1 class="font-black text-2xl leading-none tracking-tight gradient-text">FleetManager</h1>
-               <p class="text-[10px] uppercase font-bold text-slate-400 tracking-[0.2em] mt-1">System V2.32 <span class="text-green-500 ml-1">● Online</span></p>
-           </div>
-       </div>
-       <div class="hidden md:flex gap-3 items-center">
-           <button @click="loadData" class="btn-glass px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all active:scale-95">
-               <i class="fas fa-sync-alt" :class="{'fa-spin': loading}"></i> <span>รีเฟรช</span>
-           </button>
-           <div class="h-8 w-px bg-slate-200 mx-1"></div>
-           <button @click="openProjectList" class="btn-glass px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:text-purple-600 hover:border-purple-200 transition-all active:scale-95">
-               <i class="fas fa-building text-purple-500"></i> <span>โครงการ</span>
-           </button>
-           <button @click="openFuelModal" class="btn-gradient-blue px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all active:scale-95 ml-2">
-               <i class="fas fa-gas-pump"></i> <span>บันทึกน้ำมัน</span>
-           </button>
-           <button @click="openRepairModal" class="btn-gradient-red px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all active:scale-95">
-               <i class="fas fa-tools"></i> <span>แจ้งซ่อม</span>
-           </button>
-       </div>
-       <!-- Mobile Menu Button -->
-       <div class="md:hidden flex gap-2">
-           <button class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-purple-100 hover:text-purple-600 transition" @click="openProjectList"><i class="fas fa-building"></i></button>
-           <button class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition" @click="loadData"><i class="fas fa-sync-alt" :class="{'fa-spin': loading}"></i></button>
-       </div>
-   </nav>
+    <!-- Modal Popup -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="bg-[var(--safety-yellow)] text-white px-4 py-3 flex justify-between items-center">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-clipboard-list"></i> <span id="modal-title">รายงาน</span>
+                </h3>
+                <button onclick="closeModal()" class="text-white hover:text-black transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto bg-[var(--bg-body)]" style="min-height: 150px;">
+                <div id="modal-body" class="space-y-2"></div>
+            </div>
+            <div class="px-4 py-3 bg-[var(--bg-panel)] border-t border-[var(--border-color)] text-right">
+                <button onclick="closeModal()" class="construct-btn px-4">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
 
-   <!-- Main Content -->
-   <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 pb-8 space-y-6">
-       
-       <!-- Mobile Actions -->
-       <div class="grid grid-cols-2 gap-4 md:hidden">
-           <button @click="openFuelModal" class="btn-gradient-blue py-4 rounded-2xl shadow-lg font-bold flex flex-col justify-center items-center gap-1 active:scale-95 transition">
-               <i class="fas fa-gas-pump text-xl"></i> <span>เติมน้ำมัน</span>
-           </button>
-           <button @click="openRepairModal" class="btn-gradient-red py-4 rounded-2xl shadow-lg font-bold flex flex-col justify-center items-center gap-1 active:scale-95 transition">
-               <i class="fas fa-tools text-xl"></i> <span>แจ้งซ่อม</span>
-           </button>
-       </div>
+    <!-- Top Hazard Bar -->
+    <div class="h-1.5 w-full hazard-stripe fixed top-0 z-50"></div>
 
-       <!-- Dashboard Widgets -->
-       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           
-           <!-- Stats Card [UPDATED: Compact Layout for Mobile] -->
-           <div class="lg:col-span-2 glass-panel rounded-3xl p-1 shadow-sm overflow-hidden flex flex-row relative group">
-               <div class="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-               
-               <div @click="openMachineList('all')" class="flex-1 p-3 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/60 transition duration-300 relative border-r border-slate-100">
-                   <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-base md:text-lg mb-1 md:mb-2 group-hover:bg-slate-800 group-hover:text-white transition-colors duration-300 shadow-inner">
-                       <i class="fas fa-cubes"></i>
-                   </div>
-                   <h2 class="text-2xl md:text-3xl font-black text-slate-700 leading-none">{{ machines.length }}</h2>
-                   <p class="text-[9px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1 truncate w-full">เครื่องจักรทั้งหมด</p>
-               </div>
+    <!-- Main Content -->
+    <div class="container mx-auto px-2 sm:px-4 py-6 mt-4 max-w-[1400px]">
+        
+        <!-- Header Section -->
+        <header class="mb-6 pb-4 border-b border-[var(--border-color)] flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="w-12 h-12 bg-[var(--safety-yellow)] flex items-center justify-center rounded shadow-lg text-white">
+                    <i class="fas fa-hard-hat text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black text-[var(--text-main)] uppercase leading-none">
+                        ระบบจัดการ<span class="text-[var(--safety-yellow)]">เครื่องจักร</span>
+                    </h1>
+                    <p class="text-[var(--text-muted)] text-xs mt-1 font-mono">
+                        หน่วยควบคุมไซต์งาน: อัลฟ่า (Alpha)
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 self-end md:self-center">
+                <!-- Theme Toggle -->
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-moon text-[var(--text-muted)] text-xs"></i>
+                    <div class="theme-toggle" onclick="toggleTheme()">
+                        <div class="theme-toggle-circle"></div>
+                    </div>
+                    <i class="fas fa-sun text-[var(--text-muted)] text-xs"></i>
+                </div>
 
-               <div @click="openMachineList('active')" class="flex-1 p-3 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-50/60 transition duration-300 relative border-r border-slate-100">
-                   <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-100 text-green-500 flex items-center justify-center text-base md:text-lg mb-1 md:mb-2 group-hover:scale-110 transition-transform duration-300 shadow-green-200 shadow-inner">
-                       <i class="fas fa-check-circle"></i>
-                   </div>
-                   <h2 class="text-2xl md:text-3xl font-black text-green-600 leading-none">{{ activeMachines }}</h2>
-                   <p class="text-[9px] md:text-xs font-bold text-green-600/60 uppercase tracking-widest mt-1 truncate w-full">พร้อมใช้งาน</p>
-               </div>
+                <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] px-3 py-1.5 rounded flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-calendar-alt text-[var(--text-muted)]"></i>
+                    <div class="text-right">
+                        <div class="text-[9px] text-[var(--text-muted)] font-mono leading-none">วันที่ข้อมูล</div>
+                        <div class="text-sm font-bold text-[var(--safety-yellow)] font-mono leading-none" id="current-date">--/--/----</div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-               <div @click="openMachineList('repair')" class="flex-1 p-3 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-red-50/60 transition duration-300 relative">
-                   <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-base md:text-lg mb-1 md:mb-2 group-hover:scale-110 transition-transform duration-300 shadow-red-200 shadow-inner">
-                       <i class="fas fa-wrench"></i>
-                   </div>
-                   <h2 class="text-2xl md:text-3xl font-black text-red-600 leading-none">{{ repairMachines }}</h2>
-                   <p class="text-[9px] md:text-xs font-bold text-red-600/60 uppercase tracking-widest mt-1 truncate w-full">กำลังซ่อม</p>
-               </div>
-           </div>
+        <!-- Stats Overview Grid (Compact) -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+            
+            <!-- Card 1: All Machines -->
+            <div class="industrial-card card-interactive status-blue p-3 cursor-pointer" onclick="openModal('all')">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-[var(--text-muted)] text-[10px] font-bold tracking-wider mb-1">เครื่องจักรทั้งหมด</div>
+                        <div class="text-2xl font-black text-[var(--text-main)] stat-value" id="total-machines">-</div>
+                    </div>
+                    <i class="fas fa-truck-monster text-[var(--status-blue)] opacity-50 text-xl"></i>
+                </div>
+            </div>
 
-           <!-- Alert Card -->
-           <div @click="openAllAlerts()" class="glass-panel rounded-3xl p-6 cursor-pointer relative overflow-hidden group hover:shadow-orange-200/50 hover:shadow-xl transition-all duration-300 border-t-4 border-t-orange-400">
-               <div class="absolute -right-6 -top-6 w-32 h-32 bg-orange-400/10 rounded-full blur-2xl group-hover:bg-orange-400/20 transition duration-500"></div>
-               
-               <div class="flex justify-between items-start relative z-10">
-                   <div>
-                       <p class="text-xs font-bold text-orange-400 uppercase tracking-widest mb-1 flex items-center gap-2"><i class="fas fa-bell animate-swing"></i> แจ้งเตือนเอกสาร</p>
-                       <h2 class="text-4xl font-black text-slate-800 mt-2">{{ totalAlerts }}</h2>
-                       <div class="flex flex-wrap gap-2 mt-3">
-                           <span class="text-[10px] px-2.5 py-1 bg-red-100 text-red-600 rounded-lg font-bold border border-red-200 flex items-center gap-1 shadow-sm">
-                               <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ขาด {{ countExpired }}
-                           </span>
-                           <span class="text-[10px] px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-lg font-bold border border-yellow-200 shadow-sm">
-                               เตือน {{ countWarning }}
-                           </span>
-                       </div>
-                   </div>
-                   <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-orange-500/30 group-hover:rotate-12 transition duration-300">
-                       <i class="fas fa-file-invoice"></i>
-                   </div>
-               </div>
-           </div>
-       </div>
-
-       <!-- Charts Section -->
-       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-           <!-- Fuel Chart -->
-           <div class="glass-panel rounded-3xl p-6 flex flex-col min-h-[400px] card-hover relative">
-               <div class="absolute top-0 right-0 p-6 opacity-10 text-9xl text-blue-500 pointer-events-none -mr-4 -mt-4"><i class="fas fa-gas-pump"></i></div>
-               <div class="flex justify-between items-end mb-6 relative z-10">
-                   <div>
-                       <p class="text-xs text-blue-500 font-bold uppercase tracking-widest mb-1">ยอดรวมน้ำมัน</p>
-                       <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ formatNumber(mainChartFuelTotal) }} <span class="text-sm text-slate-400 font-medium">บาท</span></h3>
-                       <p class="text-[10px] font-bold text-slate-400 bg-slate-100/80 inline-block px-2 py-0.5 rounded mt-1 backdrop-blur-sm">{{ getMainChartSubtitle(fuelState) }}</p>
-                   </div>
-                   <div class="flex gap-2 bg-slate-100/80 backdrop-blur-sm p-1.5 rounded-xl border border-slate-200">
-                       <button v-if="fuelState.level !== 'year'" @click="switchView('fuel')" class="w-9 h-9 rounded-lg flex items-center justify-center transition text-xs font-bold" :class="fuelState.viewType==='rank' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"><i class="fas" :class="fuelState.viewType==='rank' ? 'fa-chart-bar' : 'fa-trophy'"></i></button>
-                       <button v-if="fuelState.level !== 'year'" @click="backChart('fuel')" class="w-9 h-9 rounded-lg hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-600 flex items-center justify-center transition text-xs"><i class="fas fa-arrow-left"></i></button>
-                   </div>
-               </div>
-               <div class="flex-grow w-full h-[250px] chart-container relative z-10"><canvas id="mainFuelChart" class="clickable-chart"></canvas></div>
-               <p v-if="fuelState.viewType==='trend'" class="text-[10px] text-slate-400 text-center mt-4 font-medium"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> แตะที่กราฟเพื่อดูรายละเอียดลึกซึ้ง</p>
-           </div>
-
-           <!-- Repair Chart -->
-           <div class="glass-panel rounded-3xl p-6 flex flex-col min-h-[400px] card-hover relative">
-               <div class="absolute top-0 right-0 p-6 opacity-10 text-9xl text-red-500 pointer-events-none -mr-4 -mt-4"><i class="fas fa-tools"></i></div>
-               <div class="flex justify-between items-end mb-6 relative z-10">
-                   <div>
-                       <p class="text-xs text-red-500 font-bold uppercase tracking-widest mb-1">ยอดรวมซ่อมบำรุง</p>
-                       <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ formatNumber(mainChartRepairTotal) }} <span class="text-sm text-slate-400 font-medium">บาท</span></h3>
-                       <p class="text-[10px] font-bold text-slate-400 bg-slate-100/80 inline-block px-2 py-0.5 rounded mt-1 backdrop-blur-sm">{{ getMainChartSubtitle(repairState) }}</p>
-                   </div>
-                   <div class="flex gap-2 bg-slate-100/80 backdrop-blur-sm p-1.5 rounded-xl border border-slate-200">
-                       <button v-if="repairState.level !== 'year'" @click="switchView('repair')" class="w-9 h-9 rounded-lg flex items-center justify-center transition text-xs font-bold" :class="repairState.viewType==='rank' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"><i class="fas" :class="repairState.viewType==='rank' ? 'fa-chart-bar' : 'fa-trophy'"></i></button>
-                       <button v-if="repairState.level !== 'year'" @click="backChart('repair')" class="w-9 h-9 rounded-lg hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-600 flex items-center justify-center transition text-xs"><i class="fas fa-arrow-left"></i></button>
-                   </div>
-               </div>
-               <div class="flex-grow w-full h-[250px] chart-container relative z-10"><canvas id="mainRepairChart" class="clickable-chart"></canvas></div>
-               <p v-if="repairState.viewType==='trend'" class="text-[10px] text-slate-400 text-center mt-4 font-medium"><i class="fas fa-hand-pointer mr-1 animate-bounce"></i> แตะที่กราฟเพื่อดูรายละเอียดลึกซึ้ง</p>
-           </div>
-       </div>
-   </main>
-
-   <!-- PROJECT LIST MODAL -->
-   <div v-if="activeModal === 'projectList'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-lg z-50 flex items-end md:items-center justify-center sm:p-6 transition-all duration-300">
-       <div class="bg-white/95 w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-zoom-in border border-white/20">
-           <div class="bg-white/80 backdrop-blur-md p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
-               <div class="flex items-center gap-4">
-                   <button @click="activeModal = null" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-500 md:hidden"><i class="fas fa-arrow-left"></i></button>
-                   <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-purple-500/30 shrink-0"><i class="fas fa-building"></i></div>
-                   <div><h2 class="text-2xl font-black text-slate-800 leading-tight">โครงการทั้งหมด</h2><p class="text-xs text-slate-500 font-bold mt-1">จำนวน {{ projectDataList.length }} โครงการ</p></div>
-               </div>
-               <button @click="activeModal = null" class="w-10 h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-full hidden md:flex items-center justify-center text-slate-400 transition text-lg"><i class="fas fa-times"></i></button>
-           </div>
-           <div class="flex-grow overflow-auto bg-slate-50/50 p-6 custom-scrollbar">
-               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                   <div v-for="(proj, idx) in projectDataList" :key="proj.name" @click="openProjectDetail(proj)" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-purple-200/50 cursor-pointer transition-all duration-300 hover:-translate-y-1 group stagger-enter" :style="{'animation-delay': idx * 50 + 'ms'}">
-                       <div class="flex justify-between items-start mb-4">
-                           <h3 class="font-bold text-slate-700 text-lg group-hover:text-purple-600 transition truncate pr-2">{{ proj.name }}</h3>
-                           <span class="bg-slate-100 text-slate-500 text-[10px] px-2.5 py-1 rounded-lg font-bold shrink-0">{{ proj.machineCount }} คัน</span>
-                       </div>
-                       <div class="space-y-3">
-                           <div class="flex justify-between text-xs items-center"><span class="text-slate-400 font-medium">ค่าน้ำมัน</span><span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{{ formatNumber(proj.totalFuel) }}</span></div>
-                           <div class="flex justify-between text-xs items-center"><span class="text-slate-400 font-medium">ค่าซ่อม</span><span class="font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">{{ formatNumber(proj.totalRepair) }}</span></div>
-                           <div class="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden flex shadow-inner">
-                               <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-full" :style="{width: (proj.totalFuel / (proj.totalFuel + proj.totalRepair + 1) * 100) + '%'}"></div>
-                               <div class="bg-gradient-to-r from-red-400 to-red-600 h-full" :style="{width: (proj.totalRepair / (proj.totalFuel + proj.totalRepair + 1) * 100) + '%'}"></div>
-                           </div>
-                       </div>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </div>
-
-   <!-- PROJECT DETAIL MODAL -->
-   <div v-if="selectedProjectName" class="fixed inset-0 bg-slate-900/70 backdrop-blur-lg z-[60] flex items-end md:items-center justify-center sm:p-6">
-       <div class="bg-white/95 w-full h-[95vh] md:h-[90vh] md:max-w-5xl rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-zoom-in border border-white/20">
-           <div class="bg-white/90 backdrop-blur p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center shrink-0 gap-4">
-               <div class="flex items-center gap-4 w-full md:w-auto">
-                   <button @click="selectedProjectName = null" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-400 md:hidden"><i class="fas fa-arrow-left"></i></button>
-                   <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-3xl shadow-inner shrink-0 border border-purple-100"><i class="fas fa-project-diagram"></i></div>
-                   <div class="min-w-0">
-                       <h2 class="text-lg md:text-2xl font-black text-slate-800 leading-tight truncate">{{ selectedProjectName }}</h2>
-                       <p class="text-xs text-slate-500 font-medium mt-1">วิเคราะห์ต้นทุนโครงการแบบเจาะลึก</p>
-                   </div>
-               </div>
-               <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto bg-slate-100 p-2 rounded-2xl border border-slate-200">
-                   <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-xl shadow-sm"><span class="text-[10px] font-bold text-slate-400 uppercase ml-1">เริ่ม</span><input type="date" v-model="projectFilter.start" class="text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-0 outline-none p-1"></div>
-                   <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-xl shadow-sm"><span class="text-[10px] font-bold text-slate-400 uppercase ml-1">ถึง</span><input type="date" v-model="projectFilter.end" class="text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-0 outline-none p-1"></div>
-               </div>
-               <button @click="selectedProjectName = null" class="w-10 h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-full hidden md:flex items-center justify-center text-slate-400 transition text-lg"><i class="fas fa-times"></i></button>
-           </div>
-
-           <div class="flex-grow overflow-y-auto bg-slate-50/50 p-6 custom-scrollbar">
-               <div class="grid grid-cols-3 gap-4 mb-8">
-                   <div class="bg-gradient-to-br from-white to-blue-50 p-4 rounded-2xl border border-blue-100 shadow-sm text-center relative overflow-hidden group">
-                       <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/10 rounded-full group-hover:scale-150 transition duration-500"></div>
-                       <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest relative z-10">ค่าน้ำมัน</p>
-                       <h3 class="text-lg md:text-2xl font-black text-blue-700 mt-1 relative z-10">{{ formatNumber(selectedProjectStats.totalFuel) }}</h3>
-                   </div>
-                   <div class="bg-gradient-to-br from-white to-red-50 p-4 rounded-2xl border border-red-100 shadow-sm text-center relative overflow-hidden group">
-                       <div class="absolute -right-4 -top-4 w-16 h-16 bg-red-500/10 rounded-full group-hover:scale-150 transition duration-500"></div>
-                       <p class="text-[10px] text-red-500 font-bold uppercase tracking-widest relative z-10">ค่าซ่อม</p>
-                       <h3 class="text-lg md:text-2xl font-black text-red-700 mt-1 relative z-10">{{ formatNumber(selectedProjectStats.totalRepair) }}</h3>
-                   </div>
-                   <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center relative overflow-hidden">
-                       <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">เครื่องจักร</p>
-                       <h3 class="text-lg md:text-2xl font-black text-slate-700 mt-1">{{ selectedProjectStats.machineCount }} <span class="text-sm font-medium text-slate-400">คัน</span></h3>
-                   </div>
-               </div>
-               
-               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1 flex items-center justify-between"><span><i class="fas fa-list mr-2"></i> รายการเครื่องจักรในโครงการ</span><span class="text-[9px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-bold shadow-sm" v-if="projectFilter.start && projectFilter.end">Filtered Date Active</span></h4>
-               
-               <div class="hidden md:block bg-white rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                   <table class="w-full text-sm text-left">
-                       <thead class="bg-slate-50/80 backdrop-blur border-b border-slate-100 text-slate-500 text-[10px] uppercase font-bold tracking-wider"><tr><th class="p-5">รหัส / ชื่อ</th><th class="p-5 text-right text-blue-600">ใช้น้ำมัน (บาท)</th><th class="p-5 text-right text-red-600">ค่าซ่อม (บาท)</th></tr></thead>
-                       <tbody class="divide-y divide-slate-50">
-                           <tr v-for="mc in selectedProjectStats.machines" :key="mc.id" class="hover:bg-blue-50/30 cursor-pointer transition duration-200" @click="selectMachine(machines.find(m => m.id === mc.id) || { id: mc.id, name: mc.name }, { start: projectFilter.start, end: projectFilter.end })">
-                               <td class="p-5"><div class="font-bold text-slate-700 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-black">{{ mc.id.replace(/[^0-9]/g, '') }}</div> {{ mc.id }}</div><div class="text-xs text-slate-400 pl-10">{{ mc.name }}</div></td>
-                               <td class="p-5 text-right font-mono font-bold text-slate-700">{{ formatNumber(mc.fuelCost) }}</td>
-                               <td class="p-5 text-right font-mono font-bold text-slate-700">{{ formatNumber(mc.repairCost) }}</td>
-                           </tr>
-                       </tbody>
-                   </table>
-               </div>
-               <div class="md:hidden space-y-3">
-                   <div v-for="mc in selectedProjectStats.machines" :key="mc.id" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer active:scale-98 transition" @click="selectMachine(machines.find(m => m.id === mc.id) || { id: mc.id, name: mc.name }, { start: projectFilter.start, end: projectFilter.end })">
-                       <div class="flex justify-between items-start mb-3"><div><span class="font-black text-slate-800 text-base">{{ mc.id }}</span><p class="text-xs text-slate-500">{{ mc.name }}</p></div><i class="fas fa-chevron-right text-slate-300 text-xs mt-1"></i></div>
-                       <div class="flex gap-2 text-xs">
-                           <div class="flex-1 bg-blue-50 p-2.5 rounded-xl border border-blue-100"><span class="text-blue-400 block text-[9px] font-bold uppercase mb-1">น้ำมัน</span><span class="font-black text-blue-700 text-sm">{{ formatNumber(mc.fuelCost) }}</span></div>
-                           <div class="flex-1 bg-red-50 p-2.5 rounded-xl border border-red-100"><span class="text-red-400 block text-[9px] font-bold uppercase mb-1">ซ่อม</span><span class="font-black text-red-700 text-sm">{{ formatNumber(mc.repairCost) }}</span></div>
-                       </div>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </div>
-
-   <!-- Machine List Modal (Popup) -->
-   <div v-if="activeModal === 'machineList'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-lg z-50 flex items-end md:items-center justify-center sm:p-6 transition-all duration-300">
-       <div class="bg-white/95 w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in border border-white/20">
-           <div class="bg-white/90 backdrop-blur p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center sticky top-0 z-10 shrink-0">
-               <div class="flex items-center gap-4 w-full md:w-auto">
-                   <button @click="activeModal = null" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-500 md:hidden"><i class="fas fa-arrow-left"></i></button>
-                   <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0 text-xl transition-colors duration-300" :class="filterStatus === 'all' ? 'bg-slate-700' : (filterStatus === 'active' ? 'bg-green-500' : 'bg-red-500')">
-                       <i class="fas" :class="filterStatus === 'all' ? 'fa-cubes' : (filterStatus === 'active' ? 'fa-check' : 'fa-wrench')"></i>
-                   </div>
-                   <div>
-                       <h2 class="text-2xl font-black text-slate-800 leading-tight">{{ filterStatus === 'all' ? 'เครื่องจักรทั้งหมด' : (filterStatus === 'active' ? 'รถพร้อมใช้งาน' : 'รถกำลังซ่อม') }}</h2>
-                       <p class="text-xs text-slate-400 font-bold mt-1">จำนวน {{ filteredMachines.length }} คัน</p>
-                   </div>
-               </div>
-               <div class="flex w-full md:w-auto gap-3 relative">
-                   <div class="relative w-full md:w-72">
-                       <i class="fas fa-search absolute left-4 top-3.5 text-slate-400"></i>
-                       <input v-model="searchQuery" type="text" placeholder="ค้นหาชื่อ, รหัส..." class="w-full pl-11 pr-4 py-3 text-sm font-medium border-0 bg-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
-                   </div>
-                   <button @click="activeModal = null" class="w-12 h-11 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-2xl hidden md:flex items-center justify-center text-slate-400 transition text-lg"><i class="fas fa-times"></i></button>
-               </div>
-           </div>
-           <div class="flex-grow overflow-auto bg-slate-50/50 p-2 md:p-0">
-               <table class="w-full text-left border-collapse hidden md:table">
-                   <thead class="bg-white/80 backdrop-blur text-slate-400 text-[10px] uppercase font-bold tracking-wider sticky top-0 z-0 shadow-sm border-b border-slate-100"><tr><th class="p-5 pl-8">รหัส / ชื่อ</th><th class="p-5">รุ่น</th><th class="p-5 text-center">สถานะ</th><th class="p-5">สถานที่ล่าสุด</th><th class="p-5"></th></tr></thead>
-                   <tbody class="divide-y divide-slate-100">
-                       <tr v-for="mc in filteredMachines" :key="mc.id" @click="selectMachine(mc)" class="bg-white hover:bg-blue-50/40 transition cursor-pointer group">
-                           <td class="p-5 pl-8"><div class="font-black text-blue-600 text-base group-hover:translate-x-1 transition-transform">{{ mc.id }}</div><div class="text-xs text-slate-500 font-medium">{{ mc.name }}</div></td>
-                           <td class="p-5 text-xs text-slate-500 font-bold">{{ mc.model }}</td>
-                           <td class="p-5 text-center"><span class="px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm" :class="mc.status==='Active'?'bg-green-100 text-green-700 border-green-200':'bg-red-100 text-red-700 border-red-200'">{{ mc.status==='Active'?'พร้อมใช้':'ซ่อม' }}</span></td>
-                           <td class="p-5 text-xs text-slate-500"><i class="fas fa-map-marker-alt text-slate-300 mr-1"></i> {{ mc.location }}</td>
-                           <td class="p-5 text-right text-slate-300 group-hover:text-blue-500 transition"><i class="fas fa-chevron-right"></i></td>
-                       </tr>
-                   </tbody>
-               </table>
-               <div class="md:hidden space-y-3 p-4">
-                   <div v-for="mc in filteredMachines" :key="mc.id" @click="selectMachine(mc)" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between active:scale-[0.98] transition">
-                       <div class="flex items-center gap-4">
-                           <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md shrink-0" :class="mc.status==='Active'?'bg-gradient-to-br from-green-400 to-green-600':'bg-gradient-to-br from-red-400 to-red-600'">{{ mc.id.replace('MC','') }}</div>
-                           <div>
-                               <div class="font-bold text-slate-700 text-base">{{ mc.id }}</div>
-                               <div class="text-[10px] text-slate-500 font-medium">{{ mc.name }}</div>
-                               <div class="text-[10px] text-slate-400 mt-1"><i class="fas fa-map-marker-alt"></i> {{ mc.location }}</div>
-                           </div>
-                       </div>
-                       <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </div>
-   
-   <!-- Alerts Modal -->
-   <div v-if="activeModal === 'alerts'" class="fixed inset-0 bg-slate-900/60 backdrop-blur-lg z-50 flex items-end md:items-center justify-center sm:p-4 transition-all duration-300"><div class="bg-white/95 w-full h-[85vh] md:h-[80vh] md:max-w-lg rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in border border-white/20"><div class="bg-white/90 backdrop-blur p-6 border-b border-slate-100 flex justify-between items-center shrink-0"><div class="flex gap-4 items-center"><div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-orange-500/30"><i class="fas fa-bell"></i></div><div><h2 class="text-2xl font-black text-slate-800 leading-none">แจ้งเตือน</h2><p class="text-xs text-slate-400 font-bold mt-1">รายการเอกสารหมดอายุ</p></div></div><button @click="activeModal = null" class="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 transition text-lg"><i class="fas fa-times"></i></button></div><div class="bg-white px-6 border-b border-slate-100 flex gap-2 shrink-0 py-3"><button v-for="tab in ['all', 'tax', 'insurance']" :key="tab" @click="alertTab = tab" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300" :class="alertTab === tab ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 scale-105' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'">{{ tab === 'all' ? 'ทั้งหมด' : (tab === 'tax' ? 'ภาษี' : 'ประกัน') }}</button></div><div class="overflow-y-auto p-6 space-y-3 bg-slate-50/50 flex-grow custom-scrollbar"><div v-for="(item, idx) in filteredAlertList" :key="idx" @click="openMachineFromAlert(item.id)" class="bg-white p-5 rounded-2xl cursor-pointer flex justify-between items-center border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-orange-200/50 hover:-translate-y-1 transition duration-300 group"><div class="flex items-center gap-4"><div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0 shadow-inner transition-colors" :class="item.docType==='ภาษี' ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white' : 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white'"><i class="fas" :class="item.docType==='ภาษี' ? 'fa-file-invoice-dollar' : 'fa-shield-alt'"></i></div><div><div class="flex items-center gap-2"><span class="font-bold text-slate-700 text-lg group-hover:text-orange-600 transition">{{ item.id }}</span><span class="text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border" :class="item.docType==='ภาษี'?'bg-blue-50 text-blue-600 border-blue-100':'bg-indigo-50 text-indigo-600 border-indigo-100'">{{ item.docType }}</span></div><p class="text-xs text-slate-400 mt-1 font-medium">วันหมดอายุ: {{ formatDateThai(item.date) }}</p></div></div><span class="text-[10px] font-black px-3 py-1.5 rounded-lg whitespace-nowrap shadow-md" :class="item.level === 'expired' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-500/30' : 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-yellow-500/30'">{{ item.days }}</span></div></div></div></div>
-   
-   <!-- Fuel Modal -->
-   <div v-if="activeModal === 'fuel'" class="fixed inset-0 bg-slate-900/80 backdrop-blur-lg z-[90] flex items-center justify-center p-4 transition-all duration-300"><div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl animate-zoom-in relative overflow-hidden border border-white/20"><div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600"></div><h3 class="font-black text-3xl mb-8 text-slate-800 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg"><i class="fas fa-gas-pump"></i></span> บันทึกน้ำมัน</h3><form @submit.prevent="submitFuel" class="space-y-5"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">วันที่</label><input v-model="formFuel.date" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 transition"></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">รหัสรถ</label><input v-model="formFuel.id" list="allMachines" placeholder="เช่น MC01" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold uppercase focus:ring-2 focus:ring-blue-500 transition"></div><div class="grid grid-cols-2 gap-4"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">ปริมาณ (ลิตร)</label><input v-model="formFuel.liters" placeholder="0.00" type="number" step="0.01" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition font-black text-blue-600 text-center"></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">ราคา (บาท)</label><input v-model="formFuel.cost" placeholder="0.00" type="number" step="0.01" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition font-black text-slate-700 text-center"></div></div><div class="pt-6 flex gap-3"><button type="button" @click="activeModal = null" class="flex-1 py-4 rounded-2xl text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition">ยกเลิก</button><button type="submit" :disabled="isSubmitting" class="flex-1 py-4 rounded-2xl text-sm font-bold text-white btn-gradient-blue shadow-lg shadow-blue-500/30 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'ยืนยันข้อมูล' }}</button></div></form></div></div>
-   
-   <!-- Repair Modal -->
-   <div v-if="activeModal === 'repair'" class="fixed inset-0 bg-slate-900/80 backdrop-blur-lg z-[90] flex items-center justify-center p-4 transition-all duration-300">
-       <div class="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-zoom-in border border-white/20">
-           <div class="flex border-b border-slate-100 bg-slate-50/50">
-               <button @click="repairTab='open'" class="flex-1 py-5 text-sm font-bold transition relative" :class="repairTab==='open'?'text-red-600 bg-white shadow-sm z-10':'text-slate-400 hover:bg-slate-100'">แจ้งซ่อม <div v-if="repairTab==='open'" class="absolute top-0 left-0 w-full h-1 bg-red-500 rounded-b-full"></div></button>
-               <button @click="repairTab='close'" class="flex-1 py-5 text-sm font-bold transition relative" :class="repairTab==='close'?'text-green-600 bg-white shadow-sm z-10':'text-slate-400 hover:bg-slate-100'">ปิดงาน <div v-if="repairTab==='close'" class="absolute top-0 left-0 w-full h-1 bg-green-500 rounded-b-full"></div></button>
-           </div>
-           <div class="p-8 bg-white">
-               <form v-if="repairTab==='open'" @submit.prevent="submitRepairOpen" class="space-y-4">
-                   <div class="grid grid-cols-2 gap-3"><input v-model="formRepairOpen.dateStart" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold text-slate-700 focus:ring-2 focus:ring-red-500"><input v-model="formRepairOpen.id" list="allMachines" placeholder="รหัสรถ" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold uppercase focus:ring-2 focus:ring-red-500"></div>
-                   <textarea v-model="formRepairOpen.issue" rows="3" placeholder="ระบุอาการเสียอย่างละเอียด..." required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 focus:ring-2 focus:ring-red-500 transition resize-none"></textarea>
-                   <button type="submit" :disabled="isSubmitting" class="w-full py-4 rounded-2xl text-sm font-bold text-white btn-gradient-red shadow-lg shadow-red-500/30 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'แจ้งซ่อมทันที' }}</button>
-               </form>
-               <form v-if="repairTab==='close'" @submit.prevent="submitRepairClose" class="space-y-4">
-                   <select v-model="formRepairClose.id" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold text-slate-700 focus:ring-2 focus:ring-green-500">
-                       <option value="" disabled>-- เลือกรถที่ต้องการปิดงาน --</option>
-                       <option v-for="mc in machines" :value="mc.id" :class="{'text-red-500 font-bold': mc.status !== 'Active'}">{{ mc.id }} - {{ mc.name }} {{ mc.status !== 'Active' ? '(กำลังซ่อม)' : '' }}</option>
-                   </select>
-                   <div v-if="formRepairClose.id" class="space-y-4 animate-slide-up">
-                       <input v-model="formRepairClose.dateEnd" type="date" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold text-slate-700 focus:ring-2 focus:ring-green-500">
-                       <textarea v-model="formRepairClose.fix" rows="2" placeholder="วิธีแก้ไข / อะไหล่ที่เปลี่ยน..." required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 focus:ring-2 focus:ring-green-500 resize-none"></textarea>
-                       <div class="flex gap-3"><input v-model="formRepairClose.cost" placeholder="ค่าซ่อม" type="number" required class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold text-red-600 text-center"><input v-model="formRepairClose.downtime" placeholder="จำนวนวันหยุด" type="number" class="w-full text-sm border-0 bg-slate-100 rounded-2xl p-4 font-bold text-slate-700 text-center"></div>
-                       <button type="submit" :disabled="isSubmitting" class="w-full py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 hover:scale-105 transition transform">{{ isSubmitting?'กำลังบันทึก...':'ปิดงานซ่อม' }}</button>
-                   </div>
-               </form>
-           </div>
-           <div class="bg-slate-50 p-4 text-center border-t border-slate-100"><button @click="activeModal = null" class="text-xs font-bold text-slate-400 hover:text-slate-600">ปิดหน้าต่าง</button></div>
-       </div>
-   </div>
-
-   <!-- DETAIL MODAL -->
-   <div v-if="selectedMachine" class="fixed inset-0 bg-slate-900/70 backdrop-blur-lg z-[60] flex items-end md:items-center justify-center sm:p-6 transition-all duration-300">
-       <div class="bg-white/95 w-full h-[95vh] md:h-[90vh] md:max-w-6xl rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slide-up md:animate-zoom-in border border-white/20">
-           <!-- Header -->
-           <div class="bg-white/90 backdrop-blur p-6 border-b border-slate-100 flex justify-between items-start shrink-0 z-10 shadow-sm">
-               <div class="flex gap-5 items-center">
-                   <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-3xl shadow-lg shadow-blue-500/30 shrink-0"><i class="fas fa-truck-moving"></i></div>
-                   <div>
-                       <div class="flex flex-wrap items-center gap-3">
-                           <h2 class="text-3xl font-black text-slate-800 leading-none">{{ selectedMachine.name }}</h2>
-                           <span v-if="machineFilter && (machineFilter.year || machineFilter.start)" class="filter-badge text-[10px] shadow-sm"><i class="fas fa-filter"></i>
-                               <span v-if="machineFilter.start">{{ formatDateThai(machineFilter.start) }} - {{ formatDateThai(machineFilter.end) }}</span>
-                               <span v-else>{{ machineFilter.year }} <span v-if="machineFilter.month !== null">/ {{ getMonthName(machineFilter.month) }}</span></span>
-                               <button @click="clearMachineFilter" class="hover:text-blue-800 ml-1"><i class="fas fa-times"></i></button>
-                           </span>
-                       </div>
-                       <div class="flex gap-4 mt-2 text-sm text-slate-500 font-medium items-center">
-                           <span class="bg-slate-100 px-3 py-1 rounded-lg font-mono text-slate-600 font-bold border border-slate-200">{{ selectedMachine.id }}</span>
-                           <span class="text-slate-400 flex items-center gap-1" v-if="selectedMachine.model"><i class="fas fa-tag text-slate-300"></i> {{ selectedMachine.model }}</span>
-                           <span class="text-slate-400 flex items-center gap-1" v-if="selectedMachine.location"><i class="fas fa-map-marker-alt text-slate-300"></i> {{ selectedMachine.location }}</span>
-                       </div>
-                   </div>
-               </div>
-               <button @click="selectedMachine = null" class="w-10 h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-full flex items-center justify-center text-slate-400 transition text-lg"><i class="fas fa-times"></i></button>
-           </div>
-           
-           <div class="flex-grow overflow-y-auto bg-slate-50/50 p-6 custom-scrollbar">
-               <div class="mb-8"><h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1 flex items-center gap-2"><i class="fas fa-shield-alt"></i> สถานะความคุ้มครอง</h4>
-                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                       <div v-for="doc in getMachineDocs(selectedMachine.id)" class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4 group">
-                           <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform"><i class="fas fa-file-contract"></i></div>
-                           <div class="flex-grow min-w-0">
-                               <div class="flex justify-between items-center mb-1"><span class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg font-bold border border-indigo-100 truncate shadow-sm">{{ doc['บริษัทประกัน'] }}</span></div>
-                               <p class="font-bold text-slate-700 text-sm mb-2 truncate">{{ doc['เลขกรมธรรม์'] }}</p>
-                               <div class="space-y-1">
-                                   <div class="flex justify-between text-[11px] font-medium text-slate-500 border-b border-dashed border-slate-100 pb-1"><span>ประกันหมด</span><b :class="getExpireStatus(doc['วันหมดประกัน']).color">{{ formatDateThai(doc['วันหมดประกัน']) }}</b></div>
-                                   <div class="flex justify-between text-[11px] font-medium text-slate-500"><span>ภาษีหมด</span><b :class="getExpireStatus(doc['วันหมดภาษี']).color">{{ formatDateThai(doc['วันหมดภาษี']) }}</b></div>
-                               </div>
-                           </div>
-                       </div>
-                       <div v-if="getMachineDocs(selectedMachine.id).length === 0" class="col-span-full text-center p-8 text-sm text-slate-400 bg-white/50 rounded-3xl border-2 border-dashed border-slate-200">ไม่พบข้อมูลประกันภัย</div>
-                   </div>
-               </div>
-
-               <div class="glass-panel rounded-[2rem] p-8 shadow-lg shadow-slate-200/50 flex flex-col mb-10 relative overflow-hidden group">
-                   <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-400 via-purple-400 to-red-400"></div>
-                   <div class="grid grid-cols-2 gap-6 mb-8 md:w-2/3 lg:w-1/2 mx-auto md:mx-0">
-                        <div @click="switchDetailChartType('fuel')" class="bg-white p-5 rounded-3xl cursor-pointer border-2 flex items-center justify-between transition-all duration-300 hover:-translate-y-1" :class="detailViewType === 'fuel' ? 'border-blue-500 shadow-lg shadow-blue-200' : 'border-transparent shadow-sm hover:border-blue-200'">
-                           <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">ค่าน้ำมัน</p><h3 class="text-xl md:text-2xl font-black" :class="detailViewType === 'fuel' ? 'text-blue-600' : 'text-slate-700'">{{ formatNumber(currentMachineFuelCost) }}</h3></div>
-                           <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-colors shadow-inner" :class="detailViewType === 'fuel' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-300'"><i class="fas fa-gas-pump"></i></div>
+            <!-- Card 2: Expired -->
+            <div class="industrial-card card-interactive status-red p-3 cursor-pointer" onclick="openModal('expired')">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-[var(--status-red)] text-[10px] font-bold tracking-wider mb-1 flex items-center gap-1">
+                            <i class="fas fa-exclamation-circle animate-pulse"></i> ทะเบียนขาด
                         </div>
-                        <div @click="switchDetailChartType('repair')" class="bg-white p-5 rounded-3xl cursor-pointer border-2 flex items-center justify-between transition-all duration-300 hover:-translate-y-1" :class="detailViewType === 'repair' ? 'border-red-500 shadow-lg shadow-red-200' : 'border-transparent shadow-sm hover:border-red-200'">
-                           <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">ค่าซ่อม</p><h3 class="text-xl md:text-2xl font-black" :class="detailViewType === 'repair' ? 'text-red-600' : 'text-slate-700'">{{ formatNumber(currentMachineRepairCost) }}</h3></div>
-                           <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-colors shadow-inner" :class="detailViewType === 'repair' ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-300'"><i class="fas fa-tools"></i></div>
+                        <div class="text-2xl font-black text-[var(--status-red)] stat-value" id="total-expired">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Warning -->
+            <div class="industrial-card card-interactive status-yellow p-3 cursor-pointer" onclick="openModal('warning')">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-[var(--safety-yellow)] text-[10px] font-bold tracking-wider mb-1">ใกล้หมด (30 วัน)</div>
+                        <div class="text-2xl font-black text-[var(--safety-yellow)] stat-value" id="total-warning">-</div>
+                    </div>
+                    <i class="fas fa-bell text-[var(--safety-yellow)] opacity-50 text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Card 4: Fuel (Switcher) -->
+            <div id="card-fuel" class="industrial-card card-interactive status-green p-3 cursor-pointer card-selected" onclick="switchGraphMode('fuel')">
+                <div class="flex justify-between items-start">
+                    <div class="overflow-hidden">
+                        <div class="text-[var(--status-green)] text-[10px] font-bold tracking-wider mb-1" id="label-total-fuel">ข้อมูลน้ำมัน</div>
+                        <div class="text-2xl font-black text-[var(--text-main)] stat-value truncate" id="total-fuel">- ลิตร</div>
+                    </div>
+                    <i class="fas fa-gas-pump text-[var(--status-green)] opacity-50 text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Card 5: Maintenance -->
+            <div id="card-maintenance" class="industrial-card card-interactive status-purple p-3 cursor-pointer" onclick="switchGraphMode('maintenance')">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-[var(--status-purple)] text-[10px] font-bold tracking-wider mb-1">ค่าซ่อมบำรุง</div>
+                        <div class="text-2xl font-black text-[var(--text-main)] stat-value">XXX,XXX</div>
+                    </div>
+                    <i class="fas fa-wrench text-[var(--status-purple)] opacity-50 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart Section -->
+        <div class="blueprint-container p-4 rounded-lg shadow-md min-h-[450px] flex flex-col">
+            
+            <!-- Chart Header Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-3 border-b border-[var(--border-color)] pb-3">
+                <div>
+                    <div class="text-[var(--status-blue)] font-mono text-[10px] tracking-widest mb-0.5">// การแสดงผลข้อมูลกราฟ</div>
+                    <h2 class="text-xl font-bold text-[var(--text-main)] flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-[var(--safety-yellow)]" id="chart-icon"></i>
+                        <span id="chart-title">สถิติน้ำมันเชื้อเพลิง</span>
+                    </h2>
+                    <!-- Breadcrumb -->
+                    <div id="chart-breadcrumb" class="text-xs text-[var(--text-muted)] mt-1 font-mono flex items-center gap-2 bg-[var(--bg-body)] px-2 py-0.5 rounded border border-[var(--border-color)] inline-flex">
+                        <span class="w-1.5 h-1.5 bg-[var(--safety-yellow)] rounded-full animate-pulse inline-block"></span>
+                        พร้อมทำงาน
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <!-- Toggle View Buttons -->
+                    <div id="view-toggles" class="hidden bg-[var(--bg-body)] p-0.5 border border-[var(--border-color)] rounded flex gap-0.5">
+                        <button class="construct-btn toggle-btn text-xs active" id="btn-trend" data-view="trend">แนวโน้ม</button>
+                        <button class="construct-btn toggle-btn text-xs" id="btn-top10" data-view="top10">10 อันดับ</button>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <button id="chart-home-btn" class="hidden construct-btn" title="หน้าแรก">
+                        <i class="fas fa-home"></i>
+                    </button>
+                    <button id="chart-back-btn" class="hidden construct-btn" title="ย้อนกลับ">
+                        <i class="fas fa-undo"></i> ย้อนกลับ
+                    </button>
+                    
+                    <!-- Machine Selector -->
+                    <div class="relative group w-full sm:w-auto" id="machine-select-container">
+                        <select id="machine-select" class="appearance-none bg-[var(--bg-body)] border border-[var(--border-color)] text-[var(--text-main)] py-1.5 px-3 pr-8 rounded font-mono text-xs focus:outline-none focus:border-[var(--safety-yellow)] w-full sm:w-48 cursor-pointer">
+                            <option value="ALL">>> เครื่องจักรทั้งหมด</option>
+                            <!-- Options will be added by JS -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[var(--text-muted)]">
+                            <i class="fas fa-chevron-down text-[10px]"></i>
                         </div>
-                   </div>
-                   <div class="relative">
-                       <div class="flex justify-between items-center mb-4">
-                           <h4 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-chart-line"></i> กราฟแสดงแนวโน้ม ({{ detailViewType === 'fuel' ? 'น้ำมัน' : 'ซ่อมบำรุง' }})</h4>
-                           <button v-if="machineFilter && !machineFilter.start" @click="detailChartBack" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition active:scale-95"><i class="fas fa-arrow-left"></i> ย้อนกลับ</button>
-                       </div>
-                       <div class="h-[250px] md:h-[300px] w-full relative chart-container"><canvas id="detailMainChart" class="clickable-chart"></canvas></div>
-                       <p class="text-[10px] text-slate-400 text-center mt-4 bg-white/50 inline-block mx-auto px-4 py-1.5 rounded-full border border-slate-100 backdrop-blur-sm" v-if="!machineFilter || machineFilter.month === null"><i class="fas fa-hand-pointer mr-2 animate-bounce"></i> กดกราฟเพื่อดูรายละเอียด</p>
-                   </div>
-               </div>
+                    </div>
+                </div>
+            </div>
 
-               <div class="mb-8">
-                   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1 flex items-center gap-2"><i class="fas fa-history"></i> รายละเอียด: {{ detailViewType === 'fuel' ? 'ประวัติการเติมน้ำมัน' : 'ประวัติการซ่อมบำรุง' }}</h4>
-                   <div class="hidden md:block bg-white rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                       <table class="w-full text-sm text-left">
-                           <thead class="bg-slate-50/80 backdrop-blur border-b border-slate-100 text-slate-500 text-[10px] uppercase font-bold tracking-wider"><tr><th class="p-5">วันที่</th><th class="p-5" v-if="detailViewType==='fuel'">ปริมาณ</th><th class="p-5" v-if="detailViewType==='repair'">อาการเสีย</th><th class="p-5 text-right">ค่าใช้จ่าย</th><th class="p-5 text-right" v-if="detailViewType==='fuel'">สถานที่</th><th class="p-5 text-right" v-if="detailViewType==='repair'">การแก้ไข</th></tr></thead>
-                           <tbody class="divide-y divide-slate-50">
-                               <tr v-for="(log, idx) in currentDetailList" :key="idx" class="hover:bg-blue-50/30 transition duration-200">
-                                   <td class="p-5 text-xs font-bold text-slate-600">{{ formatDateThai(log[detailDateKey]) }}</td>
-                                   <td class="p-5 font-bold text-xs" v-if="detailViewType==='fuel'"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg shadow-sm">{{ log['ปริมาณ(ลิตร)'] }} ลิตร</span></td>
-                                   <td class="p-5 text-xs font-bold text-red-500" v-if="detailViewType==='repair'">{{ log['อาการเสีย'] }}</td>
-                                   <td class="p-5 text-right font-mono font-black text-sm text-slate-700">{{ formatNumber(log['ค่าใช้จ่าย(บาท)']) }}</td>
-                                   <td class="p-5 text-right text-xs text-slate-400 font-medium" v-if="detailViewType==='fuel'">{{ log['สถานที่'] }}</td>
-                                   <td class="p-5 text-right text-xs text-slate-500 font-medium" v-if="detailViewType==='repair'">{{ log['การแก้ไข'] }}</td>
-                               </tr>
-                               <tr v-if="currentDetailList.length === 0"><td colspan="5" class="p-10 text-center text-slate-300 text-sm">ไม่พบข้อมูลในช่วงเวลานี้</td></tr>
-                           </tbody>
-                       </table>
-                   </div>
-                   <div class="md:hidden space-y-4">
-                       <div v-for="(log, idx) in currentDetailList" :key="idx" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
-                           <div class="absolute right-0 top-0 p-4 opacity-5 text-6xl text-slate-400 pointer-events-none"><i class="fas" :class="detailViewType==='fuel'?'fa-gas-pump':'fa-tools'"></i></div>
-                           <div class="flex justify-between items-start mb-4 relative z-10">
-                               <span class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">{{ formatDateThai(log[detailDateKey]) }}</span>
-                               <span class="text-lg font-black" :class="detailViewType==='fuel'?'text-blue-600':'text-red-600'">{{ formatNumber(log['ค่าใช้จ่าย(บาท)']) }} <span class="text-[10px] text-slate-400 font-normal">บ.</span></span>
-                           </div>
-                           <div v-if="detailViewType==='fuel'" class="flex justify-between text-xs font-bold text-slate-600 bg-slate-50 p-3 rounded-xl">
-                               <span><i class="fas fa-fill-drip mr-2 text-blue-400"></i> {{ log['ปริมาณ(ลิตร)'] }} ลิตร</span>
-                               <span><i class="fas fa-map-marker-alt mr-2 text-red-400"></i> {{ log['สถานที่'] }}</span>
-                           </div>
-                           <div v-if="detailViewType==='repair'">
-                               <p class="text-sm font-bold text-red-500 mb-2 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> {{ log['อาการเสีย'] }}</p>
-                               <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed font-medium"><i class="fas fa-wrench mr-2 text-slate-400"></i> {{ log['การแก้ไข'] }}</p>
-                           </div>
-                       </div>
-                       <div v-if="currentDetailList.length === 0" class="p-10 text-center text-slate-300 text-sm bg-white rounded-3xl border-2 border-dashed border-slate-100">ไม่พบข้อมูล</div>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </div>
+            <!-- Chart Area -->
+            <div class="relative flex-grow w-full min-h-[350px]">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
 
-   <datalist id="allMachines"><option v-for="mc in machines" :value="mc.id">{{ mc.name }}</option></datalist>
+    </div>
 
-</div>
+    <!-- Scripts -->
+    <script>
+        // --- Theme Logic ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('site_theme', newTheme);
+            
+            // Re-render chart to update colors
+            if (chartState.instance) {
+                updateChartColors();
+            }
+        }
 
-<script>
-   const { createApp, markRaw } = Vue;
-   createApp({
-       data() {
-           return {
-               activeModal: null,
-               selectedProjectName: null,
-               projectFilter: { start: null, end: null },
-               scriptUrl: 'https://script.google.com/macros/s/AKfycbztjM-F4ZethjkayAW57LHAOnLOoAa6Krzd6LD-6Aquknx4ftZYvtxTd3mByJ2R6U3H/exec',
-               machinesRaw: [], fuelLogs: [], repairLogs: [], historyLogs: [], insuranceLogs: [],
-               loading: true, searchQuery: '', filterStatus: 'all', selectedMachine: null,
-               machineFilter: null,
-               repairTab: 'open', isSubmitting: false,
-               formFuel: { date: new Date().toISOString().split('T')[0], id: '', liters: '', cost: '', dist: '', location: '' },
-               formRepairOpen: { dateStart: new Date().toISOString().split('T')[0], id: '', issue: '' },
-               formRepairClose: { id: '', dateEnd: new Date().toISOString().split('T')[0], fix: '', cost: '', downtime: '', vendor: '' },
-               
-               mainFuelChart: null, mainRepairChart: null, detailMainChart: null,
-               detailViewType: 'fuel',
-               currentMachineFuelCost: 0, currentMachineRepairCost: 0,
-               
-               fuelState: { level: 'year', viewType: 'trend', selectedYear: null, selectedMonth: null },
-               repairState: { level: 'year', viewType: 'trend', selectedYear: null, selectedMonth: null },
-               mainChartFuelTotal: 0, mainChartRepairTotal: 0,
-               alertTab: 'all'
-           }
-       },
-       created() {
-           this.mainFuelChart = null; this.mainRepairChart = null; this.detailMainChart = null;
-       },
-       computed: {
-           machines() { return this.machinesRaw.map(mc => { const id = mc['รหัสเครื่อง']; if (!id) return null; const repairs = this.repairLogs.filter(r => r['รหัสเครื่อง'] === id); let status = 'Active'; const ongoing = repairs.find(r => r['วันที่เริ่มซ่อม'] && (!r['วันที่ซ่อมเสร็จ'] || r['วันที่ซ่อมเสร็จ'] === '')); if (ongoing) status = 'Repair'; const moves = this.historyLogs.filter(h => h['รหัสเครื่อง'] === id).sort((a,b) => this.parseDate(b['วันที่เข้า']) - this.parseDate(a['วันที่เข้า'])); const location = moves.length > 0 ? moves[0]['สถานที่'] : (mc['สถานที่ปัจจุบัน'] || '-'); return { id, name: mc['ชื่อเครื่อง'], model: mc['รุ่น'], status, location }; }).filter(m => m !== null); },
-           filteredMachines() {
-               return this.machines.filter(mc =>
-                   (mc.id+mc.name+mc.location).toLowerCase().includes(this.searchQuery.toLowerCase()) &&
-                   (this.filterStatus === 'all' ? true : (this.filterStatus === 'active' ? mc.status === 'Active' : mc.status !== 'Active'))
-               );
-           },
-           activeMachines() { return this.machines.filter(m => m.status === 'Active').length; },
-           repairMachines() { return this.machines.filter(m => m.status !== 'Active').length; },
-           rawAlertList() { const list = []; const today = new Date(); const warnDate = new Date(); warnDate.setDate(today.getDate()+45); this.insuranceLogs.forEach(row => { if(!row['รหัสเครื่อง']) return; if(row['วันหมดภาษี']) { const d = this.parseDate(row['วันหมดภาษี']); if(d) { const diff = Math.ceil((d-today)/(1000*60*60*24)); if (d<today) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดภาษี'], level: 'expired', days: `ขาด ${Math.abs(diff)} วัน`, docType: 'ภาษี' }); else if (d<=warnDate) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดภาษี'], level: 'warning', days: `เหลือ ${diff} วัน`, docType: 'ภาษี' }); } } if(row['วันหมดประกัน']) { const d = this.parseDate(row['วันหมดประกัน']); if(d) { const diff = Math.ceil((d-today)/(1000*60*60*24)); if (d<today) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดประกัน'], level: 'expired', days: `ขาด ${Math.abs(diff)} วัน`, docType: 'ประกันภัย' }); else if (d<=warnDate) list.push({ id: row['รหัสเครื่อง'], date: row['วันหมดประกัน'], level: 'warning', days: `เหลือ ${diff} วัน`, docType: 'ประกันภัย' }); } } }); return list.sort((a,b) => { if (a.level === 'expired' && b.level !== 'expired') return -1; if (a.level !== 'expired' && b.level === 'expired') return 1; return this.parseDate(a.date) - this.parseDate(b.date); }); },
-           totalAlerts() { return this.rawAlertList.length; }, countExpired() { return this.rawAlertList.filter(a => a.level === 'expired').length; }, countWarning() { return this.rawAlertList.filter(a => a.level === 'warning').length; },
-           filteredAlertList() {
-               if (this.alertTab === 'all') return this.rawAlertList;
-               return this.rawAlertList.filter(a => a.docType === (this.alertTab === 'tax' ? 'ภาษี' : 'ประกันภัย'));
-           },
-           detailDateKey() { return this.detailViewType === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; },
-           currentDetailList() {
-               if(!this.selectedMachine) return [];
-               const id = this.selectedMachine.id; const filter = this.machineFilter; const logs = this.detailViewType === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = this.detailDateKey;
-               let filtered = logs.filter(l => {
-                   if (l['รหัสเครื่อง'] !== id) return false;
-                   if (filter) {
-                       const d = this.parseDate(l[dateKey]); if (!d) return false;
-                       if (filter.start && filter.end) {
-                            const start = new Date(filter.start);
-                            const end = new Date(filter.end);
-                            return d >= start && d <= end;
-                       }
-                       const matchYear = d.getFullYear() === filter.year;
-                       const matchMonth = filter.month !== null ? d.getMonth() === filter.month : true;
-                       return matchYear && matchMonth;
-                   }
-                   return true;
-               });
-               return filtered.sort((a,b) => this.parseDate(b[dateKey]) - this.parseDate(a[dateKey]));
-           },
-           projectDataList() {
-               const projects = {};
-               const machineProjectHistory = {};
-               this.historyLogs.forEach(h => {
-                   const projName = h['โครงการ'];
-                   if (!projName) return;
-                   if (!projects[projName]) projects[projName] = { name: projName, totalFuel: 0, totalRepair: 0, machines: new Set(), startDate: null, endDate: null };
-                   const machineId = h['รหัสเครื่อง'];
-                   if (!machineProjectHistory[machineId]) machineProjectHistory[machineId] = [];
-                   const start = this.parseDate(h['วันที่เข้า']);
-                   const end = h['วันที่ออก'] ? this.parseDate(h['วันที่ออก']) : new Date();
-                   if (start) {
-                       machineProjectHistory[machineId].push({ project: projName, start, end });
-                       const p = projects[projName];
-                       if (!p.startDate || start < p.startDate) p.startDate = start;
-                       if (!p.endDate || end > p.endDate) p.endDate = end;
-                   }
-               });
-               const getProjectAtDate = (machineId, dateObj) => {
-                   if (!machineProjectHistory[machineId] || !dateObj) return null;
-                   return machineProjectHistory[machineId].find(p => dateObj >= p.start && dateObj <= p.end);
-               };
-               this.fuelLogs.forEach(log => {
-                   const machineId = log['รหัสเครื่อง'];
-                   const date = this.parseDate(log['วันที่']);
-                   const cost = parseInt(String(log['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0;
-                   const projInfo = getProjectAtDate(machineId, date);
-                   if (projInfo && projects[projInfo.project]) {
-                       projects[projInfo.project].totalFuel += cost;
-                       projects[projInfo.project].machines.add(machineId);
-                   }
-               });
-               this.repairLogs.forEach(log => {
-                   const machineId = log['รหัสเครื่อง'];
-                   const date = this.parseDate(log['วันที่เริ่มซ่อม']);
-                   const cost = parseInt(String(log['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0;
-                   const projInfo = getProjectAtDate(machineId, date);
-                   if (projInfo && projects[projInfo.project]) {
-                       projects[projInfo.project].totalRepair += cost;
-                       projects[projInfo.project].machines.add(machineId);
-                   }
-               });
-               return Object.values(projects).map(p => {
-                   return {
-                       ...p,
-                       machineCount: p.machines.size,
-                       machinesArray: Array.from(p.machines),
-                       defaultStart: p.startDate ? p.startDate.toISOString().split('T')[0] : '',
-                       defaultEnd: p.endDate ? p.endDate.toISOString().split('T')[0] : ''
-                   };
-               }).sort((a,b) => (b.totalFuel + b.totalRepair) - (a.totalFuel + a.totalRepair));
-           },
-           selectedProjectStats() {
-               if (!this.selectedProjectName) return { totalFuel: 0, totalRepair: 0, machineCount: 0, machines: [] };
-               const projName = this.selectedProjectName;
-               const filterStart = this.projectFilter.start ? new Date(this.projectFilter.start) : null;
-               const filterEnd = this.projectFilter.end ? new Date(this.projectFilter.end) : null;
-               const isInFilterRange = (date) => {
-                   if (!date) return false;
-                   if (filterStart && date < filterStart) return false;
-                   if (filterEnd && date > filterEnd) return false;
-                   return true;
-               };
-               const machineStats = {};
-               let totalFuel = 0, totalRepair = 0;
-                const machineProjectHistory = {};
-                this.historyLogs.forEach(h => {
-                   if (h['โครงการ'] === projName) {
-                       const mid = h['รหัสเครื่อง'];
-                       if (!machineProjectHistory[mid]) machineProjectHistory[mid] = [];
-                       machineProjectHistory[mid].push({
-                           start: this.parseDate(h['วันที่เข้า']),
-                           end: h['วันที่ออก'] ? this.parseDate(h['วันที่ออก']) : new Date()
-                       });
-                   }
-               });
-               const checkCost = (mid, date, cost, type) => {
-                  if (!isInFilterRange(date)) return;
-                  const ranges = machineProjectHistory[mid];
-                  if (!ranges) return;
-                  const inProject = ranges.some(r => date >= r.start && date <= r.end);
-                  if (inProject) {
-                      if (!machineStats[mid]) machineStats[mid] = { id: mid, name: '', fuelCost: 0, repairCost: 0 };
-                      if (type === 'fuel') { machineStats[mid].fuelCost += cost; totalFuel += cost; }
-                      else { machineStats[mid].repairCost += cost; totalRepair += cost; }
-                  }
-               };
-               this.fuelLogs.forEach(l => checkCost(l['รหัสเครื่อง'], this.parseDate(l['วันที่']), parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0, 'fuel'));
-               this.repairLogs.forEach(l => checkCost(l['รหัสเครื่อง'], this.parseDate(l['วันที่เริ่มซ่อม']), parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0, 'repair'));
-               const machinesList = Object.values(machineStats).map(m => {
-                   const info = this.machines.find(mac => mac.id === m.id);
-                   return { ...m, name: info ? info.name : m.id };
-               }).sort((a,b) => (b.fuelCost+b.repairCost) - (a.fuelCost+a.repairCost));
-               return {
-                   totalFuel,
-                   totalRepair,
-                   machineCount: machinesList.length,
-                   machines: machinesList
-               };
-           }
-       },
-       watch: {
-           selectedMachine(val) {
-               if (val) {
-                   this.$nextTick(() => {
-                       this.calculateDetailTotals();
-                       this.resetDetailChart();
-                       this.renderDetailMainChart();
-                   });
-               } else { if (this.detailMainChart) { this.detailMainChart.destroy(); this.detailMainChart = null; } }
-           },
-       },
-       mounted() { this.loadData(); },
-       methods: {
-           async loadData() { this.loading = true; const urls = { machine: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=2036292301&single=true&output=csv', fuel: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1215465404&single=true&output=csv', repair: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=513299430&single=true&output=csv', history: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=613103968&single=true&output=csv', insurance: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQk9jak3sAnetueFVqbVYLXhHUYKFE7S7CxSZsEB_NQT_8vRyeN7j_B3OoIORlSPjRBLdDYU53k6fUl/pub?gid=1698787286&single=true&output=csv' }; const fetchCSV = (url) => new Promise(resolve => Papa.parse(url, { download: true, header: true, complete: res => resolve(res.data) })); try { const [mc, fu, re, hi, ins] = await Promise.all([fetchCSV(urls.machine), fetchCSV(urls.fuel), fetchCSV(urls.repair), fetchCSV(urls.history), fetchCSV(urls.insurance)]); this.machinesRaw = mc; this.fuelLogs = fu; this.repairLogs = re; this.historyLogs = hi; this.insuranceLogs = ins; this.loading = false; this.$nextTick(() => setTimeout(() => { this.renderMainCharts(); }, 500)); } catch(e) { alert('โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต'); this.loading = false; } },
-           parseDate(dateStr) { if (!dateStr) return null; if (String(dateStr).indexOf('/') > -1) { const parts = String(dateStr).split('/'); if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); } const d = new Date(dateStr); return isNaN(d.getTime()) ? null : d; },
-           getYear(dateStr) { const d = this.parseDate(dateStr); return d ? d.getFullYear() : null; },
-           getMainChartSubtitle(state) { if (state.level === 'year') return 'รายปี (ทั้งหมด)'; else if (state.level === 'month') return `รายเดือน (${state.selectedYear})`; else return `รายวัน (${this.getMonthName(state.selectedMonth)})`; },
-           openAllAlerts() { this.alertTab = 'all'; this.activeModal = 'alerts'; },
-           openMachineList(status) { this.filterStatus = status; this.searchQuery = ''; this.activeModal = 'machineList'; },
-           openMachineFromAlert(id) { const mc = this.machines.find(m=>m.id===id); if(mc) { this.activeModal = null; this.selectMachine(mc); } },
-           openFuelModal() { this.activeModal = 'fuel'; }, openRepairModal() { this.repairTab='open'; this.activeModal = 'repair'; },
-           selectMachine(mc, filter = null) { this.selectedMachine = mc; this.machineFilter = filter; this.detailViewType = 'fuel'; },
-           clearMachineFilter() { this.machineFilter = null; this.resetDetailChart(); this.renderDetailMainChart(); },
-           openProjectList() { this.activeModal = 'projectList'; },
-           openProjectDetail(proj) {
-               this.selectedProjectName = proj.name;
-               this.projectFilter.start = proj.defaultStart;
-               this.projectFilter.end = proj.defaultEnd;
-           },
-           switchView(type) { const state = type === 'fuel' ? this.fuelState : this.repairState; state.viewType = (state.viewType === 'trend') ? 'rank' : 'trend'; this.renderSpecificChart(type, type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart', type === 'fuel' ? 'mainChartFuelTotal' : 'mainChartRepairTotal', type === 'fuel' ? '#3b82f6' : '#ef4444'); },
-           backChart(type) { const state = type === 'fuel' ? this.fuelState : this.repairState; if (state.level === 'day') { state.level = 'month'; state.selectedMonth = null; } else if (state.level === 'month') { state.level = 'year'; state.selectedYear = null; } state.viewType = 'trend'; this.renderSpecificChart(type, type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart', type === 'fuel' ? 'mainChartFuelTotal' : 'mainChartRepairTotal', type === 'fuel' ? '#3b82f6' : '#ef4444'); },
-           renderMainCharts() { this.renderSpecificChart('fuel', 'mainFuelChart', 'mainChartFuelTotal', '#3b82f6'); this.renderSpecificChart('repair', 'mainRepairChart', 'mainChartRepairTotal', '#ef4444'); },
-           renderSpecificChart(type, canvasId, totalProp, color) { const state = type === 'fuel' ? this.fuelState : this.repairState; const logs = type === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = type === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; const chartPropName = type === 'fuel' ? 'mainFuelChart' : 'mainRepairChart'; let labels = [], values = [], title = '', totalCost = 0; if (state.level === 'year') { const years = {}; logs.forEach(l => { const y = this.getYear(l[dateKey]); if(y) { const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0; years[y] = (years[y]||0) + cost; } }); labels = Object.keys(years).sort().reverse(); values = labels.map(y => years[y]); title = 'รายปี'; totalCost = values.reduce((a,b)=>a+b,0); if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, (idx, label) => { state.level = 'month'; state.selectedYear = parseInt(label); this.renderSpecificChart(type, canvasId, totalProp, color); }); else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, null, null, color, totalProp); } else if (state.level === 'month') { const months = Array(12).fill(0); logs.forEach(l => { const d = this.parseDate(l[dateKey]); if(d && d.getFullYear() === state.selectedYear) months[d.getMonth()] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0); }); labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; values = months; title = `รายเดือน ${state.selectedYear}`; totalCost = values.reduce((a,b)=>a+b,0); if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, (idx, label) => { state.level = 'day'; state.selectedMonth = idx; this.renderSpecificChart(type, canvasId, totalProp, color); }); else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, state.selectedYear, null, color, totalProp); } else if (state.level === 'day') { const daysInMonth = new Date(state.selectedYear, state.selectedMonth + 1, 0).getDate(); const days = Array(daysInMonth).fill(0); logs.forEach(l => { const d = this.parseDate(l[dateKey]); if(d && d.getFullYear() === state.selectedYear && d.getMonth() === state.selectedMonth) { const day = d.getDate() - 1; if(day >= 0 && day < daysInMonth) days[day] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0); } }); labels = Array.from({length: daysInMonth}, (_, i) => String(i+1)); values = days; title = `รายวัน ${this.getMonthName(state.selectedMonth)}`; totalCost = values.reduce((a,b)=>a+b,0); if (state.viewType === 'trend') this.drawChart(canvasId, chartPropName, 'bar', labels, values, title, color, null); else this.renderTop10(type, canvasId, chartPropName, logs, dateKey, state.selectedYear, state.selectedMonth, color, totalProp); } this[totalProp] = totalCost; },
-           renderTop10(type, canvasId, chartObjProp, logs, dateKey, year, month, color, totalProp) { const costs = {}; let totalCost = 0; logs.forEach(l => { const d = this.parseDate(l[dateKey]); let match = true; if (year !== null && (!d || d.getFullYear() !== year)) match = false; if (month !== null && (!d || d.getMonth() !== month)) match = false; if (match) { const id = l['รหัสเครื่อง']; const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g, '')) || 0; costs[id] = (costs[id]||0) + cost; totalCost += cost; } }); const sorted = Object.keys(costs).map(id => ({ id, cost: costs[id] })).sort((a,b) => b.cost - a.cost).slice(0, 10); const labels = sorted.map(i => i.id); const values = sorted.map(i => i.cost); this[totalProp] = totalCost; this.drawChart(canvasId, chartObjProp, 'bar', labels, values, 'Top 10', color, (idx, machineId) => { const mc = this.machines.find(m => m.id === machineId); if (mc) this.selectMachine(mc, year ? { year: year, month: month } : null); }, true); },
-           switchDetailChartType(type) { this.detailViewType = type; this.renderDetailMainChart(); },
-           resetDetailChart() { if (this.detailMainChart) { this.detailMainChart.destroy(); this.detailMainChart = null; } },
-           calculateDetailTotals() {
-               const id = this.selectedMachine.id;
-               const filter = this.machineFilter;
-               const isFiltered = (date) => {
-                   if (!date) return false;
-                   if (filter) {
-                       if (filter.start && filter.end) {
-                            const start = new Date(filter.start);
-                            const end = new Date(filter.end);
-                            return date >= start && date <= end;
-                       }
-                       const matchYear = date.getFullYear() === filter.year;
-                       const matchMonth = filter.month !== null ? date.getMonth() === filter.month : true;
-                       return matchYear && matchMonth;
-                   }
-                   return true;
-               };
-               this.currentMachineFuelCost = this.fuelLogs
-                   .filter(l => l['รหัสเครื่อง'] === id && isFiltered(this.parseDate(l['วันที่'])))
-                   .reduce((sum, l) => sum + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0), 0);
-               this.currentMachineRepairCost = this.repairLogs
-                   .filter(l => l['รหัสเครื่อง'] === id && isFiltered(this.parseDate(l['วันที่เริ่มซ่อม'])))
-                   .reduce((sum, l) => sum + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0), 0);
-           },
-           detailChartBack() { if (this.machineFilter && this.machineFilter.month !== null) { this.machineFilter.month = null; } else if (this.machineFilter) { this.machineFilter = null; } this.renderDetailMainChart(); },
-           renderDetailMainChart() {
-               const id = this.selectedMachine.id; const filter = this.machineFilter; const type = this.detailViewType; const logs = type === 'fuel' ? this.fuelLogs : this.repairLogs; const dateKey = type === 'fuel' ? 'วันที่' : 'วันที่เริ่มซ่อม'; const color = type === 'fuel' ? '#3b82f6' : '#ef4444';
-               let isYearly = !filter, isMonthly = filter && filter.month === null, isDaily = filter && filter.month !== null;
-               if (filter && filter.start) {
-                   isYearly = false; isMonthly = false; isDaily = true;
-               }
-               const filteredData = logs.filter(l => {
-                   if (l['รหัสเครื่อง'] !== id) return false;
-                   if (filter) {
-                       const d = this.parseDate(l[dateKey]); if (!d) return false;
-                       if (filter.start) {
-                            const start = new Date(filter.start);
-                            const end = new Date(filter.end);
-                            return d >= start && d <= end;
-                       }
-                       const matchYear = d.getFullYear() === filter.year;
-                       const matchMonth = filter.month !== null ? d.getMonth() === filter.month : true;
-                       return matchYear && matchMonth;
-                   }
-                   return true;
-               });
-               let labels = [], values = [];
-               if (filter && filter.start) {
-                     const dateMap = {};
-                     filteredData.forEach(l => {
-                         const dStr = this.formatDateThai(l[dateKey]);
-                         const cost = parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0;
-                         dateMap[dStr] = (dateMap[dStr] || 0) + cost;
-                     });
-                     labels = Object.keys(dateMap);
-                     values = Object.values(dateMap);
-               }
-               else if (isDaily) {
-                   const daysInMonth = new Date(filter.year, filter.month + 1, 0).getDate(); const days = Array(daysInMonth).fill(0);
-                   filteredData.forEach(l => { const d = this.parseDate(l[dateKey]); if(d) days[d.getDate()-1] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); });
-                   labels = Array.from({length: daysInMonth}, (_,i)=>String(i+1)); values = days;
-               }
-               else if (isMonthly) {
-                   const months = Array(12).fill(0);
-                   filteredData.forEach(l => { const d = this.parseDate(l[dateKey]); if(d) months[d.getMonth()] += (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); });
-                   labels = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; values = months;
-               }
-               else {
-                   const years = {};
-                   filteredData.forEach(l => { const y = this.getYear(l[dateKey]); if(y) years[y] = (years[y]||0) + (parseInt(String(l['ค่าใช้จ่าย(บาท)']).replace(/,/g,''))||0); });
-                   labels = Object.keys(years).sort(); values = labels.map(y => years[y]);
-               }
-               const clickHandler = (index, label) => {
-                   if (isYearly) { this.machineFilter = { year: parseInt(label), month: null }; this.renderDetailMainChart(); }
-                   else if (isMonthly) { this.machineFilter = { ...this.machineFilter, month: index }; this.renderDetailMainChart(); }
-               };
-               this.drawChart('detailMainChart', 'detailMainChart', 'bar', labels, values, 'ค่าใช้จ่าย', color, (isDaily || (filter && filter.start)) ? null : clickHandler);
-               this.calculateDetailTotals();
-           },
-           drawChart(canvasId, chartProperty, type, labels, data, label, color, clickHandler, isHorizontal=false) { const canvas = document.getElementById(canvasId); if(!canvas) return; if (this[chartProperty]) { this[chartProperty].destroy(); } const config = { type: type, data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 6, hoverBackgroundColor: color, borderSkipped: false }] }, options: { indexAxis: isHorizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false, animation: { duration: 600, easing: 'easeOutQuart' }, plugins: { legend: {display: false}, tooltip: {callbacks: {label: (c)=>c.raw.toLocaleString()+' บาท'}, backgroundColor: 'rgba(255, 255, 255, 0.9)', titleColor: '#1e293b', bodyColor: '#334155', borderColor: '#e2e8f0', borderWidth: 1, padding: 10, titleFont:{family:'Sarabun', size: 14, weight: 'bold'}, bodyFont:{family:'Sarabun', size: 12}} }, scales: { y: { grid: {display: true, color:'rgba(241, 245, 249, 0.6)', drawBorder: false}, ticks: {font:{family:'Sarabun'}, color: '#64748b'} }, x: { grid: {display: false}, ticks: {font:{size:11, family:'Sarabun'}, color: '#64748b'} } } } }; if(clickHandler) config.options.onClick = (e, els) => { if(els.length>0) clickHandler(els[0].index, labels[els[0].index]); }; this[chartProperty] = markRaw(new Chart(canvas, config)); },
-           submitFuel() { this.sendToScript({ sheet: 'บันทึกน้ำมัน', ...this.formFuel }, () => this.activeModal = null); },
-           submitRepairOpen() { this.sendToScript({ sheet: 'บันทึกซ่อมบำรุง', ...this.formRepairOpen }, () => { this.activeModal = null; this.formRepairOpen={dateStart:new Date().toISOString().split('T')[0], id:'', issue:''}; }); },
-           submitRepairClose() { this.sendToScript({ action: 'close_repair', ...this.formRepairClose }, () => { this.activeModal = null; this.formRepairClose={id:'', dateEnd:new Date().toISOString().split('T')[0], fix:'', cost:'', downtime:'', vendor:''}; }); },
-           sendToScript(pl, cb) { this.isSubmitting=true;
-               const fd = new FormData(); for(let k in pl) fd.append(k, pl[k]);
-               fetch(this.scriptUrl, {method:'POST', body:fd}).then(r=>r.text()).then(t=>{ if(t.includes('Success')||t.includes('Updated')) { alert('✅ บันทึกสำเร็จ'); cb(); this.loadData(); } else alert('❌ '+t); }).finally(()=>this.isSubmitting=false);
-           },
-           formatNumber(n) { return parseInt(n||0).toLocaleString(); },
-           formatDateThai(d) { if(!d) return '-'; const date = this.parseDate(d); return (date && !isNaN(date.getTime())) ? date.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'}) : d; },
-           getMachineDocs(id) { return this.insuranceLogs.filter(l => l['รหัสเครื่อง'] === id); },
-           getExpireStatus(dStr) { if(!dStr) return {color:'text-gray-400'}; const d=this.parseDate(dStr); if(!d) return {color:'text-gray-400'}; const t=new Date(); return d<t?{color:'text-red-600'}:(d<new Date(t.getTime()+45*86400000)?{color:'text-yellow-600'}:{color:'text-green-600'}); },
-           getMonthName(idx) { return ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][idx]; },
-           filterAlerts(type, level) { return []; }
-       }
-   }).mount('#app');
-</script>
+        // Load saved theme
+        (function() {
+            const savedTheme = localStorage.getItem('site_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+
+        // Get CSS Variable
+        function getCssVar(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        function updateChartColors() {
+            Chart.defaults.color = getCssVar('--chart-text');
+            Chart.defaults.borderColor = getCssVar('--chart-grid');
+            if(currentGraphMode === 'fuel') updateChart();
+            else renderMaintenanceDummyChart();
+        }
+
+        // --- Configuration ---
+        Chart.defaults.font.family = "'Prompt', sans-serif";
+        Chart.defaults.font.size = 11;
+        Chart.defaults.responsive = true;
+        Chart.defaults.maintainAspectRatio = false;
+
+        const SHEET_URLS = {
+            machines: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLxlqlfXntTk-z4x45kGjZ1OjHFnpCeaqjGZGpkfohr3difiJQsI-p-3iZwgyM7UO35kRztltMKgbd/pub?gid=0&single=true&output=csv',
+            fuel: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLxlqlfXntTk-z4x45kGjZ1OjHFnpCeaqjGZGpkfohr3difiJQsI-p-3iZwgyM7UO35kRztltMKgbd/pub?gid=700157187&single=true&output=csv'
+        };
+
+        let appData = { machines: [], fuel: [], alerts: { expired: [], warning: [], all: [] } };
+        let currentGraphMode = 'fuel'; 
+        let chartState = { instance: null, view: 'year', subView: 'trend', selectedMachine: 'ALL', selectedYear: null, selectedMonth: null, selectedDay: null };
+
+        // --- Helpers ---
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            }
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? null : d;
+        }
+        function formatDateTH(date) { return date ? date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : '-'; }
+        function formatNumber(num) { return num.toLocaleString('th-TH', { maximumFractionDigits: 0 }); }
+
+        // --- Data Fetching ---
+        async function loadData() {
+            try {
+                const [machinesRes, fuelRes] = await Promise.all([
+                    fetch(SHEET_URLS.machines).then(r => r.text()),
+                    fetch(SHEET_URLS.fuel).then(r => r.text())
+                ]);
+                appData.machines = Papa.parse(machinesRes, { header: true, skipEmptyLines: true }).data;
+                appData.fuel = Papa.parse(fuelRes, { header: true, skipEmptyLines: true }).data;
+                appData.fuel.sort((a, b) => {
+                    const da = parseDate(a['วันที่']);
+                    const db = parseDate(b['วันที่']);
+                    return (da && db) ? da - db : 0;
+                });
+                initializeApp();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('loading').innerHTML = `<div class="text-red-500 font-bold">ระบบขัดข้อง: ${error.message}</div>`;
+            }
+        }
+
+        function initializeApp() {
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('th-TH');
+            document.getElementById('total-machines').innerText = appData.machines.length;
+            
+            // Set initial colors
+            updateChartColors();
+
+            processAlerts();
+            setupFuelChart();
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading').style.display = 'none', 800);
+        }
+
+        // --- Alert System ---
+        function processAlerts() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            appData.alerts.all = []; appData.alerts.expired = []; appData.alerts.warning = [];
+            const machineStatusMap = new Map();
+
+            appData.machines.forEach(machine => {
+                const code = machine['รหัส']; if (!code) return;
+                if (!machineStatusMap.has(code)) machineStatusMap.set(code, { info: machine, expiredIssues: [], warningIssues: [] });
+                const entry = machineStatusMap.get(code);
+                const checks = [
+                    { key: 'วันที่ทะเบียนขาด', label: 'ทะเบียน', date: parseDate(machine['วันที่ทะเบียนขาด']) },
+                    { key: 'วันที่ประกัน+พรบ.ขาด', label: 'ประกัน', date: parseDate(machine['วันที่ประกัน+พรบ.ขาด']) }
+                ];
+                checks.forEach(check => {
+                    if (!check.date) return;
+                    const diffDays = Math.ceil((check.date - today) / (1000 * 60 * 60 * 24));
+                    const issueText = `${check.label}: ${formatDateTH(check.date)} (${diffDays <= 0 ? 'ขาด ' + Math.abs(diffDays) + ' วัน' : 'เหลือ ' + diffDays + ' วัน'})`;
+                    if (diffDays <= 0) entry.expiredIssues.push(issueText);
+                    else if (diffDays <= 30) entry.warningIssues.push(issueText);
+                });
+            });
+
+            machineStatusMap.forEach((data) => {
+                appData.alerts.all.push(data);
+                if (data.expiredIssues.length > 0) appData.alerts.expired.push(data);
+                if (data.warningIssues.length > 0) appData.alerts.warning.push(data);
+            });
+
+            document.getElementById('total-expired').innerText = appData.alerts.expired.length;
+            document.getElementById('total-warning').innerText = appData.alerts.warning.length;
+        }
+
+        // --- Modal Logic ---
+        function openModal(type) {
+            const modal = document.getElementById('modal'), title = document.getElementById('modal-title'), body = document.getElementById('modal-body');
+            body.innerHTML = '';
+            let dataList = [], headerText = '', emptyText = '';
+            if (type === 'all') { headerText = 'บัญชีเครื่องจักรทั้งหมด'; dataList = appData.alerts.all; emptyText = 'ไม่พบข้อมูล'; }
+            else if (type === 'expired') { headerText = 'รายการแจ้งเตือนวิกฤต (หมดอายุ)'; dataList = appData.alerts.expired; emptyText = 'ไม่มีรายการหมดอายุ'; }
+            else if (type === 'warning') { headerText = 'คาดการณ์ซ่อมบำรุง (30 วัน)'; dataList = appData.alerts.warning; emptyText = 'ไม่มีการแจ้งเตือน'; }
+            title.innerText = headerText;
+            if (dataList.length === 0) body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
+            else dataList.forEach(item => body.innerHTML += generateCardHTML(item, type));
+            modal.classList.add('show');
+        }
+        function closeModal() { document.getElementById('modal').classList.remove('show'); }
+        window.onclick = function(event) { if (event.target == document.getElementById('modal')) closeModal(); }
+
+        function generateCardHTML(item, type) {
+            const { info, expiredIssues, warningIssues } = item;
+            const code = info['รหัส'], plate = info['ทะเบียน'] || '-', typeName = info['ประเภทรถ'] || '';
+            let borderColor = 'border-l-4 border-[var(--border-color)]', statusIcon = '', bgClass = 'bg-[var(--bg-card)]';
+            
+            if (expiredIssues.length > 0) { borderColor = 'border-l-4 border-[var(--status-red)]'; statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-red)] px-2 py-0.5 rounded-sm">วิกฤต</span>'; bgClass = 'bg-red-500/10'; }
+            else if (warningIssues.length > 0) { borderColor = 'border-l-4 border-[var(--safety-yellow)]'; statusIcon = '<span class="text-black font-bold text-[10px] bg-[var(--safety-yellow)] px-2 py-0.5 rounded-sm">เตือน</span>'; bgClass = 'bg-yellow-500/10'; }
+            else { borderColor = 'border-l-4 border-[var(--status-green)]'; statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-green)] px-2 py-0.5 rounded-sm">ปกติ</span>'; }
+
+            let issuesHtml = '';
+            expiredIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${txt}</div>`);
+            warningIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${txt}</div>`);
+            if (!issuesHtml && type === 'all') issuesHtml = '<div class="text-xs text-[var(--status-green)] font-mono mt-1"><i class="fas fa-check-circle"></i> ปกติพร้อมใช้งาน</div>';
+
+            return `
+                <div class="${bgClass} border border-[var(--border-color)] ${borderColor} p-3 mb-2 shadow-sm rounded">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-[var(--bg-body)] flex items-center justify-center text-[var(--text-muted)] border border-[var(--border-color)] rounded"><i class="fas fa-truck-pickup text-sm"></i></div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-[var(--text-main)] font-[Black Ops One] text-base">${code}</span>
+                                    ${statusIcon}
+                                </div>
+                                <div class="text-[10px] text-[var(--text-muted)] font-mono">${plate} // ${typeName}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">
+                        ${issuesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Chart & Mode Switcher ---
+        function setupFuelChart() {
+            const selector = document.getElementById('machine-select');
+            const codes = [...new Set(appData.machines.map(m => m['รหัส']).filter(c => c))].sort();
+            codes.forEach(code => { const opt = document.createElement('option'); opt.value = code; opt.innerText = code; selector.appendChild(opt); });
+            selector.addEventListener('change', (e) => { chartState.selectedMachine = e.target.value; resetChartToYear(); });
+            document.getElementById('chart-back-btn').addEventListener('click', goBackLevel);
+            document.getElementById('chart-home-btn').addEventListener('click', () => { chartState.selectedMachine = 'ALL'; document.getElementById('machine-select').value = 'ALL'; resetChartToYear(); });
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active'); chartState.subView = e.target.dataset.view; updateChart();
+                });
+            });
+            updateChart(); 
+        }
+
+        function switchGraphMode(mode) {
+            currentGraphMode = mode;
+            const cardFuel = document.getElementById('card-fuel');
+            const cardMaint = document.getElementById('card-maintenance');
+            const chartTitle = document.getElementById('chart-title');
+            const chartIcon = document.getElementById('chart-icon');
+            const machineSelectDiv = document.getElementById('machine-select-container');
+
+            if (mode === 'fuel') {
+                cardFuel.classList.add('card-selected'); cardMaint.classList.remove('card-selected');
+                chartTitle.innerText = 'สถิติน้ำมันเชื้อเพลิง'; chartIcon.className = 'fas fa-chart-bar text-[var(--safety-yellow)]';
+                machineSelectDiv.style.visibility = 'visible'; resetChartToYear();
+            } else if (mode === 'maintenance') {
+                cardFuel.classList.remove('card-selected'); cardMaint.classList.add('card-selected');
+                chartTitle.innerText = 'ค่าซ่อมบำรุง (ตัวอย่าง)'; chartIcon.className = 'fas fa-tools text-[var(--status-purple)]';
+                machineSelectDiv.style.visibility = 'hidden'; 
+                document.getElementById('chart-back-btn').classList.add('hidden');
+                document.getElementById('chart-home-btn').classList.add('hidden');
+                document.getElementById('view-toggles').classList.add('hidden');
+                document.getElementById('chart-breadcrumb').innerHTML = '<span class="text-[var(--status-purple)]">ภาพรวมค่าใช้จ่าย</span>';
+                renderMaintenanceDummyChart();
+            }
+        }
+
+        function resetChartToYear() {
+            if (currentGraphMode !== 'fuel') return;
+            chartState.view = 'year'; chartState.selectedYear = null; chartState.selectedMonth = null; chartState.selectedDay = null; chartState.subView = 'trend';
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-trend').classList.add('active');
+            updateChart();
+        }
+
+        function goBackLevel() {
+            if (currentGraphMode !== 'fuel') return;
+            if (chartState.view === 'single_day') { chartState.view = 'day'; chartState.selectedDay = null; chartState.subView = 'trend'; }
+            else if (chartState.view === 'day') { chartState.view = 'month'; chartState.selectedMonth = null; chartState.subView = 'trend'; }
+            else if (chartState.view === 'month') { chartState.view = 'year'; chartState.selectedYear = null; chartState.subView = 'trend'; }
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-trend').classList.add('active');
+            updateChart();
+        }
+
+        function updateChart() {
+            if (currentGraphMode !== 'fuel') return;
+            let labels = [], values = [], labelText = '', breadcrumb = '', showToggles = false;
+            let currentTotalFuel = 0, currentScopeLabel = 'ทั้งหมด';
+            const isAllMachines = chartState.selectedMachine === 'ALL';
+            
+            document.getElementById('chart-back-btn').classList.toggle('hidden', chartState.view === 'year');
+            document.getElementById('chart-home-btn').classList.toggle('hidden', chartState.view === 'year');
+            document.getElementById('view-toggles').classList.toggle('hidden', !(isAllMachines && chartState.view !== 'single_day'));
+
+            const colorBarBg = (ctx) => {
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400); // Fixed: Removed .chart.ctx
+                if (chartState.subView === 'top10') {
+                    gradient.addColorStop(0, getCssVar('--safety-orange')); 
+                    gradient.addColorStop(1, '#c2410c');
+                } else {
+                    gradient.addColorStop(0, getCssVar('--safety-yellow'));
+                    gradient.addColorStop(1, '#a16207');
+                }
+                return gradient;
+            };
+
+            const filterAndSum = (filterFn, groupFn) => {
+                const grouped = {};
+                appData.fuel.forEach(item => {
+                    if (filterFn(item)) {
+                        const val = parseFloat(item['ปริมาณ(ลิตร)']) || 0;
+                        currentTotalFuel += val;
+                        const key = groupFn(item);
+                        grouped[key] = (grouped[key] || 0) + val;
+                    }
+                });
+                return grouped;
+            }
+
+            if (chartState.view === 'year') {
+                breadcrumb = isAllMachines ? `<span class="text-[var(--text-main)]">ทั้งหมด</span> > <span class="text-[var(--safety-yellow)]">รายปี</span>` : `<span class="text-[var(--text-main)]">${chartState.selectedMachine}</span> > <span class="text-[var(--safety-yellow)]">รายปี</span>`;
+                currentScopeLabel = isAllMachines ? 'ตลอดเวลา' : `${chartState.selectedMachine}`;
+                
+                if (!isAllMachines || chartState.subView === 'trend') {
+                    labelText = 'ปริมาณน้ำมันรวม (ลิตร)';
+                    const data = filterAndSum(
+                        i => isAllMachines || i['รหัสรถ'] === chartState.selectedMachine, 
+                        i => parseDate(i['วันที่'])?.getFullYear()
+                    );
+                    labels = Object.keys(data).sort(); values = labels.map(k => data[k]);
+                } else {
+                    labelText = '10 อันดับการใช้น้ำมันสูงสุด (ทั้งหมด)';
+                    const data = filterAndSum(i => true, i => i['รหัสรถ']);
+                    const sorted = Object.entries(data).sort(([,a], [,b]) => b - a).slice(0, 10);
+                    labels = sorted.map(k => k[0]); values = sorted.map(k => k[1]);
+                }
+            } 
+            else if (chartState.view === 'month') {
+                breadcrumb = `${isAllMachines ? 'ทั้งหมด' : chartState.selectedMachine} > ${chartState.selectedYear} > <span class="text-[var(--safety-yellow)]">รายเดือน</span>`;
+                currentScopeLabel = `ปี ${chartState.selectedYear}`;
+                
+                if (!isAllMachines || chartState.subView === 'trend') {
+                    labelText = `น้ำมัน: ${chartState.selectedYear}`;
+                    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                    const data = filterAndSum(
+                        i => (isAllMachines || i['รหัสรถ'] === chartState.selectedMachine) && parseDate(i['วันที่'])?.getFullYear() === chartState.selectedYear,
+                        i => parseDate(i['วันที่'])?.getMonth()
+                    );
+                    labels = months; values = new Array(12).fill(0).map((_, i) => data[i] || 0);
+                } else {
+                    labelText = `10 อันดับสูงสุด: ปี ${chartState.selectedYear}`;
+                    const data = filterAndSum(
+                        i => parseDate(i['วันที่'])?.getFullYear() === chartState.selectedYear,
+                        i => i['รหัสรถ']
+                    );
+                    const sorted = Object.entries(data).sort(([,a], [,b]) => b - a).slice(0, 10);
+                    labels = sorted.map(k => k[0]); values = sorted.map(k => k[1]);
+                }
+            }
+            else if (chartState.view === 'day') {
+                const mName = new Date(chartState.selectedYear, chartState.selectedMonth).toLocaleString('th-TH', { month: 'long' });
+                breadcrumb = `${isAllMachines ? 'ทั้งหมด' : chartState.selectedMachine} > ${chartState.selectedYear} > ${mName} > <span class="text-[var(--safety-yellow)]">รายวัน</span>`;
+                currentScopeLabel = `เดือน ${mName} ${chartState.selectedYear}`;
+
+                if (!isAllMachines || chartState.subView === 'trend') {
+                    labelText = `น้ำมัน: ${mName}`;
+                    const daysInMonth = new Date(chartState.selectedYear, chartState.selectedMonth + 1, 0).getDate();
+                    const data = filterAndSum(
+                        i => (isAllMachines || i['รหัสรถ'] === chartState.selectedMachine) && parseDate(i['วันที่'])?.getFullYear() === chartState.selectedYear && parseDate(i['วันที่'])?.getMonth() === chartState.selectedMonth,
+                        i => parseDate(i['วันที่'])?.getDate()
+                    );
+                    labels = Array.from({length: daysInMonth}, (_, i) => i + 1); values = labels.map(d => data[d] || 0);
+                } else {
+                    labelText = `10 อันดับสูงสุด: ${mName}`;
+                    const data = filterAndSum(
+                        i => parseDate(i['วันที่'])?.getFullYear() === chartState.selectedYear && parseDate(i['วันที่'])?.getMonth() === chartState.selectedMonth,
+                        i => i['รหัสรถ']
+                    );
+                    const sorted = Object.entries(data).sort(([,a], [,b]) => b - a).slice(0, 10);
+                    labels = sorted.map(k => k[0]); values = sorted.map(k => k[1]);
+                }
+            }
+            else if (chartState.view === 'single_day') {
+                const mName = new Date(chartState.selectedYear, chartState.selectedMonth).toLocaleString('th-TH', { month: 'long' });
+                breadcrumb = `ทั้งหมด > ${chartState.selectedYear} > ${mName} > ${chartState.selectedDay} > <span class="text-[var(--safety-orange)]">10 อันดับ</span>`;
+                currentScopeLabel = `${chartState.selectedDay} ${mName} ${chartState.selectedYear}`;
+                labelText = `10 อันดับสูงสุด: ${chartState.selectedDay} ${mName}`;
+                
+                const data = filterAndSum(
+                    i => parseDate(i['วันที่'])?.getFullYear() === chartState.selectedYear && parseDate(i['วันที่'])?.getMonth() === chartState.selectedMonth && parseDate(i['วันที่'])?.getDate() === chartState.selectedDay,
+                    i => i['รหัสรถ']
+                );
+                const sorted = Object.entries(data).sort(([,a], [,b]) => b - a).slice(0, 10);
+                labels = sorted.map(k => k[0]); values = sorted.map(k => k[1]);
+            }
+
+            document.getElementById('total-fuel').innerText = formatNumber(currentTotalFuel) + " ลิตร";
+            document.getElementById('label-total-fuel').innerText = `น้ำมัน (${currentScopeLabel})`;
+            document.getElementById('chart-breadcrumb').innerHTML = breadcrumb;
+            renderCanvas(labels, values, labelText, colorBarBg);
+        }
+
+        function renderMaintenanceDummyChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (chartState.instance) chartState.instance.destroy();
+            const labels = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, getCssVar('--status-purple')); 
+            gradient.addColorStop(1, '#581c87');
+
+            chartState.instance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'ค่าซ่อมบำรุง (บาท)', data: new Array(12).fill(0), backgroundColor: gradient, borderRadius: 0, borderWidth: 1, borderColor: getCssVar('--text-muted') }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { color: getCssVar('--chart-text'), font: {family: 'Prompt'} } }, title: { display: true, text: 'รอข้อมูลซ่อมบำรุง...', color: getCssVar('--text-muted') } },
+                    scales: { y: { beginAtZero: true, grid: { color: getCssVar('--chart-grid') }, ticks: { color: getCssVar('--chart-text') } }, x: { grid: { display: false }, ticks: { color: getCssVar('--chart-text') } } }
+                }
+            });
+        }
+
+        function renderCanvas(labels, data, labelText, colorFunc) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (chartState.instance) chartState.instance.destroy();
+
+            chartState.instance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: data,
+                        backgroundColor: colorFunc(ctx),
+                        borderRadius: 0, 
+                        borderWidth: 1,
+                        borderColor: getCssVar('--bg-body'),
+                        hoverBackgroundColor: getCssVar('--text-main'),
+                        hoverBorderColor: getCssVar('--safety-yellow')
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: getCssVar('--bg-panel'), 
+                            titleColor: getCssVar('--safety-yellow'), 
+                            bodyColor: getCssVar('--text-main'), 
+                            borderColor: getCssVar('--border-color'), 
+                            borderWidth: 1, 
+                            titleFont: {family: 'Prompt'},
+                            callbacks: { label: (c) => c.parsed.y.toLocaleString() + ' ลิตร' }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: getCssVar('--chart-grid'), borderDash: [2, 2] }, ticks: { color: getCssVar('--chart-text'), font: {family: 'Prompt', size: 10} } },
+                        x: { grid: { display: false }, ticks: { color: getCssVar('--chart-text'), font: {family: 'Prompt', size: 10} } }
+                    },
+                    onClick: (e, activeEls) => { if (activeEls.length > 0) handleChartClick(activeEls[0].index, labels); },
+                    onHover: (e, els) => e.native.target.style.cursor = els[0] ? 'pointer' : 'default'
+                }
+            });
+        }
+
+        function handleChartClick(index, labels) {
+            if (currentGraphMode !== 'fuel') return;
+            if (chartState.view === 'year') {
+                if (chartState.subView === 'trend') { chartState.selectedYear = parseInt(labels[index]); chartState.view = 'month'; updateChart(); }
+                else if (chartState.subView === 'top10') { chartState.selectedMachine = labels[index]; document.getElementById('machine-select').value = labels[index]; chartState.subView = 'trend'; updateChart(); }
+            } else if (chartState.view === 'month') {
+                if (chartState.subView === 'trend') { chartState.selectedMonth = index; chartState.view = 'day'; updateChart(); }
+                else if (chartState.subView === 'top10') { chartState.selectedMachine = labels[index]; document.getElementById('machine-select').value = labels[index]; chartState.subView = 'trend'; updateChart(); }
+            } else if (chartState.view === 'day') {
+                if (chartState.subView === 'trend' && chartState.selectedMachine === 'ALL') { chartState.selectedDay = index + 1; chartState.view = 'single_day'; chartState.subView = 'top10'; updateChart(); }
+                else if (chartState.subView === 'top10') { chartState.selectedMachine = labels[index]; document.getElementById('machine-select').value = labels[index]; chartState.subView = 'trend'; updateChart(); }
+            }
+        }
+
+        loadData();
+    </script>
 </body>
 </html>
