@@ -832,11 +832,12 @@
             // Determine initial data type based on current graph mode or default to fuel
             const initialDataType = (currentGraphMode === 'maintenance') ? 'maintenance' : 'fuel';
 
+            // Bug fix: Explicitly check for undefined to handle month 0 (January) correctly
             modalChartState = { 
                 id: code, type: 'machine', 
                 view: initialContext.view || 'year', 
-                year: initialContext.year || null, 
-                month: initialContext.month || null,
+                year: (initialContext.year !== undefined) ? initialContext.year : null, 
+                month: (initialContext.month !== undefined) ? initialContext.month : null,
                 dataType: initialDataType, 
                 subView: 'trend', machineFilter: 'ALL'
             };
@@ -882,9 +883,12 @@
             // But let's stick to 'fuel' default for projects as standard or use same logic
             const initialDataType = (currentGraphMode === 'maintenance') ? 'maintenance' : 'fuel';
 
+            // Bug fix: Explicitly check for undefined to handle month 0 (January) correctly
             modalChartState = { 
                 id: projectName, type: 'project', 
-                view: 'year', year: null, month: null,
+                view: 'year', 
+                year: (initialContext.year !== undefined) ? initialContext.year : null, 
+                month: (initialContext.month !== undefined) ? initialContext.month : null,
                 dataType: initialDataType, 
                 subView: 'trend', machineFilter: 'ALL'
             };
