@@ -38,6 +38,7 @@
             
             --status-blue: #3b82f6;
             --status-red: #ef4444;
+            --status-yellow: #d4ac0d;
             --status-green: #22c55e;
             --status-purple: #a855f7;
             --status-orange: #f97316;
@@ -324,7 +325,7 @@
         </header>
 
         <!-- Stats Overview Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
             <div class="industrial-card card-interactive status-blue p-3 cursor-pointer" onclick="openModal('all')">
                 <div class="flex justify-between items-start">
                     <div>
@@ -334,25 +335,30 @@
                     <i class="fas fa-truck-monster text-[var(--status-blue)] opacity-50 text-xl"></i>
                 </div>
             </div>
-            <div class="industrial-card card-interactive status-red p-3 cursor-pointer" onclick="openModal('expired')">
+            
+            <!-- MERGED ALERTS CARD -->
+            <div class="industrial-card card-interactive status-red p-3 cursor-pointer" onclick="openModal('alerts')">
                 <div class="flex justify-between items-start">
                     <div>
-                        <div class="text-[var(--status-red)] text-[10px] font-bold tracking-wider mb-1 flex items-center gap-1">
-                            <i class="fas fa-exclamation-circle animate-pulse"></i> ทะเบียนขาด
+                        <div class="text-[var(--text-muted)] text-[10px] font-bold tracking-wider mb-1 flex items-center gap-1">
+                            <i class="fas fa-bell animate-pulse text-[var(--safety-orange)]"></i> แจ้งเตือน (ALERTS)
                         </div>
-                        <div class="text-2xl font-black text-[var(--status-red)] stat-value" id="total-expired">-</div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="w-2 h-2 rounded-full bg-[var(--status-red)]"></span>
+                                <span class="text-[var(--status-red)] font-bold">หมดอายุ:</span>
+                                <span class="font-black text-[var(--text-main)]" id="val-expired">-</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="w-2 h-2 rounded-full bg-[var(--safety-yellow)]"></span>
+                                <span class="text-[var(--safety-yellow)] font-bold">ใกล้หมด:</span>
+                                <span class="font-black text-[var(--text-main)]" id="val-warning">-</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="industrial-card card-interactive status-yellow p-3 cursor-pointer" onclick="openModal('warning')">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-[var(--safety-yellow)] text-[10px] font-bold tracking-wider mb-1">ใกล้หมด (30 วัน)</div>
-                        <div class="text-2xl font-black text-[var(--safety-yellow)] stat-value" id="total-warning">-</div>
-                    </div>
-                    <i class="fas fa-bell text-[var(--safety-yellow)] opacity-50 text-xl"></i>
-                </div>
-            </div>
+            
             <div id="card-fuel" class="industrial-card card-interactive status-green p-3 cursor-pointer card-selected" onclick="switchGraphMode('fuel')">
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
@@ -365,7 +371,7 @@
             <div id="card-maintenance" class="industrial-card card-interactive status-purple p-3 cursor-pointer" onclick="switchGraphMode('maintenance')">
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
-                        <div class="text-[var(--status-purple)] text-[10px] font-bold tracking-wider mb-1" id="label-total-maint">ค่าซ่อมบำรุง</div>
+                        <div class="text-[var(--status-purple)] text-[10px] font-bold tracking-wider mb-1">ค่าซ่อมบำรุง</div>
                         <div class="text-2xl font-black text-[var(--text-main)] stat-value truncate" id="total-maintenance">...</div>
                     </div>
                     <i class="fas fa-wrench text-[var(--status-purple)] opacity-50 text-xl"></i>
@@ -452,22 +458,17 @@
         // --- Helpers ---
         function parseDate(dateStr) {
             if (!dateStr) return null;
-            // 1. Try explicit dd/mm/yyyy parsing first
             if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
                 if (parts.length === 3) {
                     let day = parseInt(parts[0], 10);
-                    let month = parseInt(parts[1], 10) - 1; // 0-based
+                    let month = parseInt(parts[1], 10) - 1; 
                     let year = parseInt(parts[2], 10);
-                    
                     if (year > 2400) year -= 543;
-                    
                     const d = new Date(year, month, day);
                     if (!isNaN(d.getTime())) return d;
                 }
             }
-
-            // 2. Fallback
             let d = new Date(dateStr);
             if (!isNaN(d.getTime())) {
                  if (d.getFullYear() > 2400) { d.setFullYear(d.getFullYear() - 543); }
@@ -506,7 +507,7 @@
             }
         }
 
-        // --- Handle Chart Click (Defined First) ---
+        // --- Handle Chart Click ---
         function handleChartClick(index, labels) {
             if (chartState.subView === 'top10') {
                 const machineCode = labels[index];
@@ -516,7 +517,6 @@
                 showMachineDetails(machineCode, context);
                 return; 
             }
-
             if (chartState.view === 'year') {
                 if (chartState.subView === 'trend') { chartState.selectedYear = parseInt(labels[index]); chartState.view = 'month'; updateChart(); }
             } else if (chartState.view === 'month') {
@@ -562,7 +562,6 @@
                 });
 
                 if(!appData.machines.length || !appData.fuel.length) throw new Error("Empty Data");
-                
                 finalizeLoad();
             } catch (error) {
                 console.error("Critical Load Error:", error);
@@ -605,6 +604,13 @@
                  totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
              });
              
+             // Update merged card values
+             const elExpiredVal = document.getElementById('val-expired');
+             if(elExpiredVal) elExpiredVal.innerText = appData.alerts.expired.length;
+
+             const elWarningVal = document.getElementById('val-warning');
+             if(elWarningVal) elWarningVal.innerText = appData.alerts.warning.length;
+
              const elMaint = document.getElementById('total-maintenance');
              if(elMaint) elMaint.innerText = formatNumber(totalCost) + " บาท";
 
@@ -634,9 +640,9 @@
             const codes = [...new Set(appData.machines.map(m => m['รหัส']).filter(c => c))].sort();
             codes.forEach(code => { const opt = document.createElement('option'); opt.value = code; opt.innerText = code; selector.appendChild(opt); });
 
-            updateAllStats();
+            processAlerts(); // Process first
+            updateAllStats(); // Then update UI
             updateChartColors();
-            processAlerts();
             setupFuelChart();
             document.getElementById('loading').style.opacity = '0';
             setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
@@ -667,8 +673,12 @@
                 if (data.expiredIssues.length > 0) appData.alerts.expired.push(data);
                 if (data.warningIssues.length > 0) appData.alerts.warning.push(data);
             });
-            document.getElementById('total-expired').innerText = appData.alerts.expired.length;
-            document.getElementById('total-warning').innerText = appData.alerts.warning.length;
+            // Card updated in updateAllStats now? No, update directly here is safer
+             const elExpiredVal = document.getElementById('val-expired');
+             if(elExpiredVal) elExpiredVal.innerText = appData.alerts.expired.length;
+
+             const elWarningVal = document.getElementById('val-warning');
+             if(elWarningVal) elWarningVal.innerText = appData.alerts.warning.length;
         }
 
         // --- Cleanup & Modal ---
@@ -678,18 +688,64 @@
             if (modalProjectChartInstance) { modalProjectChartInstance.destroy(); modalProjectChartInstance = null; }
         }
 
+        // Tab Switching Logic for Alerts
+        function switchAlertTab(tabName) {
+            // Update Buttons
+            const btnExpired = document.getElementById('tab-expired');
+            const btnWarning = document.getElementById('tab-warning');
+            
+            // Basic toggle styling
+            const activeClass = 'bg-[var(--safety-yellow)] text-black border-[var(--safety-orange)]';
+            const inactiveClass = 'bg-[var(--bg-panel)] text-[var(--text-muted)] border-[var(--border-color)]';
+            
+            if (tabName === 'expired') {
+                btnExpired.className = `construct-btn text-xs flex-1 ${activeClass}`;
+                btnWarning.className = `construct-btn text-xs flex-1 ${inactiveClass}`;
+                renderAlertList('expired');
+            } else {
+                btnExpired.className = `construct-btn text-xs flex-1 ${inactiveClass}`;
+                btnWarning.className = `construct-btn text-xs flex-1 ${activeClass}`;
+                renderAlertList('warning');
+            }
+        }
+        
+        function renderAlertList(type) {
+            const container = document.getElementById('alert-list-container');
+            let dataList = (type === 'expired') ? appData.alerts.expired : appData.alerts.warning;
+            let emptyText = (type === 'expired') ? 'ไม่มีรายการหมดอายุ' : 'ไม่มีรายการใกล้หมดอายุ';
+            
+            if (dataList.length === 0) {
+                container.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
+            } else {
+                const listHTML = dataList.map(item => generateCardHTML(item, type)).join('');
+                container.innerHTML = listHTML;
+            }
+        }
+
         function openModal(type) {
             cleanupModalCharts();
             lastModalType = type;
             const modal = document.getElementById('modal'), title = document.getElementById('modal-title'), body = document.getElementById('modal-body');
             body.innerHTML = '';
-            let headerText = '', emptyText = '';
+            let headerText = '';
             
-            if (type === 'project') {
-                headerText = 'รายการโครงการทั้งหมด';
-                emptyText = 'ไม่พบข้อมูลโครงการ';
-                document.getElementById('modal-filter-bar').classList.add('hidden'); 
+            document.getElementById('modal-filter-bar').classList.add('hidden'); // Hide by default
+
+            if (type === 'alerts') {
+                headerText = 'รายการแจ้งเตือน (ALERTS)';
+                // Inject Tab Structure
+                body.innerHTML = `
+                    <div class="flex gap-2 mb-4 border-b border-[var(--border-color)] pb-2">
+                        <button id="tab-expired" onclick="switchAlertTab('expired')" class="construct-btn text-xs flex-1">หมดอายุ (${appData.alerts.expired.length})</button>
+                        <button id="tab-warning" onclick="switchAlertTab('warning')" class="construct-btn text-xs flex-1">ใกล้หมด (${appData.alerts.warning.length})</button>
+                    </div>
+                    <div id="alert-list-container"></div>
+                `;
+                // Initialize with expired tab
+                setTimeout(() => switchAlertTab('expired'), 0);
                 
+            } else if (type === 'project') {
+                headerText = 'รายการโครงการทั้งหมด';
                 const projStats = {};
                 const addStat = (p, fuel, cost) => {
                     if(!p) p = 'ไม่ระบุโครงการ';
@@ -701,32 +757,20 @@
                 appData.maintenance.forEach(m => addStat(m['โครงการ'], 0, parseNumber(m['ค่าซ่อมบำรุง'])));
 
                 const projects = Object.values(projStats).sort((a,b) => b.cost - a.cost); 
-                if (projects.length === 0) body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
+                if (projects.length === 0) body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">ไม่พบข้อมูลโครงการ</div>`;
                 else body.innerHTML = projects.map(p => generateProjectCardHTML(p)).join('');
                 
-            } else {
-                let dataList = [];
-                if (type === 'all') { headerText = 'บัญชีเครื่องจักรทั้งหมด'; dataList = appData.alerts.all; emptyText = 'ไม่พบข้อมูล'; }
-                else if (type === 'expired') { headerText = 'รายการแจ้งเตือนวิกฤต (หมดอายุ)'; dataList = appData.alerts.expired; emptyText = 'ไม่มีรายการหมดอายุ'; }
-                else if (type === 'warning') { headerText = 'คาดการณ์ซ่อมบำรุง (30 วัน)'; dataList = appData.alerts.warning; emptyText = 'ไม่มีการแจ้งเตือน'; }
+            } else if (type === 'all') {
+                headerText = 'บัญชีเครื่องจักรทั้งหมด'; 
+                document.getElementById('modal-filter-bar').classList.remove('hidden');
+                document.getElementById('machine-search').value = '';
+                populateTypeFilter();
                 
-                const filterBar = document.getElementById('modal-filter-bar');
-                if (type === 'all') {
-                    filterBar.classList.remove('hidden');
-                    document.getElementById('machine-search').value = '';
-                    populateTypeFilter();
-                } else {
-                    filterBar.classList.add('hidden');
-                }
-
-                if (dataList.length > 0 && type !== 'all') {
-                    const listHTML = dataList.map(item => generateCardHTML(item, type)).join('');
-                    body.innerHTML = listHTML;
-                } else if (type === 'all') {
-                    filterModalList(); 
-                } else {
-                    body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
-                }
+                // Initial render for 'all'
+                filterModalList();
+            } else {
+                 // Fallback for direct calls (not used for alerts anymore)
+                 body.innerHTML = "Unknown Type";
             }
             title.innerText = headerText;
             modal.classList.add('show');
@@ -743,7 +787,8 @@
 
         function filterModalList() {
             const type = lastModalType;
-            if(type === 'project') return; 
+            if (type !== 'all') return;
+
             const body = document.getElementById('modal-body');
             let sourceList = appData.alerts.all;
             const searchText = document.getElementById('machine-search').value.toLowerCase().trim();
@@ -753,7 +798,7 @@
                 const matchesType = !filterType || (item.info['ประเภทรถ'] === filterType);
                 return matchesSearch && matchesType;
             });
-            body.innerHTML = filteredList.length === 0 ? `<div class="text-center text-[var(--text-muted)] py-8 font-mono">ไม่พบข้อมูล</div>` : filteredList.map(item => generateCardHTML(item, type)).join('');
+            body.innerHTML = filteredList.length === 0 ? `<div class="text-center text-[var(--text-muted)] py-8 font-mono">ไม่พบข้อมูล</div>` : filteredList.map(item => generateCardHTML(item, 'all')).join('');
         }
         function closeModal() { cleanupModalCharts(); document.getElementById('modal').classList.remove('show'); }
         window.onclick = function(event) { if (event.target == document.getElementById('modal')) closeModal(); }
@@ -762,20 +807,53 @@
             const { info, expiredIssues, warningIssues } = item;
             const code = info['รหัส'], plate = info['ทะเบียน'] || '-', typeName = info['ประเภทรถ'] || '';
             let borderColor = '', statusIcon = '', bgClass = 'bg-[var(--bg-card)]', issuesHtml = '';
+
+            // Type 'all' has blue border, clean look
             if (type === 'all') {
                 borderColor = 'border-l-4 border-[var(--status-blue)]';
                 statusIcon = '<span class="text-[var(--text-muted)] font-bold text-[10px] bg-[var(--bg-body)] px-2 py-0.5 rounded-sm border border-[var(--border-color)]">รายการ</span>';
             } else {
-                if (expiredIssues.length > 0) { borderColor = 'border-l-4 border-[var(--status-red)]'; statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-red)] px-2 py-0.5 rounded-sm">วิกฤต</span>'; bgClass = 'bg-red-500/10'; }
-                else if (warningIssues.length > 0) { borderColor = 'border-l-4 border-[var(--safety-yellow)]'; statusIcon = '<span class="text-black font-bold text-[10px] bg-[var(--safety-yellow)] px-2 py-0.5 rounded-sm">เตือน</span>'; bgClass = 'bg-yellow-500/10'; }
-                else { borderColor = 'border-l-4 border-[var(--status-green)]'; statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-green)] px-2 py-0.5 rounded-sm">ปกติ</span>'; }
+                // For Alerts tabs (expired/warning)
+                if (type === 'expired' && expiredIssues.length > 0) { 
+                    borderColor = 'border-l-4 border-[var(--status-red)]'; 
+                    statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-red)] px-2 py-0.5 rounded-sm">วิกฤต</span>'; 
+                    bgClass = 'bg-red-500/10'; 
+                }
+                else if (type === 'warning' && warningIssues.length > 0) { 
+                    borderColor = 'border-l-4 border-[var(--safety-yellow)]'; 
+                    statusIcon = '<span class="text-black font-bold text-[10px] bg-[var(--safety-yellow)] px-2 py-0.5 rounded-sm">เตือน</span>'; 
+                    bgClass = 'bg-yellow-500/10'; 
+                }
+                else { 
+                    // Fallback
+                    borderColor = 'border-l-4 border-[var(--status-green)]'; 
+                }
             }
-            if(type !== 'all' && (expiredIssues.length > 0 || warningIssues.length > 0)) {
-                issuesHtml = '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
-                expiredIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${txt}</div>`);
-                warningIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${txt}</div>`);
-                issuesHtml += '</div>';
+
+            // Only show issues details if not in 'all' view (keep 'all' clean)
+            if(type !== 'all') {
+                 if (expiredIssues.length > 0) {
+                     issuesHtml += '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
+                     expiredIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${txt}</div>`);
+                     issuesHtml += '</div>';
+                 }
+                 if (warningIssues.length > 0) {
+                     if (!issuesHtml) issuesHtml += '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
+                     warningIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${txt}</div>`);
+                     if (!expiredIssues.length) issuesHtml += '</div>'; // Close div if opened here
+                 }
+                 // If both existed, the div is already open from expired block, need to check if we need to close it? 
+                 // Actually easier to build string:
+                 /* Refined logic */
+                 let htmlContent = '';
+                 [...expiredIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${t}</div>`);
+                 [...warningIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${t}</div>`);
+                 
+                 if (htmlContent) {
+                     issuesHtml = `<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">${htmlContent}</div>`;
+                 }
             }
+
             return `<div onclick="showMachineDetails('${code}')" class="${bgClass} border border-[var(--border-color)] ${borderColor} p-3 mb-2 shadow-sm rounded cursor-pointer hover:shadow-lg transition">
                 <div class="flex justify-between items-start"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-[var(--bg-body)] flex items-center justify-center text-[var(--text-muted)] border border-[var(--border-color)] rounded"><i class="fas fa-truck-pickup text-sm"></i></div><div><div class="flex items-center gap-2"><span class="font-bold text-[var(--text-main)] font-[Black Ops One] text-base">${code}</span>${statusIcon}</div><div class="text-[10px] text-[var(--text-muted)] font-mono">${plate} // ${typeName}</div></div></div><i class="fas fa-chevron-right text-[var(--text-muted)] text-xs mt-2"></i></div>${issuesHtml}</div>`;
         }
