@@ -367,7 +367,8 @@
         </header>
 
         <!-- Stats Overview Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
+            <!-- 1. All Machines -->
             <div class="industrial-card card-interactive status-blue p-3 cursor-pointer" onclick="openModal('all')">
                 <div class="flex justify-between items-start">
                     <div>
@@ -377,25 +378,29 @@
                     <i class="fas fa-truck-monster text-[var(--status-blue)] opacity-50 text-xl"></i>
                 </div>
             </div>
-            <div class="industrial-card card-interactive status-red p-3 cursor-pointer" onclick="openModal('expired')">
+            
+            <!-- 2. MERGED ALERTS CARD -->
+            <div class="industrial-card card-interactive status-red p-3 cursor-pointer" onclick="openModal('alerts')">
                 <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-[var(--status-red)] text-[10px] font-bold tracking-wider mb-1 flex items-center gap-1">
-                            <i class="fas fa-exclamation-circle animate-pulse"></i> ทะเบียนขาด
+                    <div class="w-full">
+                        <div class="text-[var(--text-muted)] text-[10px] font-bold tracking-wider mb-1 flex items-center gap-1">
+                            <i class="fas fa-bell animate-pulse text-[var(--safety-orange)]"></i> แจ้งเตือน (ALERTS)
                         </div>
-                        <div class="text-2xl font-black text-[var(--status-red)] stat-value" id="total-expired">-</div>
+                        <div class="space-y-1 mt-2">
+                            <div class="flex justify-between items-center text-sm border-b border-[var(--border-color)] pb-1">
+                                <span class="text-[var(--status-red)] font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[var(--status-red)]"></span> หมดอายุ</span>
+                                <span class="font-black text-[var(--text-main)]" id="val-expired">-</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm pt-1">
+                                <span class="text-[var(--safety-yellow)] font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[var(--safety-yellow)]"></span> ใกล้หมด</span>
+                                <span class="font-black text-[var(--text-main)]" id="val-warning">-</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="industrial-card card-interactive status-yellow p-3 cursor-pointer" onclick="openModal('warning')">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-[var(--safety-yellow)] text-[10px] font-bold tracking-wider mb-1">ใกล้หมด (30 วัน)</div>
-                        <div class="text-2xl font-black text-[var(--safety-yellow)] stat-value" id="total-warning">-</div>
-                    </div>
-                    <i class="fas fa-bell text-[var(--safety-yellow)] opacity-50 text-xl"></i>
-                </div>
-            </div>
+            
+            <!-- 3. Fuel -->
             <div id="card-fuel" class="industrial-card card-interactive status-green p-3 cursor-pointer card-selected" onclick="switchGraphMode('fuel')">
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
@@ -405,6 +410,8 @@
                     <i class="fas fa-gas-pump text-[var(--status-green)] opacity-50 text-xl"></i>
                 </div>
             </div>
+
+            <!-- 4. Maintenance -->
             <div id="card-maintenance" class="industrial-card card-interactive status-purple p-3 cursor-pointer" onclick="switchGraphMode('maintenance')">
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
@@ -414,7 +421,8 @@
                     <i class="fas fa-wrench text-[var(--status-purple)] opacity-50 text-xl"></i>
                 </div>
             </div>
-             <!-- Project Card -->
+
+             <!-- 5. Project Card -->
             <div id="card-project" class="industrial-card card-interactive status-orange p-3 cursor-pointer" onclick="openModal('project')">
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
@@ -442,7 +450,7 @@
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                    <!-- Toggle Buttons -->
+                    <!-- Toggle Buttons (Always visible) -->
                     <div id="view-toggles" class="bg-[var(--bg-body)] p-0.5 border border-[var(--border-color)] rounded flex gap-0.5">
                         <button class="construct-btn toggle-btn text-xs active" id="btn-trend" data-view="trend">แนวโน้ม</button>
                         <button class="construct-btn toggle-btn text-xs" id="btn-top10" data-view="top10">10 อันดับ</button>
@@ -496,6 +504,7 @@
         // --- Helpers ---
         function parseDate(dateStr) {
             if (!dateStr) return null;
+            // FIX: Strict dd/mm/yyyy parsing first
             if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
                 if (parts.length === 3) {
@@ -564,6 +573,28 @@
             }
         }
 
+        // --- Reset Modal Chart (Defined Globally) ---
+        function resetModalChartToYear() {
+            modalChartState.view = 'year';
+            modalChartState.year = null;
+            modalChartState.month = null;
+            updateModalUI();
+
+            if (modalChartState.projectName) {
+                renderModalProjectChart();
+            } else {
+                updateModalCharts();
+            }
+        }
+        
+        // --- Button Setters ---
+        function setMainView(subView, btn) {
+            chartState.subView = subView;
+            document.querySelectorAll('#view-toggles .construct-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateChart();
+        }
+
         // --- App Init ---
         async function loadData() {
             const fetchTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000));
@@ -591,6 +622,7 @@
                     });
                 }
                 
+                // Fuel Mapping
                 appData.fuel.forEach(row => {
                     const valKey = Object.keys(row).find(k => k.includes('ปริมาณ') || k.includes('ลิตร') || k.toLowerCase().includes('fuel') || k.toLowerCase().includes('qty'));
                     if (valKey) row['ปริมาณ(ลิตร)'] = row[valKey];
@@ -704,8 +736,13 @@
                 if (data.expiredIssues.length > 0) appData.alerts.expired.push(data);
                 if (data.warningIssues.length > 0) appData.alerts.warning.push(data);
             });
-            document.getElementById('total-expired').innerText = appData.alerts.expired.length;
-            document.getElementById('total-warning').innerText = appData.alerts.warning.length;
+            
+             // UPDATED: Set values in merged card
+             const elExpiredVal = document.getElementById('val-expired');
+             if(elExpiredVal) elExpiredVal.innerText = appData.alerts.expired.length;
+
+             const elWarningVal = document.getElementById('val-warning');
+             if(elWarningVal) elWarningVal.innerText = appData.alerts.warning.length;
         }
 
         // --- Cleanup & Modal ---
@@ -801,19 +838,59 @@
             }
         }
 
-        // --- Open Modal ---
+        // Tab Switching Logic for Alerts
+        function switchAlertTab(tabName) {
+            const btnExpired = document.getElementById('tab-expired');
+            const btnWarning = document.getElementById('tab-warning');
+            const activeClass = 'bg-[var(--safety-yellow)] text-black border-[var(--safety-orange)]';
+            const inactiveClass = 'bg-[var(--bg-panel)] text-[var(--text-muted)] border-[var(--border-color)]';
+            
+            if (tabName === 'expired') {
+                btnExpired.className = `construct-btn text-xs flex-1 ${activeClass}`;
+                btnWarning.className = `construct-btn text-xs flex-1 ${inactiveClass}`;
+                renderAlertList('expired');
+            } else {
+                btnExpired.className = `construct-btn text-xs flex-1 ${inactiveClass}`;
+                btnWarning.className = `construct-btn text-xs flex-1 ${activeClass}`;
+                renderAlertList('warning');
+            }
+        }
+        
+        function renderAlertList(type) {
+            const container = document.getElementById('alert-list-container');
+            let dataList = (type === 'expired') ? appData.alerts.expired : appData.alerts.warning;
+            let emptyText = (type === 'expired') ? 'ไม่มีรายการหมดอายุ' : 'ไม่มีรายการใกล้หมดอายุ';
+            
+            if (dataList.length === 0) {
+                container.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
+            } else {
+                const listHTML = dataList.map(item => generateCardHTML(item, type)).join('');
+                container.innerHTML = listHTML;
+            }
+        }
+
         function openModal(type) {
             cleanupModalCharts();
             lastModalType = type;
             const modal = document.getElementById('modal'), title = document.getElementById('modal-title'), body = document.getElementById('modal-body');
             body.innerHTML = '';
-            let headerText = '', emptyText = '';
+            let headerText = '';
             
-            if (type === 'project') {
-                headerText = 'รายการโครงการทั้งหมด';
-                emptyText = 'ไม่พบข้อมูลโครงการ';
-                document.getElementById('modal-filter-bar').classList.add('hidden'); 
+            document.getElementById('modal-filter-bar').classList.add('hidden'); // Hide by default
+
+            if (type === 'alerts') {
+                headerText = 'รายการแจ้งเตือน (ALERTS)';
+                body.innerHTML = `
+                    <div class="flex gap-2 mb-4 border-b border-[var(--border-color)] pb-2">
+                        <button id="tab-expired" onclick="switchAlertTab('expired')" class="construct-btn text-xs flex-1">หมดอายุ (${appData.alerts.expired.length})</button>
+                        <button id="tab-warning" onclick="switchAlertTab('warning')" class="construct-btn text-xs flex-1">ใกล้หมด (${appData.alerts.warning.length})</button>
+                    </div>
+                    <div id="alert-list-container"></div>
+                `;
+                setTimeout(() => switchAlertTab('expired'), 0);
                 
+            } else if (type === 'project') {
+                headerText = 'รายการโครงการทั้งหมด';
                 const projStats = {};
                 const addStat = (p, fuel, cost) => {
                     if(!p) p = 'ไม่ระบุโครงการ';
@@ -825,35 +902,22 @@
                 appData.maintenance.forEach(m => addStat(m['โครงการ'], 0, parseNumber(m['ค่าซ่อมบำรุง'])));
 
                 const projects = Object.values(projStats).sort((a,b) => b.cost - a.cost); 
-                if (projects.length === 0) body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
+                if (projects.length === 0) body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">ไม่พบข้อมูลโครงการ</div>`;
                 else body.innerHTML = projects.map(p => generateProjectCardHTML(p)).join('');
                 
-            } else {
-                let dataList = [];
-                if (type === 'all') { headerText = 'บัญชีเครื่องจักรทั้งหมด'; dataList = appData.alerts.all; emptyText = 'ไม่พบข้อมูล'; }
-                else if (type === 'expired') { headerText = 'รายการแจ้งเตือนวิกฤต (หมดอายุ)'; dataList = appData.alerts.expired; emptyText = 'ไม่มีรายการหมดอายุ'; }
-                else if (type === 'warning') { headerText = 'คาดการณ์ซ่อมบำรุง (30 วัน)'; dataList = appData.alerts.warning; emptyText = 'ไม่มีการแจ้งเตือน'; }
+            } else if (type === 'all') {
+                headerText = 'บัญชีเครื่องจักรทั้งหมด'; 
+                document.getElementById('modal-filter-bar').classList.remove('hidden');
+                document.getElementById('machine-search').value = '';
+                // Show Print Button in All Machine View
+                document.getElementById('btn-print-qr').classList.remove('hidden');
+                populateTypeFilter();
                 
-                const filterBar = document.getElementById('modal-filter-bar');
-                if (type === 'all') {
-                    filterBar.classList.remove('hidden');
-                    document.getElementById('machine-search').value = '';
-                    // Show Print Button in All Machine View
-                    document.getElementById('btn-print-qr').classList.remove('hidden');
-                    populateTypeFilter();
-                } else {
-                    filterBar.classList.add('hidden');
-                    document.getElementById('btn-print-qr').classList.add('hidden');
-                }
-
-                if (dataList.length > 0 && type !== 'all') {
-                    const listHTML = dataList.map(item => generateCardHTML(item, type)).join('');
-                    body.innerHTML = listHTML;
-                } else if (type === 'all') {
-                    filterModalList(); 
-                } else {
-                    body.innerHTML = `<div class="text-center text-[var(--text-muted)] py-8 font-mono">${emptyText}</div>`;
-                }
+                // Initial render for 'all'
+                filterModalList();
+            } else {
+                 // Fallback for direct calls (not used for alerts anymore)
+                 body.innerHTML = "Unknown Type";
             }
             title.innerText = headerText;
             modal.classList.add('show');
@@ -870,7 +934,8 @@
 
         function filterModalList() {
             const type = lastModalType;
-            if(type === 'project') return; 
+            if (type !== 'all') return;
+
             const body = document.getElementById('modal-body');
             let sourceList = appData.alerts.all;
             const searchText = document.getElementById('machine-search').value.toLowerCase().trim();
@@ -890,10 +955,12 @@
             const code = info['รหัส'], plate = info['ทะเบียน'] || '-', typeName = info['ประเภทรถ'] || '';
             let borderColor = '', statusIcon = '', bgClass = 'bg-[var(--bg-card)]', issuesHtml = '';
 
+            // Type 'all' has blue border, clean look
             if (type === 'all') {
                 borderColor = 'border-l-4 border-[var(--status-blue)]';
                 statusIcon = '<span class="text-[var(--text-muted)] font-bold text-[10px] bg-[var(--bg-body)] px-2 py-0.5 rounded-sm border border-[var(--border-color)]">รายการ</span>';
             } else {
+                // For Alerts tabs (expired/warning)
                 if (type === 'expired' && expiredIssues.length > 0) { 
                     borderColor = 'border-l-4 border-[var(--status-red)]'; 
                     statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-red)] px-2 py-0.5 rounded-sm">วิกฤต</span>'; 
@@ -905,24 +972,21 @@
                     bgClass = 'bg-yellow-500/10'; 
                 }
                 else { 
+                    // Fallback
                     borderColor = 'border-l-4 border-[var(--status-green)]'; 
                 }
             }
 
+            // Only show issues details if not in 'all' view (keep 'all' clean)
             if(type !== 'all') {
-                 if (expiredIssues.length > 0) {
-                     issuesHtml += '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
-                     expiredIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${txt}</div>`);
-                     issuesHtml += '</div>';
-                 }
-                 if (warningIssues.length > 0) {
-                     if (!issuesHtml) issuesHtml += '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
-                     warningIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${txt}</div>`);
-                     if (!expiredIssues.length) issuesHtml += '</div>';
-                 }
                  let htmlContent = '';
-                 [...expiredIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${t}</div>`);
-                 [...warningIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${t}</div>`);
+                 if(type === 'expired') {
+                     [...expiredIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${t}</div>`);
+                 }
+                 if(type === 'warning') {
+                     [...warningIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${t}</div>`);
+                 }
+                 
                  if (htmlContent) {
                      issuesHtml = `<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">${htmlContent}</div>`;
                  }
@@ -1125,19 +1189,6 @@
              const isRoot = modalChartState.view === 'year';
              const btnBack = document.getElementById('btn-modal-drill-back');
              if(btnBack) btnBack.classList.toggle('hidden', isRoot);
-        }
-        
-        function resetModalChartToYear() {
-            modalChartState.view = 'year';
-            modalChartState.year = null;
-            modalChartState.month = null;
-            updateModalUI();
-
-            if (modalChartState.projectName) {
-                renderModalProjectChart();
-            } else {
-                updateModalCharts();
-            }
         }
 
         // --- Sub-Modal: Daily List ---
