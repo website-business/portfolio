@@ -38,7 +38,6 @@
             
             --status-blue: #3b82f6;
             --status-red: #ef4444;
-            --status-yellow: #d4ac0d;
             --status-green: #22c55e;
             --status-purple: #a855f7;
             --status-orange: #f97316;
@@ -325,7 +324,7 @@
         </header>
 
         <!-- Stats Overview Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
             <div class="industrial-card card-interactive status-blue p-3 cursor-pointer" onclick="openModal('all')">
                 <div class="flex justify-between items-start">
                     <div>
@@ -371,7 +370,7 @@
             <div id="card-maintenance" class="industrial-card card-interactive status-purple p-3 cursor-pointer" onclick="switchGraphMode('maintenance')">
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
-                        <div class="text-[var(--status-purple)] text-[10px] font-bold tracking-wider mb-1">ค่าซ่อมบำรุง</div>
+                        <div class="text-[var(--status-purple)] text-[10px] font-bold tracking-wider mb-1" id="label-total-maint">ค่าซ่อมบำรุง</div>
                         <div class="text-2xl font-black text-[var(--text-main)] stat-value truncate" id="total-maintenance">...</div>
                     </div>
                     <i class="fas fa-wrench text-[var(--status-purple)] opacity-50 text-xl"></i>
@@ -458,17 +457,22 @@
         // --- Helpers ---
         function parseDate(dateStr) {
             if (!dateStr) return null;
+            // 1. Try explicit dd/mm/yyyy parsing first
             if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
                 if (parts.length === 3) {
                     let day = parseInt(parts[0], 10);
                     let month = parseInt(parts[1], 10) - 1; 
                     let year = parseInt(parts[2], 10);
+                    
                     if (year > 2400) year -= 543;
+                    
                     const d = new Date(year, month, day);
                     if (!isNaN(d.getTime())) return d;
                 }
             }
+
+            // 2. Fallback
             let d = new Date(dateStr);
             if (!isNaN(d.getTime())) {
                  if (d.getFullYear() > 2400) { d.setFullYear(d.getFullYear() - 543); }
@@ -507,7 +511,7 @@
             }
         }
 
-        // --- Handle Chart Click ---
+        // --- Handle Chart Click (Defined First) ---
         function handleChartClick(index, labels) {
             if (chartState.subView === 'top10') {
                 const machineCode = labels[index];
@@ -517,12 +521,27 @@
                 showMachineDetails(machineCode, context);
                 return; 
             }
+
             if (chartState.view === 'year') {
                 if (chartState.subView === 'trend') { chartState.selectedYear = parseInt(labels[index]); chartState.view = 'month'; updateChart(); }
             } else if (chartState.view === 'month') {
                 if (chartState.subView === 'trend') { chartState.selectedMonth = index; chartState.view = 'day'; updateChart(); }
             } else if (chartState.view === 'day') {
                 if (chartState.subView === 'trend' && chartState.selectedMachine === 'ALL') { chartState.selectedDay = index + 1; chartState.view = 'single_day'; chartState.subView = 'top10'; updateChart(); }
+            }
+        }
+
+        // --- Reset Modal Chart (Defined Globally) ---
+        function resetModalChartToYear() {
+            modalChartState.view = 'year';
+            modalChartState.year = null;
+            modalChartState.month = null;
+            updateModalUI();
+
+            if (modalChartState.projectName) {
+                renderModalProjectChart();
+            } else {
+                updateModalCharts();
             }
         }
 
@@ -562,6 +581,7 @@
                 });
 
                 if(!appData.machines.length || !appData.fuel.length) throw new Error("Empty Data");
+                
                 finalizeLoad();
             } catch (error) {
                 console.error("Critical Load Error:", error);
@@ -604,13 +624,6 @@
                  totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
              });
              
-             // Update merged card values
-             const elExpiredVal = document.getElementById('val-expired');
-             if(elExpiredVal) elExpiredVal.innerText = appData.alerts.expired.length;
-
-             const elWarningVal = document.getElementById('val-warning');
-             if(elWarningVal) elWarningVal.innerText = appData.alerts.warning.length;
-
              const elMaint = document.getElementById('total-maintenance');
              if(elMaint) elMaint.innerText = formatNumber(totalCost) + " บาท";
 
@@ -640,9 +653,9 @@
             const codes = [...new Set(appData.machines.map(m => m['รหัส']).filter(c => c))].sort();
             codes.forEach(code => { const opt = document.createElement('option'); opt.value = code; opt.innerText = code; selector.appendChild(opt); });
 
-            processAlerts(); // Process first
-            updateAllStats(); // Then update UI
+            updateAllStats();
             updateChartColors();
+            processAlerts();
             setupFuelChart();
             document.getElementById('loading').style.opacity = '0';
             setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
@@ -673,7 +686,6 @@
                 if (data.expiredIssues.length > 0) appData.alerts.expired.push(data);
                 if (data.warningIssues.length > 0) appData.alerts.warning.push(data);
             });
-            // Card updated in updateAllStats now? No, update directly here is safer
              const elExpiredVal = document.getElementById('val-expired');
              if(elExpiredVal) elExpiredVal.innerText = appData.alerts.expired.length;
 
@@ -690,11 +702,8 @@
 
         // Tab Switching Logic for Alerts
         function switchAlertTab(tabName) {
-            // Update Buttons
             const btnExpired = document.getElementById('tab-expired');
             const btnWarning = document.getElementById('tab-warning');
-            
-            // Basic toggle styling
             const activeClass = 'bg-[var(--safety-yellow)] text-black border-[var(--safety-orange)]';
             const inactiveClass = 'bg-[var(--bg-panel)] text-[var(--text-muted)] border-[var(--border-color)]';
             
@@ -733,7 +742,6 @@
 
             if (type === 'alerts') {
                 headerText = 'รายการแจ้งเตือน (ALERTS)';
-                // Inject Tab Structure
                 body.innerHTML = `
                     <div class="flex gap-2 mb-4 border-b border-[var(--border-color)] pb-2">
                         <button id="tab-expired" onclick="switchAlertTab('expired')" class="construct-btn text-xs flex-1">หมดอายุ (${appData.alerts.expired.length})</button>
@@ -741,7 +749,6 @@
                     </div>
                     <div id="alert-list-container"></div>
                 `;
-                // Initialize with expired tab
                 setTimeout(() => switchAlertTab('expired'), 0);
                 
             } else if (type === 'project') {
@@ -765,11 +772,8 @@
                 document.getElementById('modal-filter-bar').classList.remove('hidden');
                 document.getElementById('machine-search').value = '';
                 populateTypeFilter();
-                
-                // Initial render for 'all'
                 filterModalList();
             } else {
-                 // Fallback for direct calls (not used for alerts anymore)
                  body.innerHTML = "Unknown Type";
             }
             title.innerText = headerText;
@@ -808,12 +812,10 @@
             const code = info['รหัส'], plate = info['ทะเบียน'] || '-', typeName = info['ประเภทรถ'] || '';
             let borderColor = '', statusIcon = '', bgClass = 'bg-[var(--bg-card)]', issuesHtml = '';
 
-            // Type 'all' has blue border, clean look
             if (type === 'all') {
                 borderColor = 'border-l-4 border-[var(--status-blue)]';
                 statusIcon = '<span class="text-[var(--text-muted)] font-bold text-[10px] bg-[var(--bg-body)] px-2 py-0.5 rounded-sm border border-[var(--border-color)]">รายการ</span>';
             } else {
-                // For Alerts tabs (expired/warning)
                 if (type === 'expired' && expiredIssues.length > 0) { 
                     borderColor = 'border-l-4 border-[var(--status-red)]'; 
                     statusIcon = '<span class="text-white font-bold text-[10px] bg-[var(--status-red)] px-2 py-0.5 rounded-sm">วิกฤต</span>'; 
@@ -825,12 +827,10 @@
                     bgClass = 'bg-yellow-500/10'; 
                 }
                 else { 
-                    // Fallback
                     borderColor = 'border-l-4 border-[var(--status-green)]'; 
                 }
             }
 
-            // Only show issues details if not in 'all' view (keep 'all' clean)
             if(type !== 'all') {
                  if (expiredIssues.length > 0) {
                      issuesHtml += '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
@@ -840,15 +840,11 @@
                  if (warningIssues.length > 0) {
                      if (!issuesHtml) issuesHtml += '<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">';
                      warningIssues.forEach(txt => issuesHtml += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${txt}</div>`);
-                     if (!expiredIssues.length) issuesHtml += '</div>'; // Close div if opened here
+                     if (!expiredIssues.length) issuesHtml += '</div>';
                  }
-                 // If both existed, the div is already open from expired block, need to check if we need to close it? 
-                 // Actually easier to build string:
-                 /* Refined logic */
                  let htmlContent = '';
                  [...expiredIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--status-red)] font-mono mt-1"><i class="fas fa-times-circle"></i> ${t}</div>`);
                  [...warningIssues].forEach(t => htmlContent += `<div class="text-xs text-[var(--safety-yellow)] font-mono mt-1"><i class="fas fa-exclamation-triangle"></i> ${t}</div>`);
-                 
                  if (htmlContent) {
                      issuesHtml = `<div class="mt-2 pl-[44px] space-y-1 border-t border-[var(--border-color)] pt-1">${htmlContent}</div>`;
                  }
