@@ -28,11 +28,11 @@
         :root {
             --font-main: 'Kanit', sans-serif;
             
-            --text-main: #1f2937;      /* Grey 800 */
-            --text-muted: #6b7280;     /* Grey 500 */
+            --text-main: #1f2937;       /* Grey 800 */
+            --text-muted: #6b7280;      /* Grey 500 */
             
-            --primary: #6366f1;        /* Indigo 500 */
-            --primary-dark: #4f46e5;   /* Indigo 600 */
+            --primary: #6366f1;         /* Indigo 500 */
+            --primary-dark: #4f46e5;    /* Indigo 600 */
             
             /* Glass Variables */
             --glass-bg: rgba(255, 255, 255, 0.75);
@@ -210,6 +210,15 @@
             padding-right: 10px;
         }
 
+        /* Number Update Animation */
+        .fade-number {
+            animation: fadeInNumber 0.5s ease-out;
+        }
+        @keyframes fadeInNumber {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
     </style>
 </head>
 <body class="antialiased text-sm">
@@ -239,7 +248,7 @@
                     <span class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
                 </span>
-                <span class="text-xs text-gray-500 font-medium ml-1">กำลังเชื่อมต่อฐานข้อมูล...</span>
+                <span class="text-xs text-gray-500 font-medium ml-1" id="loading-text">กำลังเชื่อมต่อฐานข้อมูล...</span>
             </div>
             
             <button id="btn-retry" onclick="location.reload()" class="hidden mt-6 bg-red-500 text-white py-2 px-6 rounded-full shadow-lg hover:bg-red-600 transition hover:scale-105 active:scale-95">
@@ -412,7 +421,7 @@
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
                         <div class="text-green-500 text-xs font-semibold mb-2" id="label-total-fuel">ปริมาณน้ำมัน</div>
-                        <div class="text-3xl font-bold text-gray-700 truncate" id="total-fuel">0</div>
+                        <div class="text-3xl font-bold text-gray-700 truncate fade-number" id="total-fuel">0</div>
                     </div>
                     <div class="icon-box icon-green">
                         <i class="fas fa-gas-pump"></i>
@@ -428,7 +437,7 @@
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
                         <div class="text-purple-500 text-xs font-semibold mb-2" id="label-total-maint">ค่าซ่อมบำรุง</div>
-                        <div class="text-3xl font-bold text-gray-700 truncate" id="total-maintenance">0</div>
+                        <div class="text-3xl font-bold text-gray-700 truncate fade-number" id="total-maintenance">0</div>
                     </div>
                     <div class="icon-box icon-purple">
                         <i class="fas fa-tools"></i>
@@ -444,7 +453,7 @@
                 <div class="flex justify-between items-start">
                     <div class="overflow-hidden">
                         <div class="text-orange-500 text-xs font-semibold mb-2">โครงการ</div>
-                        <div class="text-3xl font-bold text-gray-700" id="total-projects">0</div>
+                        <div class="text-3xl font-bold text-gray-700 fade-number" id="total-projects">0</div>
                     </div>
                     <div class="icon-box icon-orange">
                         <i class="fas fa-building"></i>
@@ -549,8 +558,8 @@
         let modalFuelChartInstance = null;
         let modalMaintChartInstance = null;
         let modalProjectChartInstance = null;
-        let modalDailyChartInstance = null; // New instance for daily detail graph
-        let modalRankingChartInstance = null; // Added this missing variable
+        let modalDailyChartInstance = null;
+        let modalRankingChartInstance = null; 
         let modalChartState = { view: 'year', year: null, month: null, machineCode: null }; 
         let html5QrCode = null;
 
@@ -598,9 +607,15 @@
         // --- Handle Chart Click (Drill down) ---
         function handleTrendClick(index, labels) {
             if (chartState.view === 'year') {
-                chartState.selectedYear = parseInt(labels[index]); chartState.view = 'month'; updateChart(); 
+                chartState.selectedYear = parseInt(labels[index]); 
+                chartState.view = 'month'; 
+                updateChart(); 
+                updateAllStats(); // Update stats when drilling down
             } else if (chartState.view === 'month') {
-                chartState.selectedMonth = index; chartState.view = 'day'; updateChart(); 
+                chartState.selectedMonth = index; 
+                chartState.view = 'day'; 
+                updateChart(); 
+                updateAllStats(); // Update stats when drilling down
             } else if (chartState.view === 'day' || chartState.view === 'single_day') {
                  showMainDailyDetail(index + 1);
             }
@@ -811,40 +826,120 @@
             initializeApp();
         }
 
+        // --- UPDATED STATS LOGIC ---
         function updateAllStats() {
              let totalCost = 0;
              let totalFuel = 0;
-             const selectedProj = chartState.selectedProject;
              
+             // Destructure state
+             const { selectedProject, selectedMachine, view, selectedYear, selectedMonth } = chartState;
+
+             // 1. Scope Filter (Project & Machine) - Applies to EVERYTHING
+             const matchesScope = (item) => {
+                 if (selectedProject !== 'ALL' && item['โครงการ'] !== selectedProject) return false;
+                 if (selectedMachine !== 'ALL' && item['รหัสรถ'] !== selectedMachine) return false;
+                 return true;
+             };
+
+             // 2. Time Filter (Drill Down) - Applies ONLY to the active graph mode
+             const matchesTime = (item) => {
+                 const d = parseDate(item['วันที่']);
+                 if (!d) return false;
+
+                 if (view === 'month') {
+                     // In Month view, we are looking at specific Year
+                     if (d.getFullYear() !== selectedYear) return false;
+                 } else if (view === 'day' || view === 'single_day') {
+                     // In Day view, we are looking at specific Year & Month
+                     if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) return false;
+                 }
+                 return true;
+             };
+             
+             // --- Calculate Maintenance ---
              appData.maintenance.forEach(item => {
-                 if (selectedProj !== 'ALL' && item['โครงการ'] !== selectedProj) return;
-                 totalCost += parseNumber(item['ค่าซ่อมบำรุง']);
+                 if (!matchesScope(item)) return;
+                 
+                 // Condition: Only apply Time Filter if we are viewing Maintenance Graph
+                 if (currentGraphMode === 'maintenance') {
+                     if (matchesTime(item)) totalCost += parseNumber(item['ค่าซ่อมบำรุง']);
+                 } else {
+                     // If viewing Fuel graph, show TOTAL Maintenance for this scope (Ignore time drill-down)
+                     totalCost += parseNumber(item['ค่าซ่อมบำรุง']);
+                 }
              });
 
+             // --- Calculate Fuel ---
              appData.fuel.forEach(item => {
-                 if (selectedProj !== 'ALL' && item['โครงการ'] !== selectedProj) return;
-                 totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
+                 if (!matchesScope(item)) return;
+
+                 // Condition: Only apply Time Filter if we are viewing Fuel Graph
+                 if (currentGraphMode === 'fuel') {
+                     if (matchesTime(item)) totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
+                 } else {
+                     // If viewing Maintenance graph, show TOTAL Fuel for this scope
+                     totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
+                 }
              });
              
-             const elMaint = document.getElementById('total-maintenance');
-             if(elMaint) elMaint.innerText = formatNumber(totalCost); 
-
-             const elFuel = document.getElementById('total-fuel');
-             if(elFuel) elFuel.innerText = formatNumber(totalFuel); 
+             // Animate and Update UI
+             const animateValue = (id, val) => {
+                 const el = document.getElementById(id);
+                 if(el) {
+                     el.classList.remove('fade-number');
+                     void el.offsetWidth; // trigger reflow
+                     el.innerText = formatNumber(val); 
+                     el.classList.add('fade-number');
+                 }
+             };
              
+             animateValue('total-maintenance', totalCost);
+             animateValue('total-fuel', totalFuel);
+             
+             // Project Count: Keep logic simple, count active projects in scope
              const projects = new Set();
-             appData.fuel.forEach(f => { if(f['โครงการ']) projects.add(f['โครงการ']); });
-             appData.maintenance.forEach(m => { if(m['โครงการ']) projects.add(m['โครงการ']); });
+             // We count projects based on the ACTIVE graph's context to reflect what's being shown
+             if (currentGraphMode === 'fuel') {
+                 appData.fuel.forEach(f => { if(matchesScope(f) && matchesTime(f) && f['โครงการ']) projects.add(f['โครงการ']); });
+             } else {
+                 appData.maintenance.forEach(m => { if(matchesScope(m) && matchesTime(m) && m['โครงการ']) projects.add(m['โครงการ']); });
+             }
              
-             const elProj = document.getElementById('total-projects');
-             if(elProj) elProj.innerText = projects.size;
+             animateValue('total-projects', projects.size);
              
-             const scopeLabel = selectedProj === 'ALL' ? 'ทั้งหมด' : selectedProj;
+             // Update Labels to reflect context
+             let scopeLabel = selectedProject === 'ALL' ? '' : ` (${selectedProject})`;
+             
+             // Create Time Label
+             let timeLabel = '';
+             if (view === 'month') timeLabel = ` (ปี ${selectedYear})`;
+             else if (view === 'day') {
+                 const mName = new Date(selectedYear, selectedMonth).toLocaleString('th-TH', { month: 'short' });
+                 timeLabel = ` (${mName} ${selectedYear})`;
+             }
+
+             // Update Labels selectively
              const elLabelFuel = document.getElementById('label-total-fuel');
-             if(elLabelFuel) elLabelFuel.innerText = `ปริมาณน้ำมัน (${scopeLabel})`;
+             if(elLabelFuel) {
+                 if (currentGraphMode === 'fuel') {
+                     // Active: Show Time Context
+                     elLabelFuel.innerText = `ปริมาณน้ำมัน${timeLabel}${scopeLabel}`;
+                 } else {
+                     // Inactive: Show "All Time" context
+                     elLabelFuel.innerText = `ปริมาณน้ำมัน (ภาพรวม)${scopeLabel}`;
+                 }
+             }
 
              const elLabelMaint = document.getElementById('label-total-maint');
-             if(elLabelMaint) elLabelMaint.innerText = `ค่าซ่อมบำรุง (${scopeLabel})`;
+             if(elLabelMaint) {
+                 if (currentGraphMode === 'maintenance') {
+                     // Active: Show Time Context
+                     elLabelMaint.innerText = `ค่าซ่อมบำรุง${timeLabel}${scopeLabel}`;
+                 } else {
+                     // Inactive: Show "All Time" context
+                     elLabelMaint.innerText = `ค่าซ่อมบำรุง (ภาพรวม)${scopeLabel}`;
+                 }
+             }
         }
 
         function initializeApp() {
@@ -1664,8 +1759,8 @@
              const chart = new Chart(ctx, {
                  type: 'bar', data: { labels: labels, datasets: [{ label: unit, data: data, backgroundColor: color, borderRadius: 4 }] },
                  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-                     scales: { x: { display: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }, y: { display: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9', borderDash: [2, 2] } } },
-                     onClick: (e, activeEls) => { if (activeEls.length > 0) { const index = activeEls[0].index; if (modalChartState.view === 'year') { modalChartState.year = parseInt(labels[index]); modalChartState.view = 'month'; updateModalCharts(); } else if (modalChartState.view === 'month') { modalChartState.month = index; modalChartState.view = 'day'; updateModalCharts(); } } }
+                      scales: { x: { display: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }, y: { display: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9', borderDash: [2, 2] } } },
+                      onClick: (e, activeEls) => { if (activeEls.length > 0) { const index = activeEls[0].index; if (modalChartState.view === 'year') { modalChartState.year = parseInt(labels[index]); modalChartState.view = 'month'; updateModalCharts(); } else if (modalChartState.view === 'month') { modalChartState.month = index; modalChartState.view = 'day'; updateModalCharts(); } } }
                  }
              });
              
@@ -1684,7 +1779,6 @@
                     chartState.selectedProject = 'ALL'; 
                     document.getElementById('machine-select').value = 'ALL'; 
                     resetChartToYear(); 
-                    updateAllStats(); 
                 }); 
             }
             
@@ -1711,6 +1805,7 @@
                 document.getElementById('chart-title').innerText = 'สถิติค่าซ่อมบำรุง'; 
             } 
             resetChartToYear(); 
+            // updateAllStats(); // called inside resetChartToYear
         }
 
         function resetChartToYear() { 
@@ -1719,6 +1814,7 @@
             chartState.selectedMonth = null; 
             chartState.selectedDay = null; 
             updateChart(); 
+            updateAllStats(); // Update stats on reset
         }
 
         function goBackLevel() { 
@@ -1733,6 +1829,7 @@
                 chartState.selectedYear = null; 
             } 
             updateChart(); 
+            updateAllStats(); // Update stats on back
         }
 
         function updateChart() { 
