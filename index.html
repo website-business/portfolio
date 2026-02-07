@@ -3,2088 +3,681 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Fleet // Crystal Edition</title>
-    
-    <!-- CSS Framework: Tailwind -->
+    <title>Sarayut Maungpraserd | Portfolio</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart Library: Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- CSV Parser: PapaParse -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    
-    <!-- QR Code Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    
-    <!-- Icons: FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#1e40af', // Blue 800
+                        secondary: '#3b82f6', // Blue 500
+                        dark: '#1f2937', // Gray 800
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* --- Crystal Glass Theme --- */
-        :root {
-            --font-main: 'Kanit', sans-serif;
-            
-            --text-main: #1f2937;       /* Grey 800 */
-            --text-muted: #6b7280;      /* Grey 500 */
-            
-            --primary: #6366f1;         /* Indigo 500 */
-            --primary-dark: #4f46e5;    /* Indigo 600 */
-            
-            /* Glass Variables */
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.8);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-            --glass-blur: blur(12px);
-            
-            /* Status Colors (Softer) */
-            --status-blue: #3b82f6;
-            --status-red: #ef4444;
-            --status-green: #10b981;
-            --status-purple: #8b5cf6;
-            --status-orange: #f97316;
-            --status-yellow: #eab308;
+        html {
+            scroll-behavior: smooth;
         }
-
-        body {
-            font-family: var(--font-main);
-            background: linear-gradient(135deg, #e0f2fe 0%, #eef2ff 50%, #fdf4ff 100%);
-            color: var(--text-main);
-            min-height: 100vh;
-            /* Animated Background Gradient */
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+        .glasser {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
         }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* --- Glass Card --- */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            border: var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--glass-shadow);
-            padding: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
+        /* Hide scrollbar for gallery modal */
+        body.no-scroll {
             overflow: hidden;
         }
-        
-        /* Shimmer Effect on Hover */
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: left 0.5s;
-        }
-        .glass-card:hover::before {
-            left: 100%;
-        }
-
-        .card-interactive:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
-            border-color: #fff;
-        }
-
-        /* Status Indicators as Soft Glows */
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .bg-blue-soft { background: #dbeafe; color: #1e40af; }
-        .bg-red-soft { background: #fee2e2; color: #991b1b; }
-        .bg-green-soft { background: #d1fae5; color: #065f46; }
-        .bg-purple-soft { background: #ede9fe; color: #5b21b6; }
-        .bg-orange-soft { background: #ffedd5; color: #9a3412; }
-
-        .card-selected {
-            border: 2px solid var(--primary);
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        /* --- Buttons --- */
-        .construct-btn {
-            background: rgba(255,255,255,0.6);
-            border: 1px solid rgba(255,255,255,0.8);
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .construct-btn:hover {
-            background: #fff;
-            color: var(--primary);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
-        .construct-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-            border: 1px solid var(--primary);
-        }
-
-        /* --- Modals --- */
-        .modal-overlay {
-            position: fixed; inset: 0; 
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: none; justify-content: center; align-items: center; z-index: 100;
-            opacity: 0; transition: opacity 0.3s ease;
-        }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        
-        .modal-content {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #fff;
-            border-radius: 24px;
-            width: 95%; max-width: 900px; max-height: 90vh; 
-            display: flex; flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            color: var(--text-main);
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .modal-overlay.show .modal-content { transform: scale(1); }
-
-        /* --- Icons --- */
-        .icon-box {
-            width: 48px; height: 48px;
-            border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
-            transition: all 0.3s;
-        }
-        .icon-blue { background: linear-gradient(135deg, #bfdbfe, #3b82f6); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        .icon-red { background: linear-gradient(135deg, #fecaca, #ef4444); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-        .icon-green { background: linear-gradient(135deg, #bbf7d0, #10b981); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        .icon-purple { background: linear-gradient(135deg, #e9d5ff, #8b5cf6); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
-        .icon-orange { background: linear-gradient(135deg, #fed7aa, #f97316); color: white; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
-
-        /* --- Inputs --- */
-        select, input {
-            background: rgba(255,255,255,0.8) !important;
-            border: 1px solid #e5e7eb !important;
-            color: var(--text-main) !important;
-            border-radius: 12px !important;
-            padding: 8px 12px !important;
-        }
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
-        }
-
-        /* Loading - Enhanced */
-        .loading-overlay { 
-            background: rgba(255,255,255,0.8); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-        }
-        .animate-spin-reverse { animation: spin-reverse 3s linear infinite; }
-        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Custom Scroll container for modal chart */
-        .chart-scroll-container {
-            overflow-y: auto;
-            max-height: 500px; /* Reduced for modal */
-            padding-right: 10px;
-        }
-
-        /* Number Update Animation */
-        .fade-number {
-            animation: fadeInNumber 0.5s ease-out;
-        }
-        @keyframes fadeInNumber {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
     </style>
 </head>
-<body class="antialiased text-sm">
+<body class="font-sans text-gray-700 bg-gray-50 antialiased">
 
-    <!-- Loading Screen -->
-    <div id="loading" class="loading-overlay fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden">
-        <!-- Ambient Background Globs -->
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-
-        <!-- Loader Content -->
-        <div class="relative z-10 flex flex-col items-center">
-            <div class="relative w-24 h-24 mb-8">
-                <!-- Rings -->
-                <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-transparent border-b-purple-500 border-l-transparent animate-spin"></div>
-                <div class="absolute inset-3 rounded-full border-4 border-t-transparent border-r-blue-400 border-b-transparent border-l-cyan-400 animate-spin-reverse"></div>
-                <!-- Center Icon -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fas fa-cube text-3xl text-indigo-600/80"></i>
+    <!-- Navigation -->
+    <nav class="fixed w-full z-40 glasser shadow-sm transition-all duration-300" id="navbar">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" class="text-2xl font-bold text-primary tracking-wide">SARAYUT<span class="text-secondary">.M</span></a>
                 </div>
-            </div>
-            
-            <h2 class="text-3xl font-bold text-gray-800 tracking-wider mb-2" style="font-family: 'Kanit', sans-serif;">SMART FLEET</h2>
-            <div class="flex items-center gap-2 bg-white/50 px-4 py-2 rounded-full backdrop-blur-sm border border-white/60 shadow-sm">
-                <span class="flex gap-1">
-                    <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></span>
-                    <span class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
-                </span>
-                <span class="text-xs text-gray-500 font-medium ml-1" id="loading-text">กำลังเชื่อมต่อฐานข้อมูล...</span>
-            </div>
-            
-            <button id="btn-retry" onclick="location.reload()" class="hidden mt-6 bg-red-500 text-white py-2 px-6 rounded-full shadow-lg hover:bg-red-600 transition hover:scale-105 active:scale-95">
-                <i class="fas fa-redo mr-2"></i> ลองใหม่อีกครั้ง
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal Popup -->
-    <div id="modal" class="modal-overlay">
-        <div class="modal-content">
-            <!-- Header -->
-            <div class="px-8 py-5 flex justify-between items-center border-b border-gray-100">
-                <h3 class="text-xl font-bold flex items-center gap-3 text-[var(--primary-dark)]">
-                    <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-[var(--primary)]">
-                        <i class="fas fa-folder-open" id="modal-icon-class"></i>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#home" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">หน้าแรก</a>
+                        <a href="#about" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">ข้อมูลส่วนตัว</a>
+                        <a href="#experience" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">ประสบการณ์</a>
+                        <a href="#education" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">การศึกษา</a>
+                        <a href="#certificates" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">เกียรติบัตร</a>
+                        <a href="#contact" class="bg-primary text-white hover:bg-blue-800 px-4 py-2 rounded-full text-sm font-medium transition">ติดต่อ</a>
                     </div>
-                    <span id="modal-title">รายงาน</span>
-                </h3>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <!-- Filter Bar (Hidden by default) -->
-            <div id="modal-filter-bar" class="px-8 py-4 bg-gray-50/50 border-b border-gray-100 hidden">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="relative flex-grow group">
-                        <i class="fas fa-search absolute left-4 top-3 text-gray-400 group-focus-within:text-[var(--primary)] transition"></i>
-                        <input type="text" id="machine-search" oninput="filterModalList()" placeholder="ค้นหา รหัส หรือ ทะเบียน..." 
-                            class="w-full pl-11 pr-4 py-2.5 text-sm transition focus:bg-white">
-                    </div>
-                    <div class="relative min-w-[180px]">
-                        <select id="machine-type-filter" onchange="filterModalList()" class="w-full py-2.5 pl-4 pr-10 text-sm cursor-pointer appearance-none">
-                            <option value="">ทุกประเภท</option>
-                        </select>
-                        <i class="fas fa-filter absolute right-4 top-3 text-gray-400 pointer-events-none"></i>
-                    </div>
-                    <button id="btn-print-qr" onclick="printQRCodes()" class="construct-btn flex items-center gap-2 whitespace-nowrap hidden bg-white">
-                        <i class="fas fa-print text-[var(--primary)]"></i> พิมพ์ QR
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" onclick="toggleMobileMenu()" class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
-
-            <div class="p-8 overflow-y-auto" style="min-height: 200px;" id="modal-body-container">
-                <div id="modal-body" class="space-y-4"></div>
-            </div>
-            <div class="px-8 py-5 bg-gray-50/50 border-t border-gray-100 text-right">
-                <button onclick="closeModal()" class="construct-btn px-8 bg-white border-transparent shadow-sm text-gray-600 hover:text-gray-900">ปิดหน้าต่าง</button>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-white shadow-lg" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">หน้าแรก</a>
+                <a href="#about" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">ข้อมูลส่วนตัว</a>
+                <a href="#experience" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">ประสบการณ์</a>
+                <a href="#education" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">การศึกษา</a>
+                <a href="#certificates" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">เกียรติบัตร</a>
+                <a href="#contact" class="block bg-primary text-white px-3 py-2 rounded-md text-base font-medium mt-4">ติดต่อ</a>
             </div>
         </div>
-    </div>
-    
-    <!-- QR Scanner Modal -->
-    <div id="qr-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 420px;">
-            <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100">
-                <h3 class="text-lg font-bold flex items-center gap-2 text-[var(--primary)]">
-                    <i class="fas fa-qrcode"></i> สแกน QR CODE
-                </h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-            <div class="p-6 flex justify-center bg-gray-50 rounded-b-3xl">
-                <div id="qr-reader" class="rounded-2xl overflow-hidden shadow-sm border border-gray-200 w-full"></div>
-            </div>
-            <div class="px-6 py-3 text-center text-gray-500 text-sm bg-white rounded-b-3xl">
-                ส่องกล้องไปที่ QR Code เพื่อดูข้อมูล
-            </div>
-        </div>
-    </div>
+    </nav>
 
-    <!-- Sub Modal (Daily Detail Popup) -->
-    <div id="sub-modal" class="modal-overlay" style="z-index: 200;">
-        <div class="modal-content" style="max-width: 600px;"> <!-- Expanded width for chart -->
-            <div class="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="text-lg font-bold flex items-center gap-2">
-                    <i class="fas fa-calendar-day"></i> <span id="sub-modal-title">DAILY LOG</span>
-                </h3>
-                <button onclick="closeSubModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto bg-gray-50" style="min-height: 200px; max-height: 70vh;" id="sub-modal-body">
-                <!-- Daily items here -->
-            </div>
-            <div class="px-6 py-4 bg-white border-t border-gray-100 text-right">
-                <button onclick="closeSubModal()" class="construct-btn px-6">ปิด</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div id="main-content" class="container mx-auto px-4 py-8 max-w-[1400px]" style="display: none;">
-        
-        <!-- Header Section -->
-        <header class="mb-10 flex flex-col md:flex-row justify-between items-end md:items-center gap-6">
-            <div class="flex items-center gap-5 w-full md:w-auto">
-                <div class="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center text-[var(--primary)] transform rotate-6 hover:rotate-0 transition duration-500 cursor-pointer">
-                    <i class="fas fa-cube text-3xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold text-[var(--text-main)] tracking-tight">
-                        ระบบจัดการ<span class="text-[var(--primary)]">เครื่องจักร</span>
+    <!-- Hero Section -->
+    <section id="home" class="pt-24 pb-12 md:pt-32 md:pb-24 bg-gradient-to-br from-white to-blue-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col-reverse md:flex-row items-center justify-between">
+                <div class="w-full md:w-1/2 mt-8 md:mt-0 text-center md:text-left">
+                    <p class="text-secondary font-semibold text-lg mb-2">สวัสดีครับ ผมชื่อ</p>
+                    <h1 class="text-4xl md:text-6xl font-bold text-dark mb-4 leading-tight">
+                        ศรายุทธ <br>
+                        <span class="text-primary">ม่วงประเสริฐ</span>
                     </h1>
-                    <div class="text-[var(--text-muted)] text-sm font-light mt-1 flex items-center gap-2">
-                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> ไซต์งาน: อัลฟ่า (Alpha Site)
+                    <h2 class="text-xl md:text-2xl text-gray-600 mb-6 font-medium">
+                        Electrical Engineer & Tech Educator
+                    </h2>
+                    <p class="text-gray-500 mb-8 max-w-lg mx-auto md:mx-0 leading-relaxed">
+                        วิศวกรและนักการศึกษาที่มีประสบการณ์ด้านการออกแบบไฟฟ้า, Training Specialist และการสอนนวัตกรรม พร้อมเรียนรู้และพัฒนาตนเองอยู่เสมอ
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <a href="#contact" class="bg-primary text-white px-8 py-3 rounded-full font-medium hover:bg-blue-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            ติดต่อผม
+                        </a>
+                        <a href="#certificates" class="border-2 border-primary text-primary px-8 py-3 rounded-full font-medium hover:bg-blue-50 transition">
+                            ดูผลงาน
+                        </a>
                     </div>
                 </div>
-            </div>
-            
-            <div class="flex items-center gap-4 bg-white/60 backdrop-blur-md p-2 pl-4 rounded-2xl shadow-sm border border-white/50">
-                <div class="text-right mr-2">
-                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">อัปเดตล่าสุด</div>
-                    <div class="text-sm font-bold text-[var(--primary)]" id="current-date">--/--/----</div>
-                </div>
-                
-                <button onclick="openQRScanner()" class="bg-white hover:bg-gray-50 text-[var(--primary)] p-3 rounded-xl shadow-sm border border-gray-100 transition hover:shadow-md">
-                    <i class="fas fa-qrcode text-lg"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Stats Overview Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 mb-8">
-            <!-- 1. All Machines -->
-            <div class="glass-card card-interactive cursor-pointer group" onclick="openModal('all')">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-gray-400 text-xs font-semibold mb-2">เครื่องจักรทั้งหมด</div>
-                        <div class="text-3xl font-bold text-gray-700 group-hover:text-blue-500 transition" id="total-machines">0</div>
-                    </div>
-                    <div class="icon-box icon-blue">
-                        <i class="fas fa-truck"></i>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 border-t border-dashed border-gray-200">
-                    <span class="text-[10px] text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium">พร้อมใช้งาน</span>
-                </div>
-            </div>
-            
-            <!-- 2. ALERTS CARD -->
-            <div class="glass-card card-interactive cursor-pointer group" onclick="openModal('alerts')">
-                <div class="flex justify-between items-start h-full">
-                    <div class="w-full flex flex-col justify-between">
-                        <div class="flex justify-between items-start w-full mb-2">
-                            <div class="text-gray-400 text-xs font-semibold">การแจ้งเตือน</div>
-                            <div class="icon-box icon-red" style="width: 36px; height: 36px; font-size: 1rem;">
-                                <i class="fas fa-bell"></i>
-                            </div>
-                        </div>
+                <div class="w-full md:w-1/2 flex justify-center md:justify-end relative">
+                    <div class="relative w-64 h-64 md:w-80 md:h-80">
+                        <div class="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                        <!-- IMPORTANT: Replace src with your actual image path e.g., images/profile.jpg -->
+                        <img src="images/profile.jpg" onerror="this.src='https://placehold.co/400x400/1e40af/ffffff?text=Profile+Pic'" alt="Sarayut Maungpraserd" class="relative w-full h-full object-cover rounded-full border-4 border-white shadow-2xl z-10">
                         
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs text-red-500 font-medium flex items-center gap-1"><span class="status-dot bg-red-500"></span> หมดอายุ</span>
-                                <span class="font-bold text-lg text-gray-700" id="val-expired">0</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs text-orange-500 font-medium flex items-center gap-1"><span class="status-dot bg-orange-400"></span> ใกล้หมด</span>
-                                <span class="font-bold text-lg text-gray-700" id="val-warning">0</span>
-                            </div>
+                        <!-- Floating badges -->
+                        <div class="absolute top-0 right-0 bg-white p-3 rounded-xl shadow-lg z-20 animate-bounce" style="animation-duration: 3s;">
+                            <i class="fas fa-microchip text-primary text-2xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-0 bg-white p-3 rounded-xl shadow-lg z-20 animate-bounce" style="animation-duration: 4s;">
+                            <i class="fas fa-robot text-secondary text-2xl"></i>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- 3. Fuel -->
-            <div id="card-fuel" class="glass-card card-interactive cursor-pointer card-selected" onclick="switchGraphMode('fuel')">
-                <div class="flex justify-between items-start">
-                    <div class="overflow-hidden">
-                        <div class="text-green-500 text-xs font-semibold mb-2" id="label-total-fuel">ปริมาณน้ำมัน</div>
-                        <div class="text-3xl font-bold text-gray-700 truncate fade-number" id="total-fuel">0</div>
-                    </div>
-                    <div class="icon-box icon-green">
-                        <i class="fas fa-gas-pump"></i>
-                    </div>
-                </div>
-                <div class="mt-4 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-green-500 rounded-full" style="width: 65%"></div>
-                </div>
-            </div>
-
-            <!-- 4. Maintenance -->
-            <div id="card-maintenance" class="glass-card card-interactive cursor-pointer" onclick="switchGraphMode('maintenance')">
-                <div class="flex justify-between items-start">
-                    <div class="overflow-hidden">
-                        <div class="text-purple-500 text-xs font-semibold mb-2" id="label-total-maint">ค่าซ่อมบำรุง</div>
-                        <div class="text-3xl font-bold text-gray-700 truncate fade-number" id="total-maintenance">0</div>
-                    </div>
-                    <div class="icon-box icon-purple">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                </div>
-                <div class="mt-4 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-purple-500 rounded-full" style="width: 40%"></div>
-                </div>
-            </div>
-
-             <!-- 5. Project Card -->
-            <div id="card-project" class="glass-card card-interactive cursor-pointer" onclick="openModal('project')">
-                <div class="flex justify-between items-start">
-                    <div class="overflow-hidden">
-                        <div class="text-orange-500 text-xs font-semibold mb-2">โครงการ</div>
-                        <div class="text-3xl font-bold text-gray-700 fade-number" id="total-projects">0</div>
-                    </div>
-                    <div class="icon-box icon-orange">
-                        <i class="fas fa-building"></i>
-                    </div>
-                </div>
-                 <div class="mt-4 pt-3 border-t border-dashed border-gray-200 text-right">
-                    <span class="text-[10px] text-gray-400 flex items-center justify-end gap-1">ดูรายละเอียด <i class="fas fa-chevron-right"></i></span>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- Main Chart Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- About & Contact Info Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-dark inline-block border-b-4 border-primary pb-2">ข้อมูลส่วนตัว</h2>
+            </div>
             
-            <!-- Left: Trend Chart (Timeline - Reverted) -->
-            <div class="glass-card flex flex-col lg:col-span-2 min-h-[500px]">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
-                            <span class="w-1.5 h-6 bg-[var(--primary)] rounded-full"></span>
-                            <span id="chart-title">สถิติการใช้น้ำมัน</span>
-                        </h2>
-                        <div id="chart-breadcrumb" class="text-xs text-gray-400 mt-1 font-light ml-4">
-                            ภาพรวมรายปี
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button id="chart-home-btn" class="hidden construct-btn w-8 h-8 p-0 flex items-center justify-center rounded-full" title="HOME"><i class="fas fa-home"></i></button>
-                        <button id="chart-back-btn" class="hidden construct-btn px-3 py-1 text-xs" title="BACK"><i class="fas fa-arrow-left mr-1"></i> ย้อนกลับ</button>
-                        
-                        <div class="relative group w-full sm:w-auto min-w-[200px]" id="machine-select-container">
-                            <select id="machine-select" class="w-full appearance-none py-2 px-4 pr-10 text-sm cursor-pointer bg-gray-50 border-transparent focus:bg-white font-medium text-gray-600">
-                                <option value="ALL">ภาพรวมทั้งหมด (Overview)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="bg-blue-50 p-8 rounded-2xl shadow-sm">
+                    <h3 class="text-2xl font-bold text-dark mb-6">เกี่ยวกับผม</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="font-semibold w-32 text-gray-900">ชื่อเล่น:</span>
+                            <span class="text-gray-600">นิก (Nick)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="font-semibold w-32 text-gray-900">อายุ:</span>
+                            <span class="text-gray-600">28 ปี</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="font-semibold w-32 text-gray-900">ภูมิลำเนา:</span>
+                            <span class="text-gray-600">พิจิตร</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="font-semibold w-32 text-gray-900">งานอดิเรก:</span>
+                            <span class="text-gray-600">ดูซีรีย์, อ่านนิยาย, เล่นเกมส์</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="relative flex-grow w-full bg-white/40 rounded-3xl p-4 border border-white/50 shadow-inner">
-                    <canvas id="trendChart"></canvas>
+
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-dark mb-4">ช่องทางการติดต่อ</h3>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <a href="tel:0800508823" class="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition group">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-primary group-hover:text-white transition">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">โทรศัพท์</p>
+                                <p class="font-semibold text-dark">080 050 8823</p>
+                            </div>
+                        </a>
+
+                        <a href="mailto:nickdnc@gmail.com" class="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition group">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-red-500 group-hover:text-white transition">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">อีเมล</p>
+                                <p class="font-semibold text-dark text-sm">nickdnc@gmail.com</p>
+                            </div>
+                        </a>
+
+                        <a href="#" class="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition group">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-green-500 group-hover:text-white transition">
+                                <i class="fab fa-line text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">LINE ID</p>
+                                <p class="font-semibold text-dark">nickasnick</p>
+                            </div>
+                        </a>
+
+                        <a href="https://facebook.com" target="_blank" class="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition group">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                                <i class="fab fa-facebook-f"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Facebook</p>
+                                <p class="font-semibold text-dark text-sm">Sarayut Maungpraserd</p>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Right: Top 10 Chart (With View All Button) -->
-            <div class="glass-card flex flex-col min-h-[500px]">
-                <div class="mb-6 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
-                            <i class="fas fa-crown text-yellow-400"></i>
-                            TOP 10
-                        </h2>
-                        <div class="text-xs text-gray-400 mt-1">เรียงลำดับจากมากไปน้อย</div>
+    <!-- Work Experience Section -->
+    <section id="experience" class="py-16 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-secondary font-semibold uppercase tracking-wider text-sm">Career Path</span>
+                <h2 class="text-3xl font-bold text-dark mt-2">ประสบการณ์ทำงาน</h2>
+            </div>
+
+            <div class="relative border-l-4 border-blue-200 ml-3 md:ml-6 space-y-12">
+                
+                <!-- Hitachi -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-primary h-7 w-7 rounded-full border-4 border-white shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">Technical Training Specialist</h3>
+                                <p class="text-primary font-medium">บริษัท ฮิตาชิ เอลลิเวเตอร์ (ประเทศไทย) จำกัด</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full w-fit">ต.ค. 66 - ก.พ. 68</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>อบรมพนักงานหลักสูตรพนักงานใหม่ และพนักงานอายุงาน 1-2 ปี</li>
+                            <li>อบรมลูกค้าหลักสูตรการใช้งานลิฟต์และการช่วยเหลือผู้โดยสารติดลิฟต์เบื้องต้น</li>
+                            <li>ประเมินผลและติดตามผลการอบรม</li>
+                            <li>สร้าง ปรับปรุง พัฒนาสื่อประกอบการฝึกอบรม</li>
+                            <li>ออก OJT พนักงานช่าง</li>
+                        </ul>
+                        
+                        <!-- Added Photo Gallery Buttons (Action: Open Modal) -->
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-images text-secondary mr-2"></i> อัลบั้มรูปผลงาน (คลิกเพื่อดูรูป):
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="openGallery('1_year')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> 1 year
+                                </button>
+                                <button onclick="openGallery('2_year')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> 2 year
+                                </button>
+                                <button onclick="openGallery('newcomer')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> newcomer
+                                </button>
+                                <button onclick="openGallery('phrae_hospital')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> โรงพยาบาลแพร่
+                                </button>
+                                <button onclick="openGallery('chula_hospital')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> โรงพยาบาลจุฬาลงกรณ์
+                                </button>
+                                <button onclick="openGallery('pathum_hospital')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> โรงพยาบาลปทุมเวช
+                                </button>
+                                <button onclick="openGallery('praram9_hospital')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> โรงพยาบาลพระราม 9
+                                </button>
+                                <button onclick="openGallery('yuwaprasart')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> โรงพยาบาลยุวประสาทฯ
+                                </button>
+                                <button onclick="openGallery('audit_office')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> ตรวจเงินแผ่นดิน(สตง)
+                                </button>
+                                <button onclick="openGallery('mahachai2')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> รพ.มหาชัย2
+                                </button>
+                                <button onclick="openGallery('rama_bangplee')" class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center cursor-pointer">
+                                    <i class="far fa-images mr-1.5"></i> รพ.รามาบางพลี
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
-                    <button onclick="openModal('ranking')" class="text-xs bg-indigo-50 text-[var(--primary)] px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition font-medium">
-                        ดูทั้งหมด <i class="fas fa-list-ol ml-1"></i>
+                </div>
+
+                <!-- Delta -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">Electrical Design Engineer</h3>
+                                <p class="text-primary font-medium">บริษัท เดลต้า อีเลคโทรนิคส์ (ประเทศไทย) จำกัด (มหาชน)</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">มี.ค. 66 - ส.ค. 66</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>ออกแบบวงจรเพาเวอร์ซัพพลาย</li>
+                            <li>ทดสอบการทำงาน หาประสิทธิภาพ หา power loss</li>
+                            <li>ทดสอบ EMI ทั้ง CE และ RE</li>
+                            <li>ปรับปรุงสัญญาณรบกวนที่เกิดจากตัวงาน</li>
+                            <li>อัพเดท BOM (Bill of Materials) ของโปรเจค</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Technical College -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">ครูพิเศษสอน</h3>
+                                <p class="text-primary font-medium">วิทยาลัยเทคนิคพิจิตร</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">ม.ค. 64 - ธ.ค. 65</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>ครูผู้สอนวิชา: การควบคุมนิวเมติกส์ฯ, ไมโครคอนโทรลเลอร์, PLC เบื้องต้น, หุ่นยนต์เบื้องต้น</li>
+                            <li>ครูผู้ควบคุมทีมแข่งหุ่นยนต์ และดูแลสิ่งประดิษฐ์ทั้งหมด</li>
+                            <li>ผู้ช่วยหัวหน้างานวิจัยนวัตกรรม / ทะเบียน / หลักสูตร / สื่อการสอน</li>
+                            <li>ครูที่ปรึกษา</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Cal-Comp -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">Operator</h3>
+                                <p class="text-primary font-medium">บริษัท แคล-คอมพ์อีเล็คโทรนิคส์ (ประเทศไทย)</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">มี.ค. 60 - ก.ย. 60</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>ซ่อมแผ่นวงจรฮาร์ดดิสที่เสียจากไลน์ผลิตและจากลูกค้า</li>
+                            <li>Test แผ่นวงจรที่ซ่อมเสร็จแล้ว</li>
+                            <li>ซ่อมเครื่องเทสแผ่น PCB</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-dark inline-block border-b-4 border-primary pb-2">ประวัติการศึกษา</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Bachelor -->
+                <div class="bg-white border border-blue-100 p-6 rounded-xl shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-primary text-white p-3 rounded-lg mr-4">
+                            <i class="fas fa-graduation-cap text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">2561 - 2562</p>
+                            <h3 class="text-lg font-bold">ปริญญาตรี (เกียรตินิยมอันดับ 2)</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 font-medium">มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ</p>
+                    <p class="text-gray-600 text-sm">สาขาวิชาเทคโนโลยีไฟฟ้าและอิเล็กทรอนิกส์</p>
+                    <p class="text-secondary font-semibold mt-2">GPA: 3.37</p>
+                </div>
+
+                <!-- Teaching Cert -->
+                <div class="bg-white border border-blue-100 p-6 rounded-xl shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-secondary text-white p-3 rounded-lg mr-4">
+                            <i class="fas fa-certificate text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">2564 - 2565</p>
+                            <h3 class="text-lg font-bold">ประกาศนียบัตรวิชาชีพครู</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 font-medium">มหาวิทยาลัยราชภัฏพิบูลสงคราม</p>
+                    <p class="text-secondary font-semibold mt-2">GPA: 3.87</p>
+                </div>
+
+                <!-- Vocational -->
+                <div class="bg-white border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-gray-200 text-gray-600 p-3 rounded-lg mr-4">
+                            <i class="fas fa-tools text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">2556 - 2561</p>
+                            <h3 class="text-lg font-bold">ปวช. – ปวส.</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 font-medium">วิทยาลัยเทคนิคพิจิตร</p>
+                    <p class="text-gray-600 text-sm">แผนกวิชาช่างอิเล็กทรอนิกส์</p>
+                </div>
+
+                <!-- High School -->
+                <div class="bg-white border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-gray-200 text-gray-600 p-3 rounded-lg mr-4">
+                            <i class="fas fa-school text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">2552 - 2555</p>
+                            <h3 class="text-lg font-bold">มัธยมศึกษาตอนต้น</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 font-medium">โรงเรียนพิจิตรพิทยาคม</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificates/Portfolio Section -->
+    <section id="certificates" class="py-16 bg-blue-900 text-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-blue-300 font-semibold uppercase tracking-wider text-sm">Achievements</span>
+                <h2 class="text-3xl font-bold mt-2">เกียรติบัตรและผลงาน</h2>
+                <p class="text-blue-200 mt-2">รางวัลและการอบรมเพื่อพัฒนาทักษะ</p>
+            </div>
+
+            <!-- Grid Layout for Images -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="images/cert1.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate+1'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                            <span class="text-white font-medium border border-white px-4 py-2 rounded">ดูรูปขยาย</span>
+                        </div>
+                    </div>
+                    <div class="p-4 text-gray-800">
+                        <h4 class="font-bold text-lg mb-1">สิ่งประดิษฐ์ด้านการประกอบอาชีพ</h4>
+                        <p class="text-sm text-gray-600">รางวัลชมเชย ระดับเหรียญเงิน (ระดับชาติ)</p>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="images/cert2.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate+2'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-4 text-gray-800">
+                        <h4 class="font-bold text-lg mb-1">นวัตกรรมซอฟต์แวร์</h4>
+                        <p class="text-sm text-gray-600">รางวัลชมเชย ระดับเหรียญทอง</p>
+                    </div>
+                </div>
+                 <!-- Card 3 -->
+                 <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="images/cert3.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate+3'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-4 text-gray-800">
+                        <h4 class="font-bold text-lg mb-1">สิ่งประดิษฐ์เพื่อประโยชน์สาธารณะ</h4>
+                        <p class="text-sm text-gray-600">รางวัลชมเชย ระดับเหรียญเงิน</p>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="images/cert4.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Hour+of+Code'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-4 text-gray-800">
+                        <h4 class="font-bold text-lg mb-1">Hour of Code</h4>
+                        <p class="text-sm text-gray-600">Computer Science Concepts</p>
+                    </div>
+                </div>
+                <!-- Card 5 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="images/cert5.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Robot+Maintenance'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-4 text-gray-800">
+                        <h4 class="font-bold text-lg mb-1">การซ่อมบำรุงหุ่นยนต์อุตสาหกรรม</h4>
+                        <p class="text-sm text-gray-600">กรมพัฒนาฝีมือแรงงาน</p>
+                    </div>
+                </div>
+                <!-- Card 6 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="images/cert6.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=STEM+Education'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-4 text-gray-800">
+                        <h4 class="font-bold text-lg mb-1">อบรม STEM Education</h4>
+                        <p class="text-sm text-gray-600">วิทยาลัยเทคนิคพิจิตร</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <p class="text-blue-200 text-sm">รูปภาพทั้งหมดถูกจัดเก็บใน GitHub Repository</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-900 text-gray-300 py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold text-white mb-6">Contact Me</h2>
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="https://facebook.com" class="hover:text-primary transition text-2xl"><i class="fab fa-facebook"></i></a>
+                <a href="mailto:nickdnc@gmail.com" class="hover:text-primary transition text-2xl"><i class="fas fa-envelope"></i></a>
+                <a href="#" class="hover:text-primary transition text-2xl"><i class="fab fa-line"></i></a>
+                <a href="tel:0800508823" class="hover:text-primary transition text-2xl"><i class="fas fa-phone"></i></a>
+            </div>
+            <p class="text-sm text-gray-500">
+                &copy; 2024 Sarayut Maungpraserd. All Rights Reserved. <br>
+                Designed for GitHub Pages Portfolio.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Gallery Modal (Hidden by default) -->
+    <div id="gallery-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeGallery()"></div>
+
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-5xl">
+                
+                <!-- Modal Header -->
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-900" id="modal-title">Gallery</h3>
+                    <button type="button" onclick="closeGallery()" class="text-gray-400 hover:text-red-500 transition focus:outline-none">
+                        <i class="fas fa-times text-2xl"></i>
                     </button>
                 </div>
-                <div class="relative flex-grow w-full">
-                    <canvas id="rankChart"></canvas>
+
+                <!-- Modal Body (Images go here) -->
+                <div class="bg-gray-100 px-4 py-6 sm:px-6 h-[70vh] overflow-y-auto">
+                    <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Dynamic Content will be injected here via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                    <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" onclick="closeGallery()">ปิดหน้าต่าง</button>
                 </div>
             </div>
-            
         </div>
-
     </div>
 
     <!-- Scripts -->
     <script>
-        // --- Configuration ---
-        Chart.defaults.font.family = "'Kanit', sans-serif";
-        Chart.defaults.font.size = 12;
-        Chart.defaults.responsive = true;
-        Chart.defaults.maintainAspectRatio = false;
-        Chart.defaults.color = "#64748b"; // slate-500
-        Chart.defaults.borderColor = "rgba(0,0,0,0.05)";
-        
-        // Tooltip Clean Style
-        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-        Chart.defaults.plugins.tooltip.titleColor = '#1f2937';
-        Chart.defaults.plugins.tooltip.bodyColor = '#4b5563';
-        Chart.defaults.plugins.tooltip.borderColor = '#e5e7eb';
-        Chart.defaults.plugins.tooltip.borderWidth = 1;
-        Chart.defaults.plugins.tooltip.cornerRadius = 12;
-        Chart.defaults.plugins.tooltip.padding = 12;
-        Chart.defaults.plugins.tooltip.displayColors = true;
-        Chart.defaults.plugins.tooltip.boxPadding = 4;
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
 
-        const SHEET_URLS = {
-            machines: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLxlqlfXntTk-z4x45kGjZ1OjHFnpCeaqjGZGpkfohr3difiJQsI-p-3iZwgyM7UO35kRztltMKgbd/pub?gid=0&single=true&output=csv',
-            fuel: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLxlqlfXntTk-z4x45kGjZ1OjHFnpCeaqjGZGpkfohr3difiJQsI-p-3iZwgyM7UO35kRztltMKgbd/pub?gid=700157187&single=true&output=csv',
-            maintenance: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLxlqlfXntTk-z4x45kGjZ1OjHFnpCeaqjGZGpkfohr3difiJQsI-p-3iZwgyM7UO35kRztltMKgbd/pub?gid=1964968763&single=true&output=csv'
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-md');
+                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+            } else {
+                navbar.classList.remove('shadow-md');
+                navbar.style.background = 'rgba(255, 255, 255, 0.9)';
+            }
+        });
+
+        // ----------------------------------------------------
+        // DATA CONFIGURATION
+        // ----------------------------------------------------
+        
+        const galleryData = {
+            '1_year': {
+                title: 'ผลงาน 1 Year',
+                folder: 'images/hitachi/1 year',
+                images: ['1.jpg', '2.jpg']
+            },
+            '2_year': {
+                title: 'ผลงาน 2 Year',
+                folder: 'images/hitachi/2 year',
+                images: ['1.jpg', '2.jpg']
+            },
+            'newcomer': {
+                title: 'หลักสูตร Newcomer',
+                folder: 'images/hitachi/newcomer',
+                images: ['1.jpg', '2.jpg']
+            },
+            'phrae_hospital': {
+                title: 'โรงพยาบาลแพร่',
+                folder: 'images/hitachi/โรงพยาบาลแพร่',
+                images: ['1.jpg', '2.jpg']
+            },
+            'chula_hospital': {
+                title: 'โรงพยาบาลจุฬาลงกรณ์',
+                folder: 'images/hitachi/โรงพยาบาลจุฬาลงกรณ์',
+                images: ['1.jpg', '2.jpg']
+            },
+            'pathum_hospital': {
+                title: 'โรงพยาบาลปทุมเวช',
+                folder: 'images/hitachi/โรงพยาบาลปทุมเวช',
+                images: ['1.jpg', '2.jpg']
+            },
+            'praram9_hospital': {
+                title: 'โรงพยาบาลพระราม 9',
+                folder: 'images/hitachi/โรงพยาบาลพระราม 9',
+                images: ['1.jpg', '2.jpg']
+            },
+            'yuwaprasart': {
+                title: 'โรงพยาบาลยุวประสาทไวทโยปถัมภ์',
+                folder: 'images/hitachi/โรงพยาบาลยุวประสาทไวทโยปถัมภ์',
+                images: ['1.jpg', '2.jpg']
+            },
+            'audit_office': {
+                title: 'ตรวจเงินแผ่นดิน (สตง)',
+                folder: 'images/hitachi/ตรวจเงินแผ่นดิน(สตง)',
+                images: ['1.jpg', '2.jpg']
+            },
+            'mahachai2': {
+                title: 'โรงพยาบาลมหาชัย 2',
+                folder: 'images/hitachi/รพ.มหาชัย2',
+                images: ['1.jpg', '2.jpg']
+            },
+            'rama_bangplee': {
+                title: 'รพ.รามาบางพลี อาคารกายวิภาคคลินิก',
+                folder: 'images/hitachi/รพ.รามาบางพลี อาคารกายวิภาคคลินิก',
+                images: ['1.jpg', '2.jpg']
+            }
         };
 
-        let appData = { machines: [], fuel: [], maintenance: [], alerts: { expired: [], warning: [], all: [] } };
-        let currentGraphMode = 'fuel'; 
-        let chartState = { trendInstance: null, rankInstance: null, view: 'year', selectedMachine: 'ALL', selectedProject: 'ALL', selectedYear: null, selectedMonth: null, selectedDay: null };
-        let lastModalType = 'all'; 
-        
-        let modalFuelChartInstance = null;
-        let modalMaintChartInstance = null;
-        let modalProjectChartInstance = null;
-        let modalDailyChartInstance = null;
-        let modalRankingChartInstance = null; 
-        let modalChartState = { view: 'year', year: null, month: null, machineCode: null }; 
-        let html5QrCode = null;
-
-        // --- Helpers ---
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                if (parts.length === 3) {
-                    let day = parseInt(parts[0], 10);
-                    let month = parseInt(parts[1], 10) - 1; 
-                    let year = parseInt(parts[2], 10);
-                    if (year > 2400) year -= 543;
-                    const d = new Date(year, month, day);
-                    if (!isNaN(d.getTime())) return d;
-                }
+        // Function to Open Gallery Modal
+        function openGallery(key) {
+            const data = galleryData[key];
+            if (!data) {
+                alert('ไม่พบข้อมูลรูปภาพสำหรับหมวดหมู่นี้');
+                return;
             }
-            let d = new Date(dateStr);
-            if (!isNaN(d.getTime())) {
-                 if (d.getFullYear() > 2400) { d.setFullYear(d.getFullYear() - 543); }
-                 return d;
-            }
-            return null;
-        }
-        function formatDateTH(date) { return date ? date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : '-'; }
-        function formatNumber(num) { return num.toLocaleString('th-TH', { maximumFractionDigits: 0 }); }
-        function parseNumber(val) {
-            if (typeof val === 'number') return val;
-            if (!val) return 0;
-            return parseFloat(String(val).replace(/,/g, '')) || 0;
-        }
-        function getCssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
-        function updateChartColors() {
-            if(currentGraphMode === 'fuel') updateChart();
-            else updateChart(); 
-            
-            if(document.getElementById('modal').classList.contains('show')) {
-                 if (lastModalType === 'project' && modalChartState.projectName) { renderModalProjectChart(); }
-                 else if (lastModalType === 'ranking') { renderFullRankingChart(); }
-                 else if (modalChartState.machineCode) { updateModalCharts(); }
-            }
-        }
+            // Set Title
+            document.getElementById('modal-title').innerText = data.title;
 
-        // --- Handle Chart Click (Drill down) ---
-        function handleTrendClick(index, labels) {
-            if (chartState.view === 'year') {
-                chartState.selectedYear = parseInt(labels[index]); 
-                chartState.view = 'month'; 
-                updateChart(); 
-                updateAllStats(); // Update stats when drilling down
-            } else if (chartState.view === 'month') {
-                chartState.selectedMonth = index; 
-                chartState.view = 'day'; 
-                updateChart(); 
-                updateAllStats(); // Update stats when drilling down
-            } else if (chartState.view === 'day' || chartState.view === 'single_day') {
-                 showMainDailyDetail(index + 1);
-            }
-        }
-        
-        function handleRankClick(index, labels) {
-            const machineCode = labels[index];
-            // Pass current global context to the detail modal
-            const context = {
-                view: chartState.view,
-                year: chartState.selectedYear,
-                month: chartState.selectedMonth
-            };
-            showMachineDetails(machineCode, context);
-        }
+            // Generate Images
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = ''; // Clear old content
 
-        // MODIFIED: Now shows a Graph instead of List Cards
-        function showMainDailyDetail(day) {
-            const year = chartState.selectedYear;
-            const month = chartState.selectedMonth;
-            const mode = currentGraphMode; 
-            
-            let dataSource = mode === 'fuel' ? appData.fuel : appData.maintenance;
-            let valKey = mode === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-            let unit = mode === 'fuel' ? 'ลิตร' : 'บาท';
-            
-            // Filter Data for the day
-            dataSource = dataSource.filter(item => {
-                const d = parseDate(item['วันที่']);
-                if (!d) return false;
-                
-                let match = d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
-                if (chartState.selectedProject !== 'ALL' && item['โครงการ'] !== chartState.selectedProject) match = false;
-                if (chartState.selectedMachine !== 'ALL' && item['รหัสรถ'] !== chartState.selectedMachine) match = false;
-                
-                return match;
-            });
-
-            // Group by Machine & Sort High to Low
-            const grouped = {};
-            dataSource.forEach(item => {
-                const val = parseNumber(item[valKey]);
-                const key = item['รหัสรถ'] || 'Unknown';
-                grouped[key] = (grouped[key] || 0) + val;
-            });
-            
-            const sorted = Object.entries(grouped).sort(([,a], [,b]) => b - a);
-            const labels = sorted.map(k => k[0]);
-            const data = sorted.map(k => k[1]);
-
-            const dateStr = `${day}/${month+1}/${year}`;
-            document.getElementById('sub-modal-title').innerText = `รายละเอียด: ${dateStr}`;
-            const container = document.getElementById('sub-modal-body');
-            
-            if (labels.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-400 py-12">ไม่พบรายการข้อมูล</div>`;
+            if (data.images.length === 0) {
+                grid.innerHTML = '<p class="text-center text-gray-500 col-span-3 py-10">ยังไม่มีรูปภาพในหมวดหมู่นี้</p>';
             } else {
-                // Calculate dynamic height for scrollable chart
-                const chartHeight = Math.max(300, labels.length * 40); 
-                
-                container.innerHTML = `
-                    <div style="height: ${chartHeight}px; position: relative;">
-                        <canvas id="dailyDetailChart"></canvas>
-                    </div>`;
-                
-                setTimeout(() => {
-                    const ctx = document.getElementById('dailyDetailChart').getContext('2d');
-                    if (modalDailyChartInstance) modalDailyChartInstance.destroy();
+                data.images.forEach(filename => {
+                    // Create Image Element
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'rounded-lg overflow-hidden shadow-sm hover:shadow-md transition bg-white border border-gray-200';
                     
-                    let gradient = ctx.createLinearGradient(400, 0, 0, 0); 
-                    if (currentGraphMode === 'fuel') {
-                        gradient.addColorStop(0, '#10b981'); 
-                        gradient.addColorStop(1, '#059669'); 
-                    } else {
-                        gradient.addColorStop(0, '#8b5cf6'); 
-                        gradient.addColorStop(1, '#7c3aed'); 
-                    }
-
-                    modalDailyChartInstance = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: unit,
-                                data: data,
-                                backgroundColor: gradient,
-                                borderRadius: 6,
-                                barThickness: 20
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                x: { grid: { color: '#f1f5f9', borderDash: [2, 2] }, ticks: { color: '#94a3b8' } },
-                                y: { grid: { display: false }, ticks: { color: '#1f2937', font: { weight: 'bold' } } }
-                            },
-                            onClick: (e, activeEls) => { 
-                                if(activeEls.length > 0) {
-                                    // Click on bar -> Open Machine Detail
-                                    const index = activeEls[0].index;
-                                    // Pass day context to machine details
-                                    const context = {
-                                        view: 'day',
-                                        year: chartState.selectedYear,
-                                        month: chartState.selectedMonth
-                                    };
-                                    showMachineDetails(labels[index], context);
-                                }
-                            },
-                            onHover: (e, els) => e.native.target.style.cursor = els[0] ? 'pointer' : 'default'
-                        }
-                    });
-                }, 50);
-            }
-            document.getElementById('sub-modal').classList.add('show');
-        }
-
-        function closeSubModal() {
-            if (modalDailyChartInstance) {
-                modalDailyChartInstance.destroy();
-                modalDailyChartInstance = null;
-            }
-            document.getElementById('sub-modal').classList.remove('show');
-        }
-
-        // --- Reset Modal Chart (Defined Globally) ---
-        function resetModalChartToYear() {
-            modalChartState.view = 'year';
-            modalChartState.year = null;
-            modalChartState.month = null;
-            updateModalUI();
-
-            if (modalChartState.projectName) {
-                renderModalProjectChart();
-            } else {
-                updateModalCharts();
-            }
-        }
-
-        // --- App Init ---
-        async function loadData() {
-            const fetchTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000));
-            try {
-                const [machinesRes, fuelRes, maintRes] = await Promise.race([
-                    Promise.all([
-                        fetch(SHEET_URLS.machines).then(r => { if (!r.ok) throw new Error("Net"); return r.text(); }),
-                        fetch(SHEET_URLS.fuel).then(r => { if (!r.ok) throw new Error("Net"); return r.text(); }),
-                        fetch(SHEET_URLS.maintenance).then(r => { if (!r.ok) return ""; return r.text(); }).catch(() => "") 
-                    ]),
-                    fetchTimeout
-                ]);
-                
-                appData.machines = cleanCSV(Papa.parse(machinesRes, { header: true, skipEmptyLines: true }).data);
-                appData.fuel = cleanCSV(Papa.parse(fuelRes, { header: true, skipEmptyLines: true }).data);
-                
-                if (maintRes) {
-                    const parsedMaint = Papa.parse(maintRes, { header: true, skipEmptyLines: true }).data;
-                    appData.maintenance = cleanCSV(parsedMaint);
-                    appData.maintenance.forEach(row => {
-                        const costKey = Object.keys(row).find(k => k.includes('ค่าใช้จ่าย') || k.includes('ค่าซ่อม'));
-                        if (costKey) row['ค่าซ่อมบำรุง'] = row[costKey];
-                        const projKey = Object.keys(row).find(k => k.includes('โครงการ'));
-                        if (projKey) row['โครงการ'] = row[projKey];
-                        const machineKey = Object.keys(row).find(k => k.includes('รหัสรถ') || k.includes('รหัส') || k.toLowerCase().includes('machine') || k.toLowerCase().includes('code'));
-                        if(machineKey) row['รหัสรถ'] = row[machineKey];
-                    });
-                }
-                
-                // Fuel Mapping
-                appData.fuel.forEach(row => {
-                    const valKey = Object.keys(row).find(k => k.includes('ปริมาณ') || k.includes('ลิตร') || k.toLowerCase().includes('fuel') || k.toLowerCase().includes('qty'));
-                    if (valKey) row['ปริมาณ(ลิตร)'] = row[valKey];
-                    const projKey = Object.keys(row).find(k => k.includes('โครงการ'));
-                    if (projKey) row['โครงการ'] = row[projKey];
-                    const machineKey = Object.keys(row).find(k => k.includes('รหัสรถ') || k.includes('รหัส') || k.toLowerCase().includes('machine') || k.toLowerCase().includes('code'));
-                    if(machineKey) row['รหัสรถ'] = row[machineKey];
-                });
-
-                if(!appData.machines.length || !appData.fuel.length) throw new Error("Empty Data");
-                
-                finalizeLoad();
-            } catch (error) {
-                console.error("Critical Load Error:", error);
-                document.getElementById('loading-text').innerText = "เชื่อมต่อล้มเหลว";
-                document.getElementById('loading-text').classList.add('text-red-500');
-                document.getElementById('btn-retry').classList.remove('hidden');
-            }
-        }
-
-        function cleanCSV(data) {
-            if (!data || data.length === 0) return [];
-            return data.map(row => {
-                const newRow = {};
-                Object.keys(row).forEach(key => {
-                    const cleanKey = key.trim();
-                    newRow[cleanKey] = row[key] ? row[key].trim() : "";
-                });
-                return newRow;
-            });
-        }
-
-        function finalizeLoad() {
-            appData.fuel.sort((a, b) => { const da = parseDate(a['วันที่']); const db = parseDate(b['วันที่']); return (da && db) ? da - db : 0; });
-            appData.maintenance.sort((a, b) => { const da = parseDate(a['วันที่']); const db = parseDate(b['วันที่']); return (da && db) ? da - db : 0; });
-            initializeApp();
-        }
-
-        // --- UPDATED STATS LOGIC ---
-        function updateAllStats() {
-             let totalCost = 0;
-             let totalFuel = 0;
-             
-             // Destructure state
-             const { selectedProject, selectedMachine, view, selectedYear, selectedMonth } = chartState;
-
-             // 1. Scope Filter (Project & Machine) - Applies to EVERYTHING
-             const matchesScope = (item) => {
-                 if (selectedProject !== 'ALL' && item['โครงการ'] !== selectedProject) return false;
-                 if (selectedMachine !== 'ALL' && item['รหัสรถ'] !== selectedMachine) return false;
-                 return true;
-             };
-
-             // 2. Time Filter (Drill Down) - Applies ONLY to the active graph mode
-             const matchesTime = (item) => {
-                 const d = parseDate(item['วันที่']);
-                 if (!d) return false;
-
-                 if (view === 'month') {
-                     // In Month view, we are looking at specific Year
-                     if (d.getFullYear() !== selectedYear) return false;
-                 } else if (view === 'day' || view === 'single_day') {
-                     // In Day view, we are looking at specific Year & Month
-                     if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) return false;
-                 }
-                 return true;
-             };
-             
-             // --- Calculate Maintenance ---
-             appData.maintenance.forEach(item => {
-                 if (!matchesScope(item)) return;
-                 
-                 // Condition: Only apply Time Filter if we are viewing Maintenance Graph
-                 if (currentGraphMode === 'maintenance') {
-                     if (matchesTime(item)) totalCost += parseNumber(item['ค่าซ่อมบำรุง']);
-                 } else {
-                     // If viewing Fuel graph, show TOTAL Maintenance for this scope (Ignore time drill-down)
-                     totalCost += parseNumber(item['ค่าซ่อมบำรุง']);
-                 }
-             });
-
-             // --- Calculate Fuel ---
-             appData.fuel.forEach(item => {
-                 if (!matchesScope(item)) return;
-
-                 // Condition: Only apply Time Filter if we are viewing Fuel Graph
-                 if (currentGraphMode === 'fuel') {
-                     if (matchesTime(item)) totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
-                 } else {
-                     // If viewing Maintenance graph, show TOTAL Fuel for this scope
-                     totalFuel += parseNumber(item['ปริมาณ(ลิตร)']);
-                 }
-             });
-             
-             // Animate and Update UI
-             const animateValue = (id, val) => {
-                 const el = document.getElementById(id);
-                 if(el) {
-                     el.classList.remove('fade-number');
-                     void el.offsetWidth; // trigger reflow
-                     el.innerText = formatNumber(val); 
-                     el.classList.add('fade-number');
-                 }
-             };
-             
-             animateValue('total-maintenance', totalCost);
-             animateValue('total-fuel', totalFuel);
-             
-             // Project Count: Keep logic simple, count active projects in scope
-             const projects = new Set();
-             // We count projects based on the ACTIVE graph's context to reflect what's being shown
-             if (currentGraphMode === 'fuel') {
-                 appData.fuel.forEach(f => { if(matchesScope(f) && matchesTime(f) && f['โครงการ']) projects.add(f['โครงการ']); });
-             } else {
-                 appData.maintenance.forEach(m => { if(matchesScope(m) && matchesTime(m) && m['โครงการ']) projects.add(m['โครงการ']); });
-             }
-             
-             animateValue('total-projects', projects.size);
-             
-             // Update Labels to reflect context
-             let scopeLabel = selectedProject === 'ALL' ? '' : ` (${selectedProject})`;
-             
-             // Create Time Label
-             let timeLabel = '';
-             if (view === 'month') timeLabel = ` (ปี ${selectedYear})`;
-             else if (view === 'day') {
-                 const mName = new Date(selectedYear, selectedMonth).toLocaleString('th-TH', { month: 'short' });
-                 timeLabel = ` (${mName} ${selectedYear})`;
-             }
-
-             // Update Labels selectively
-             const elLabelFuel = document.getElementById('label-total-fuel');
-             if(elLabelFuel) {
-                 if (currentGraphMode === 'fuel') {
-                     // Active: Show Time Context
-                     elLabelFuel.innerText = `ปริมาณน้ำมัน${timeLabel}${scopeLabel}`;
-                 } else {
-                     // Inactive: Show "All Time" context
-                     elLabelFuel.innerText = `ปริมาณน้ำมัน (ภาพรวม)${scopeLabel}`;
-                 }
-             }
-
-             const elLabelMaint = document.getElementById('label-total-maint');
-             if(elLabelMaint) {
-                 if (currentGraphMode === 'maintenance') {
-                     // Active: Show Time Context
-                     elLabelMaint.innerText = `ค่าซ่อมบำรุง${timeLabel}${scopeLabel}`;
-                 } else {
-                     // Inactive: Show "All Time" context
-                     elLabelMaint.innerText = `ค่าซ่อมบำรุง (ภาพรวม)${scopeLabel}`;
-                 }
-             }
-        }
-
-        function initializeApp() {
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('th-TH');
-            document.getElementById('total-machines').innerText = appData.machines.length;
-            
-            const selector = document.getElementById('machine-select');
-            const codes = [...new Set(appData.machines.map(m => m['รหัส']).filter(c => c))].sort();
-            codes.forEach(code => { const opt = document.createElement('option'); opt.value = code; opt.innerText = code; selector.appendChild(opt); });
-
-            // Reveal content first so charts have dimensions
-            document.getElementById('main-content').style.display = 'block'; 
-
-            updateAllStats();
-            updateChartColors();
-            processAlerts();
-            setupFuelChart(); // Renders charts
-            
-            // Hide loader
-            document.getElementById('loading').style.opacity = '0';
-            setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
-        }
-
-        function processAlerts() {
-            const today = new Date(); today.setHours(0,0,0,0);
-            appData.alerts.all = []; appData.alerts.expired = []; appData.alerts.warning = [];
-            const machineMap = new Map();
-            appData.machines.forEach(machine => {
-                const code = machine['รหัส']; if (!code) return;
-                if(!machineMap.has(code)) { machineMap.set(code, { info: machine, expiredIssues: [], warningIssues: [] }); }
-                const entry = machineMap.get(code);
-                const checks = [
-                    { key: 'วันที่ทะเบียนขาด', label: 'ภาษีทะเบียน', date: parseDate(machine['วันที่ทะเบียนขาด']) },
-                    { key: 'วันที่ประกัน+พรบ.ขาด', label: 'ประกัน/พ.ร.บ.', date: parseDate(machine['วันที่ประกัน+พรบ.ขาด']) }
-                ];
-                checks.forEach(check => {
-                    if (!check.date) return;
-                    const diffDays = Math.ceil((check.date - today) / (1000 * 60 * 60 * 24));
-                    const issueText = `${check.label}: ${formatDateTH(check.date)} (${diffDays <= 0 ? 'หมดอายุแล้ว' : 'เหลือ ' + diffDays + ' วัน'})`;
-                    if (diffDays <= 0) entry.expiredIssues.push(issueText);
-                    else if (diffDays <= 30) entry.warningIssues.push(issueText);
-                });
-            });
-            machineMap.forEach(data => {
-                appData.alerts.all.push(data);
-                if (data.expiredIssues.length > 0) appData.alerts.expired.push(data);
-                if (data.warningIssues.length > 0) appData.alerts.warning.push(data);
-            });
-            
-             const elExpiredVal = document.getElementById('val-expired');
-             if(elExpiredVal) elExpiredVal.innerText = appData.alerts.expired.length;
-
-             const elWarningVal = document.getElementById('val-warning');
-             if(elWarningVal) elWarningVal.innerText = appData.alerts.warning.length;
-        }
-
-        // --- Cleanup & Modal ---
-        function cleanupModalCharts() {
-            if (modalFuelChartInstance) { modalFuelChartInstance.destroy(); modalFuelChartInstance = null; }
-            if (modalMaintChartInstance) { modalMaintChartInstance.destroy(); modalMaintChartInstance = null; }
-            if (modalProjectChartInstance) { modalProjectChartInstance.destroy(); modalProjectChartInstance = null; }
-            if (modalRankingChartInstance) { modalRankingChartInstance.destroy(); modalRankingChartInstance = null; }
-        }
-        
-        // --- QR Code Logic ---
-        function printQRCodes() {
-             const printWindow = window.open('', '_blank');
-             let html = `<html><head><title>Print QR Codes</title>
-             <style>
-                body { font-family: 'Kanit', sans-serif; }
-                .qr-grid { display: flex; flex-wrap: wrap; gap: 20px; }
-                .qr-item { border: 1px solid #ddd; padding: 15px; text-align: center; width: 160px; border-radius: 8px; page-break-inside: avoid; }
-                .qr-code { width: 120px; height: 120px; }
-                .qr-label { font-weight: bold; margin-top: 10px; font-size: 16px; color: #333; }
-                .qr-plate { font-size: 12px; color: #666; margin-top: 4px; }
-             </style>
-             </head><body><div class="qr-grid">`;
-             
-             const type = lastModalType;
-             let sourceList = [];
-             if(type==='all') sourceList = appData.alerts.all.map(i=>i.info);
-             
-             if(sourceList.length === 0) sourceList = appData.machines;
-
-             sourceList.forEach(m => {
-                 const code = m['รหัส'];
-                 const plate = m['ทะเบียน'] || '-';
-                 const url = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${code}`;
-                 html += `
-                    <div class="qr-item">
-                        <img src="${url}" class="qr-code" />
-                        <div class="qr-label">${code}</div>
-                        <div class="qr-plate">${plate}</div>
-                    </div>
-                 `;
-             });
-             
-             html += `</div>
-             <script>
-                window.onload = function() { setTimeout(function(){ window.print(); }, 1000); }
-             <\/script>
-             </body></html>`;
-             printWindow.document.write(html);
-             printWindow.document.close();
-        }
-        
-        let isQrScanning = false;
-        function openQRScanner() {
-            const modal = document.getElementById('qr-modal');
-            modal.classList.add('show');
-            
-            if (!html5QrCode) {
-                 html5QrCode = new Html5Qrcode("qr-reader");
-            }
-            
-            if(isQrScanning) return;
-            isQrScanning = true;
-
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText, decodedResult) => {
-                    closeQRModal(); 
+                    const img = document.createElement('img');
+                    // Encode URI to handle Thai characters and spaces in folder names
+                    const path = encodeURI(`${data.folder}/${filename}`);
                     
-                    const machine = appData.machines.find(m => m['รหัส'] === decodedText);
-                    if(machine) {
-                        showMachineDetails(decodedText);
-                    } else {
-                        alert(`ไม่พบข้อมูลเครื่องจักร: ${decodedText}`);
-                    }
-                },
-                (errorMessage) => {
-                }
-            ).catch(err => {
-                isQrScanning = false;
-                console.error("Error starting scanner", err);
-                document.getElementById('qr-reader').innerHTML = `<div class="text-red-500 text-center p-4">ไม่สามารถเปิดกล้องได้ (โปรดตรวจสอบสิทธิ์ หรือใช้ HTTPS)</div>`;
-            });
-        }
-        
-        function closeQRModal() {
-            const modal = document.getElementById('qr-modal');
-            modal.classList.remove('show');
-            if(html5QrCode && isQrScanning) {
-                html5QrCode.stop().then(() => {
-                    isQrScanning = false;
-                }).catch((err) => {
-                    isQrScanning = false;
+                    img.src = path;
+                    img.className = 'w-full h-auto object-cover hover:scale-105 transition duration-300';
+                    img.alt = data.title;
+                    img.loading = 'lazy'; // Lazy load for performance
+
+                    // Error handling
+                    img.onerror = function() { 
+                        this.onerror = null; 
+                        this.src = 'https://placehold.co/400x300?text=Image+Not+Found'; 
+                    };
+
+                    imgContainer.appendChild(img);
+                    grid.appendChild(imgContainer);
                 });
             }
+
+            // Show Modal
+            document.getElementById('gallery-modal').classList.remove('hidden');
+            document.body.classList.add('no-scroll');
         }
 
-        // Tab Switching Logic for Alerts
-        function switchAlertTab(tabName) {
-            const btnExpired = document.getElementById('tab-expired');
-            const btnWarning = document.getElementById('tab-warning');
-            const activeClass = 'bg-red-500 text-white shadow-md border-transparent';
-            const activeWarnClass = 'bg-orange-400 text-white shadow-md border-transparent';
-            const inactiveClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
-            
-            if (tabName === 'expired') {
-                btnExpired.className = `construct-btn text-xs flex-1 ${activeClass}`;
-                btnWarning.className = `construct-btn text-xs flex-1 ${inactiveClass}`;
-                renderAlertList('expired');
-            } else {
-                btnExpired.className = `construct-btn text-xs flex-1 ${inactiveClass}`;
-                btnWarning.className = `construct-btn text-xs flex-1 ${activeWarnClass}`;
-                renderAlertList('warning');
-            }
+        // Function to Close Gallery Modal
+        function closeGallery() {
+            document.getElementById('gallery-modal').classList.add('hidden');
+            document.body.classList.remove('no-scroll');
         }
-        
-        function renderAlertList(type) {
-            const container = document.getElementById('alert-list-container');
-            let dataList = (type === 'expired') ? appData.alerts.expired : appData.alerts.warning;
-            let emptyText = (type === 'expired') ? 'ไม่มีรายการหมดอายุ' : 'ไม่มีรายการใกล้หมดอายุ';
-            
-            if (dataList.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-400 py-12 font-light">${emptyText}</div>`;
-            } else {
-                const listHTML = dataList.map(item => generateCardHTML(item, type)).join('');
-                container.innerHTML = listHTML;
-            }
-        }
-
-        function openModal(type) {
-            cleanupModalCharts();
-            lastModalType = type;
-            const modal = document.getElementById('modal'), title = document.getElementById('modal-title'), body = document.getElementById('modal-body'), icon = document.getElementById('modal-icon-class');
-            body.innerHTML = '';
-            let headerText = '';
-            
-            document.getElementById('modal-filter-bar').classList.add('hidden'); 
-            
-            // Reset Z-Index for standard modals
-            modal.style.zIndex = '';
-
-            if (type === 'alerts') {
-                headerText = 'รายการแจ้งเตือน (Alerts)';
-                icon.className = 'fas fa-bell';
-                body.innerHTML = `
-                    <div class="flex gap-4 mb-6">
-                        <button id="tab-expired" onclick="switchAlertTab('expired')" class="construct-btn text-xs flex-1 py-2.5">หมดอายุ (${appData.alerts.expired.length})</button>
-                        <button id="tab-warning" onclick="switchAlertTab('warning')" class="construct-btn text-xs flex-1 py-2.5">ใกล้หมด (${appData.alerts.warning.length})</button>
-                    </div>
-                    <div id="alert-list-container"></div>
-                `;
-                setTimeout(() => switchAlertTab('expired'), 0);
-                
-            } else if (type === 'project') {
-                headerText = 'รายการโครงการ';
-                icon.className = 'fas fa-building';
-                const projStats = {};
-                const addStat = (p, fuel, cost) => {
-                    if(!p) p = 'ไม่ระบุโครงการ';
-                    if(!projStats[p]) projStats[p] = { fuel: 0, cost: 0, name: p };
-                    projStats[p].fuel += fuel;
-                    projStats[p].cost += cost;
-                };
-                appData.fuel.forEach(f => addStat(f['โครงการ'], parseNumber(f['ปริมาณ(ลิตร)']), 0));
-                appData.maintenance.forEach(m => addStat(m['โครงการ'], 0, parseNumber(m['ค่าซ่อมบำรุง'])));
-
-                const projects = Object.values(projStats).sort((a,b) => b.cost - a.cost); 
-                if (projects.length === 0) body.innerHTML = `<div class="text-center text-gray-400 py-12">ไม่พบข้อมูลโครงการ</div>`;
-                else body.innerHTML = projects.map(p => generateProjectCardHTML(p)).join('');
-                
-            } else if (type === 'all') {
-                headerText = 'บัญชีเครื่องจักรทั้งหมด'; 
-                icon.className = 'fas fa-truck';
-                document.getElementById('modal-filter-bar').classList.remove('hidden');
-                document.getElementById('machine-search').value = '';
-                document.getElementById('btn-print-qr').classList.remove('hidden');
-                populateTypeFilter();
-                
-                filterModalList();
-            } else if (type === 'ranking') {
-                // New Ranking Modal
-                headerText = 'จัดอันดับทั้งหมด (เรียงจากมากไปน้อย)';
-                icon.className = 'fas fa-chart-bar';
-                body.innerHTML = `
-                    <div class="relative w-full chart-scroll-container">
-                        <canvas id="modalRankingChart"></canvas>
-                    </div>
-                `;
-                setTimeout(() => renderFullRankingChart(), 100);
-            } else {
-                 body.innerHTML = "Unknown Type";
-            }
-            title.innerText = headerText;
-            modal.classList.add('show');
-        }
-        
-        function populateTypeFilter() {
-            const select = document.getElementById('machine-type-filter');
-            select.innerHTML = '<option value="">ทั้งหมด (ทุกประเภท)</option>';
-            const types = [...new Set(appData.machines.map(m => m['ประเภทรถ']).filter(t => t))].sort();
-            types.forEach(type => {
-                const opt = document.createElement('option'); opt.value = type; opt.innerText = type; select.appendChild(opt);
-            });
-        }
-
-        function filterModalList() {
-            const type = lastModalType;
-            if (type !== 'all') return;
-
-            const body = document.getElementById('modal-body');
-            let sourceList = appData.alerts.all;
-            const searchText = document.getElementById('machine-search').value.toLowerCase().trim();
-            const filterType = document.getElementById('machine-type-filter').value;
-            const filteredList = sourceList.filter(item => {
-                const matchesSearch = !searchText || (item.info['รหัส']||'').toLowerCase().includes(searchText) || (item.info['ทะเบียน']||'').toLowerCase().includes(searchText);
-                const matchesType = !filterType || (item.info['ประเภทรถ'] === filterType);
-                return matchesSearch && matchesType;
-            });
-            body.innerHTML = filteredList.length === 0 ? `<div class="text-center text-gray-400 py-12">ไม่พบข้อมูลที่ค้นหา</div>` : filteredList.map(item => generateCardHTML(item, 'all')).join('');
-        }
-        
-        function closeModal() { 
-            cleanupModalCharts(); 
-            const modal = document.getElementById('modal');
-            modal.classList.remove('show'); 
-            // Reset z-index after transition to be safe
-            setTimeout(() => { modal.style.zIndex = ''; }, 300);
-        }
-        window.onclick = function(event) { if (event.target == document.getElementById('modal')) closeModal(); }
-
-        function generateCardHTML(item, type) {
-            const { info, expiredIssues, warningIssues } = item;
-            const code = info['รหัส'], plate = info['ทะเบียน'] || '-', typeName = info['ประเภทรถ'] || '';
-            let statusIcon = '', bgClass = 'bg-white', issuesHtml = '';
-
-            if (type === 'all') {
-                statusIcon = '<span class="text-blue-500 text-[10px] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 font-medium">ปกติ</span>';
-            } else {
-                if (type === 'expired' && expiredIssues.length > 0) { 
-                    statusIcon = '<span class="text-red-500 text-[10px] bg-red-50 px-2 py-0.5 rounded-full border border-red-100 font-bold">วิกฤต</span>'; 
-                    bgClass = 'bg-red-50/50'; 
-                }
-                else if (type === 'warning' && warningIssues.length > 0) { 
-                    statusIcon = '<span class="text-orange-500 text-[10px] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 font-bold">เตือน</span>'; 
-                    bgClass = 'bg-orange-50/50'; 
-                }
-            }
-
-            if(type !== 'all') {
-                 let htmlContent = '';
-                 if(type === 'expired') {
-                     [...expiredIssues].forEach(t => htmlContent += `<div class="text-xs text-red-500 font-medium mt-1.5 flex items-start gap-1"><i class="fas fa-exclamation-circle mt-0.5"></i> ${t}</div>`);
-                 }
-                 if(type === 'warning') {
-                     [...warningIssues].forEach(t => htmlContent += `<div class="text-xs text-orange-500 font-medium mt-1.5 flex items-start gap-1"><i class="fas fa-clock mt-0.5"></i> ${t}</div>`);
-                 }
-                 
-                 if (htmlContent) {
-                     issuesHtml = `<div class="mt-4 pt-3 border-t border-gray-200/60">${htmlContent}</div>`;
-                 }
-            }
-
-            return `<div onclick="showMachineDetails('${code}')" class="${bgClass} p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer group">
-                <div class="flex justify-between items-start">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-white flex items-center justify-center text-gray-400 rounded-2xl shadow-sm border border-gray-100 group-hover:text-[var(--primary)] group-hover:border-indigo-100 transition">
-                            <i class="fas fa-truck text-lg"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-bold text-gray-800 text-lg">${code}</span>
-                                ${statusIcon}
-                            </div>
-                            <div class="text-xs text-gray-500 font-light flex items-center gap-2">
-                                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">${plate}</span> ${typeName}
-                            </div>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right text-gray-300 text-sm mt-4 group-hover:text-[var(--primary)] transition"></i>
-                </div>
-                ${issuesHtml}
-            </div>`;
-        }
-
-        function generateProjectCardHTML(proj) {
-            return `
-                <div onclick="showProjectDetails('${proj.name}')" class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer group">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="font-bold text-gray-800 text-lg group-hover:text-[var(--primary)] transition">${proj.name}</div>
-                        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-[var(--primary)] transition">
-                            <i class="fas fa-arrow-right text-xs"></i>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-green-50 p-3 rounded-xl">
-                            <span class="text-[10px] text-green-600 font-semibold uppercase tracking-wide block mb-1">น้ำมันรวม</span>
-                            <span class="text-green-700 font-bold text-base block">${formatNumber(proj.fuel)} <small class="text-xs font-normal">ลิตร</small></span>
-                        </div>
-                        <div class="bg-purple-50 p-3 rounded-xl">
-                            <span class="text-[10px] text-purple-600 font-semibold uppercase tracking-wide block mb-1">ค่าซ่อมรวม</span>
-                            <span class="text-purple-700 font-bold text-base block">${formatNumber(proj.cost)} <small class="text-xs font-normal">บาท</small></span>
-                        </div>
-                    </div>
-                </div>`;
-        }
-
-        // --- Detail Views & Graphs (Machine & Project) ---
-        function showMachineDetails(code, initialContext = {}) {
-             const machine = appData.machines.find(m => m['รหัส'] === code);
-            if (!machine) return;
-            const modal = document.getElementById('modal');
-            const subModal = document.getElementById('sub-modal');
-            
-            cleanupModalCharts();
-            
-            // Z-Index Fix: If sub-modal is open (Daily Graph), bring Machine Detail to front (z-300)
-            if (subModal.classList.contains('show')) {
-                modal.style.zIndex = '300';
-            } else {
-                modal.style.zIndex = ''; // Default
-            }
-
-            if (!modal.classList.contains('show')) { lastModalType = 'all'; modal.classList.add('show'); }
-            document.getElementById('modal-filter-bar').classList.add('hidden');
-            document.getElementById('modal-title').innerText = `ข้อมูล: ${code}`;
-            modalChartState = { machineCode: code, view: initialContext.view || 'year', year: initialContext.year || null, month: initialContext.month || null };
-
-            // --- Logic to check status dynamically ---
-            const today = new Date(); today.setHours(0,0,0,0);
-            
-            const getStatusHTML = (label, dateStr) => {
-                const d = parseDate(dateStr);
-                let colorClass = 'bg-gray-50 border-gray-100 text-gray-600'; // Default/Missing
-                let titleColor = 'text-gray-400';
-                let statusText = '-';
-                
-                if (d) {
-                    const diffDays = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-                    if (diffDays <= 0) {
-                        colorClass = 'bg-red-50 border-red-100 text-red-600';
-                        titleColor = 'text-red-400';
-                        statusText = '<i class="fas fa-exclamation-circle"></i> หมดอายุแล้ว';
-                    } else if (diffDays <= 30) {
-                        colorClass = 'bg-orange-50 border-orange-100 text-orange-600';
-                        titleColor = 'text-orange-400';
-                        statusText = `<i class="fas fa-clock"></i> เหลือ ${diffDays} วัน`;
-                    } else {
-                        colorClass = 'bg-green-50 border-green-100 text-green-600';
-                        titleColor = 'text-green-500';
-                        statusText = '<i class="fas fa-check-circle"></i> ปกติ';
-                    }
-                } else {
-                     return `
-                       <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                           <span class="text-[10px] text-gray-400 font-bold uppercase block mb-1">${label}</span> 
-                           <div class="text-gray-400 text-xs">-</div>
-                       </div>`;
-                }
-
-                return `
-                   <div class="${colorClass} rounded-xl p-3 border">
-                       <span class="text-[10px] ${titleColor} font-bold uppercase block mb-1">${label}</span> 
-                       <div class="font-bold text-sm">${dateStr}</div>
-                       <div class="text-[10px] opacity-90 mt-1 font-medium">${statusText}</div>
-                   </div>
-                `;
-            };
-
-            const taxHTML = getStatusHTML('วันภาษีหมดอายุ', machine['วันที่ทะเบียนขาด']);
-            const insHTML = getStatusHTML('วันประกันหมดอายุ', machine['วันที่ประกัน+พรบ.ขาด']);
-
-            document.getElementById('modal-body').innerHTML = `
-                <div class="space-y-6 animate-fade-in">
-                    <button onclick="openModal(lastModalType)" class="text-gray-500 hover:text-[var(--primary)] text-sm font-medium flex items-center gap-2 transition w-fit"><i class="fas fa-arrow-left"></i> ย้อนกลับรายการ</button>
-                    <!-- Machine Info -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden">
-                         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-full opacity-50 -z-0 pointer-events-none"></div>
-                         
-                         <div class="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-8 text-sm relative z-10">
-                           <div><span class="text-gray-400 text-xs font-medium uppercase block mb-1">ทะเบียน</span> <div class="text-gray-800 font-bold text-lg">${machine['ทะเบียน'] || '-'}</div></div>
-                           <div><span class="text-gray-400 text-xs font-medium uppercase block mb-1">ประเภท</span> <div class="text-gray-700 font-medium">${machine['ประเภทรถ'] || '-'}</div></div>
-                           <div><span class="text-gray-400 text-xs font-medium uppercase block mb-1">ยี่ห้อ</span> <div class="text-gray-700 font-medium">${machine['ยี่ห้อรถ'] || '-'}</div></div>
-                           <div><span class="text-gray-400 text-xs font-medium uppercase block mb-1">เลขเครื่อง</span> <div class="text-gray-600 font-mono">${machine['เลขเครื่อง'] || '-'}</div></div>
-                           <div><span class="text-gray-400 text-xs font-medium uppercase block mb-1">เลขตัวรถ</span> <div class="text-gray-600 font-mono">${machine['เลขตัวรถ'] || '-'}</div></div>
-                           <div><span class="text-gray-400 text-xs font-medium uppercase block mb-1">กรรมสิทธิ์</span> <div class="text-gray-700 font-medium">${machine['กรรมสิทธิ์'] || '-'}</div></div>
-                         </div>
-                         
-                         <div class="mt-6 pt-6 border-t border-gray-100 grid grid-cols-2 gap-4">
-                               ${taxHTML}
-                               ${insHTML}
-                         </div>
-                    </div>
-                    <!-- Unified Charts Area -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                         <div class="flex justify-between items-center mb-6">
-                             <h4 class="text-gray-800 font-bold flex items-center gap-2"><i class="fas fa-chart-pie text-[var(--primary)]"></i> สถิติการใช้งาน</h4>
-                             <button onclick="resetModalChartToYear()" class="text-xs bg-gray-50 hover:bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg transition">รีเซ็ตกราฟ</button>
-                         </div>
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                             <div>
-                                <h5 class="text-gray-500 text-xs font-bold mb-3 flex items-center gap-2 uppercase tracking-wide"><span class="w-2 h-2 rounded-full bg-green-500"></span> ปริมาณน้ำมัน (ลิตร)</h5>
-                                <div class="h-48 relative"><canvas id="modalFuelChart"></canvas></div>
-                                <div class="text-right mt-2 text-green-600 font-bold text-sm" id="val-modal-fuel">-</div>
-                             </div>
-                             <div>
-                                <h5 class="text-gray-500 text-xs font-bold mb-3 flex items-center gap-2 uppercase tracking-wide"><span class="w-2 h-2 rounded-full bg-purple-500"></span> ค่าซ่อมบำรุง (บาท)</h5>
-                                <div class="h-48 relative"><canvas id="modalMaintChart"></canvas></div>
-                                <div class="text-right mt-2 text-purple-600 font-bold text-sm" id="val-modal-maint">-</div>
-                             </div>
-                         </div>
-                    </div>
-                </div>`;
-            setTimeout(() => { updateModalCharts(); }, 50);
-        }
-
-        function showProjectDetails(projName) {
-            cleanupModalCharts();
-            document.getElementById('modal-filter-bar').classList.add('hidden');
-            document.getElementById('modal-title').innerText = `โครงการ: ${projName}`;
-            
-            // Calculate Stats
-            const machinesInProj = new Set();
-            appData.fuel.forEach(f => { if(f['โครงการ'] === projName) machinesInProj.add(f['รหัสรถ']); });
-            appData.maintenance.forEach(m => { if(m['โครงการ'] === projName) machinesInProj.add(m['รหัสรถ']); });
-            const machineCount = machinesInProj.size;
-
-            let totalFuel = 0, totalCost = 0;
-            appData.fuel.forEach(f => { if(f['โครงการ'] === projName) totalFuel += parseNumber(f['ปริมาณ(ลิตร)']); });
-            appData.maintenance.forEach(m => { if(m['โครงการ'] === projName) totalCost += parseNumber(m['ค่าซ่อมบำรุง']); });
-
-            modalChartState = { projectName: projName, graphMode: 'fuel', subView: 'trend', view: 'year', year: null, month: null, machineCode: 'ALL' };
-
-            let machineOptions = `<option value="ALL">เครื่องจักรทั้งหมด (${machineCount})</option>`;
-            [...machinesInProj].sort().forEach(m => { machineOptions += `<option value="${m}">${m}</option>`; });
-
-            document.getElementById('modal-body').innerHTML = `
-                 <div class="space-y-6 animate-fade-in">
-                    <!-- Top Bar: Back & Stats -->
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <button onclick="openModal('project')" class="text-gray-500 hover:text-[var(--primary)] text-sm font-medium flex items-center gap-2 transition w-fit"><i class="fas fa-arrow-left"></i> กลับหน้ารายการ</button>
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
-                            <span class="text-[10px] text-gray-400 font-bold uppercase block mb-1">จำนวนรถ</span>
-                            <span class="text-gray-800 font-bold text-lg">${machineCount}</span>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-2xl text-center border border-green-100">
-                            <span class="text-[10px] text-green-500 font-bold uppercase block mb-1">น้ำมันรวม</span>
-                            <span class="text-green-700 font-bold text-lg">${formatNumber(totalFuel)}</span>
-                        </div>
-                        <div class="bg-purple-50 p-4 rounded-2xl text-center border border-purple-100">
-                            <span class="text-[10px] text-purple-500 font-bold uppercase block mb-1">ค่าซ่อมรวม</span>
-                            <span class="text-purple-700 font-bold text-lg">${formatNumber(totalCost)}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Chart Section -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                         <!-- Chart Controls -->
-                         <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
-                             
-                             <!-- Mode Switch -->
-                             <div class="bg-gray-100 p-1 rounded-xl flex">
-                                 <button class="px-4 py-1.5 text-xs rounded-lg transition font-medium shadow-sm bg-white text-gray-800" onclick="setModalMode('fuel', this)" id="btn-modal-mode-fuel">น้ำมัน</button>
-                                 <button class="px-4 py-1.5 text-xs rounded-lg transition font-medium text-gray-500 hover:bg-gray-200/50" onclick="setModalMode('maint', this)" id="btn-modal-mode-maint">ค่าซ่อม</button>
-                             </div>
-
-                             <!-- View Controls -->
-                             <div class="flex gap-3 items-center">
-                                 <!-- Trend/Top10 -->
-                                 <div class="bg-gray-100 p-1 rounded-xl flex">
-                                     <button class="px-4 py-1.5 text-xs rounded-lg transition font-medium shadow-sm bg-white text-gray-800" onclick="setModalSubView('trend', this)" id="btn-modal-view-trend">แนวโน้ม</button>
-                                     <button class="px-4 py-1.5 text-xs rounded-lg transition font-medium text-gray-500 hover:bg-gray-200/50" onclick="setModalSubView('top10', this)" id="btn-modal-view-top10">Top 10</button>
-                                 </div>
-
-                                 <!-- Drill Back -->
-                                 <button id="btn-modal-drill-back" onclick="stepBackModalCharts()" class="hidden w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-500 transition"><i class="fas fa-level-up-alt"></i></button>
-
-                                 <!-- Machine Filter -->
-                                 <select onchange="setModalMachineFilter(this.value)" class="bg-gray-50 border border-gray-200 text-gray-700 text-xs px-3 py-2 rounded-xl cursor-pointer focus:outline-none">
-                                     ${machineOptions}
-                                 </select>
-                             </div>
-                         </div>
-                         
-                         <!-- Canvas -->
-                         <div class="h-72 relative">
-                            <canvas id="modalProjectChart"></canvas>
-                         </div>
-                         <div class="mt-4 text-right text-xs font-bold text-gray-500" id="modal-chart-stat-value"></div>
-                    </div>
-                </div>
-            `;
-            setTimeout(() => { renderModalProjectChart(); }, 50);
-        }
-
-        // --- Project Modal Chart Functions ---
-
-        function setModalMode(mode, btn) {
-            modalChartState.graphMode = mode;
-            // Handle visual toggle logic simply by class manipulation
-            const btnFuel = document.getElementById('btn-modal-mode-fuel');
-            const btnMaint = document.getElementById('btn-modal-mode-maint');
-            
-            [btnFuel, btnMaint].forEach(b => {
-                b.className = "px-4 py-1.5 text-xs rounded-lg transition font-medium text-gray-500 hover:bg-gray-200/50";
-            });
-            
-            btn.className = "px-4 py-1.5 text-xs rounded-lg transition font-medium shadow-sm bg-white text-gray-800";
-
-            modalChartState.view = 'year'; modalChartState.year = null; modalChartState.month = null;
-            updateModalUI();
-            renderModalProjectChart();
-        }
-
-        function setModalSubView(subView, btn) {
-            modalChartState.subView = subView;
-             // Handle visual toggle
-            const btnTrend = document.getElementById('btn-modal-view-trend');
-            const btnTop = document.getElementById('btn-modal-view-top10');
-             
-             [btnTrend, btnTop].forEach(b => {
-                 b.className = "px-4 py-1.5 text-xs rounded-lg transition font-medium text-gray-500 hover:bg-gray-200/50";
-             });
-             
-             btn.className = "px-4 py-1.5 text-xs rounded-lg transition font-medium shadow-sm bg-white text-gray-800";
-
-            renderModalProjectChart();
-        }
-
-        function setModalMachineFilter(val) {
-            modalChartState.machineCode = val;
-            modalChartState.view = 'year'; // Reset drill down on filter change
-            updateModalUI();
-            renderModalProjectChart();
-        }
-
-        function stepBackModalCharts() {
-            if (modalChartState.view === 'day') {
-                modalChartState.view = 'month';
-                modalChartState.month = null;
-            } else if (modalChartState.view === 'month') {
-                modalChartState.view = 'year';
-                modalChartState.year = null;
-            }
-            if(modalChartState.projectName) {
-                updateModalUI();
-                renderModalProjectChart();
-            } else {
-                updateModalCharts();
-            }
-        }
-
-        function updateModalCharts() {
-            renderModalFuelChart();
-            renderModalMaintChart();
-            
-            // Update Back Buttons Visibility
-            const isRoot = modalChartState.view === 'year';
-            ['btn-back-modal-fuel', 'btn-back-modal-maint'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                   if (isRoot) el.classList.add('hidden');
-                   else el.classList.remove('hidden');
-                }
-            });
-        }
-
-        function updateModalUI() {
-             const isRoot = modalChartState.view === 'year';
-             const btnBack = document.getElementById('btn-modal-drill-back');
-             if(btnBack) btnBack.classList.toggle('hidden', isRoot);
-        }
-
-        // --- Sub-Modal: Daily List ---
-        function showProjectDailyList(dayIndex) {
-            const day = dayIndex + 1;
-            const year = modalChartState.year;
-            const month = modalChartState.month;
-            const project = modalChartState.projectName;
-            const mode = modalChartState.graphMode; 
-            
-            let dataSource = mode === 'fuel' ? appData.fuel : appData.maintenance;
-            let valKey = mode === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-            let unit = mode === 'fuel' ? 'ลิตร' : 'บาท';
-            let colorClass = mode === 'fuel' ? 'text-green-600' : 'text-purple-600';
-
-            // Filter
-            const dailyItems = dataSource.filter(item => {
-                const d = parseDate(item['วันที่']);
-                // Also check project if defined, or machine filter if defined
-                let match = d && d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
-                if (project) match = match && item['โครงการ'] === project;
-                if (modalChartState.machineCode && modalChartState.machineCode !== 'ALL') {
-                    match = match && item['รหัสรถ'] === modalChartState.machineCode;
-                }
-                return match;
-            });
-
-            const dateStr = `${day}/${month+1}/${year}`;
-            document.getElementById('sub-modal-title').innerText = `รายละเอียดวันที่ ${dateStr}`;
-            const container = document.getElementById('sub-modal-body');
-            
-            if (dailyItems.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-400 py-12">ไม่มีรายการ</div>`;
-            } else {
-                let html = `<div class="space-y-3">`;
-                dailyItems.forEach(item => {
-                    const val = parseFloat(item[valKey]) || 0;
-                    const machine = item['รหัสรถ'] || 'ไม่ระบุ';
-                    const machineInfo = appData.machines.find(m => m['รหัส'] === machine);
-                    const plate = machineInfo ? machineInfo['ทะเบียน'] : '-';
-                    
-                    html += `
-                        <div class="bg-white border border-gray-100 p-4 rounded-xl flex justify-between items-center shadow-sm">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-truck"></i>
-                                </div>
-                                <div>
-                                    <div class="font-bold text-gray-800">${machine}</div>
-                                    <div class="text-xs text-gray-500">${plate}</div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold ${colorClass} text-lg">${formatNumber(val)}</div>
-                                <div class="text-[10px] text-gray-400">${unit}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-                container.innerHTML = html;
-            }
-            document.getElementById('sub-modal').classList.add('show');
-        }
-
-        function closeSubModal() {
-            if (modalDailyChartInstance) {
-                modalDailyChartInstance.destroy();
-                modalDailyChartInstance = null;
-            }
-            document.getElementById('sub-modal').classList.remove('show');
-        }
-
-        function renderModalProjectChart() {
-            let dataSource = modalChartState.graphMode === 'fuel' ? appData.fuel : appData.maintenance;
-            let valKey = modalChartState.graphMode === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-            // Modern Colors
-            let color = modalChartState.graphMode === 'fuel' ? '#10b981' : '#8b5cf6'; // Green / Purple
-            
-            dataSource = dataSource.filter(item => item['โครงการ'] === modalChartState.projectName);
-            if (modalChartState.machineCode && modalChartState.machineCode !== 'ALL') {
-                dataSource = dataSource.filter(item => item['รหัสรถ'] === modalChartState.machineCode);
-            }
-
-            let labels = [], data = [], total = 0;
-
-            const filterAndSum = (filterFn, groupFn) => {
-                const grouped = {};
-                dataSource.forEach(item => {
-                    if (filterFn(item)) {
-                        const val = parseFloat(item[valKey]) || 0;
-                        total += val;
-                        const key = groupFn(item);
-                        grouped[key] = (grouped[key] || 0) + val;
-                    }
-                });
-                return grouped;
-            }
-
-            // Logic based on View & SubView
-            if (modalChartState.view === 'year') {
-                if (modalChartState.subView === 'trend') {
-                    // Trend: Group by Year
-                    const d = filterAndSum(i => true, i => parseDate(i['วันที่'])?.getFullYear());
-                    labels = Object.keys(d).sort(); data = labels.map(k => d[k]);
-                } else {
-                    // Top 10: Group by Machine
-                    const d = filterAndSum(i => true, i => i['รหัสรถ']);
-                    const sorted = Object.entries(d).sort(([,a], [,b]) => b - a).slice(0, 10);
-                    labels = sorted.map(k => k[0]); data = sorted.map(k => k[1]);
-                }
-            } else if (modalChartState.view === 'month') {
-                // Determine Year if missing
-                if (!modalChartState.year) {
-                     const years = [...new Set(dataSource.map(i => parseDate(i['วันที่'])?.getFullYear()).filter(y => y))].sort((a,b) => b-a);
-                     modalChartState.year = years.length > 0 ? years[0] : new Date().getFullYear();
-                }
-                
-                if (modalChartState.subView === 'trend') {
-                    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-                    const d = filterAndSum(i => parseDate(i['วันที่'])?.getFullYear() === modalChartState.year, i => parseDate(i['วันที่'])?.getMonth());
-                    labels = months; data = new Array(12).fill(0).map((_, i) => d[i] || 0);
-                } else {
-                    const d = filterAndSum(i => parseDate(i['วันที่'])?.getFullYear() === modalChartState.year, i => i['รหัสรถ']);
-                    const sorted = Object.entries(d).sort(([,a], [,b]) => b - a).slice(0, 10);
-                    labels = sorted.map(k => k[0]); data = sorted.map(k => k[1]);
-                }
-            } else if (modalChartState.view === 'day') {
-                const daysInMonth = new Date(modalChartState.year, modalChartState.month + 1, 0).getDate();
-                if (modalChartState.subView === 'trend') {
-                    const d = filterAndSum(i => parseDate(i['วันที่'])?.getFullYear() === modalChartState.year && parseDate(i['วันที่'])?.getMonth() === modalChartState.month, i => parseDate(i['วันที่'])?.getDate());
-                    labels = Array.from({length: daysInMonth}, (_, i) => i + 1); data = labels.map(k => d[k] || 0);
-                } else {
-                    const d = filterAndSum(i => parseDate(i['วันที่'])?.getFullYear() === modalChartState.year && parseDate(i['วันที่'])?.getMonth() === modalChartState.month, i => i['รหัสรถ']);
-                    const sorted = Object.entries(d).sort(([,a], [,b]) => b - a).slice(0, 10);
-                    labels = sorted.map(k => k[0]); data = sorted.map(k => k[1]);
-                }
-            }
-
-            const unit = modalChartState.graphMode === 'fuel' ? 'ลิตร' : 'บาท';
-            const statElem = document.getElementById('modal-chart-stat-value');
-            if(statElem) {
-                statElem.innerText = `รวมในกราฟ: ${formatNumber(total)} ${unit}`;
-                statElem.style.color = color;
-            }
-
-            // Draw Chart
-            if (modalProjectChartInstance) modalProjectChartInstance.destroy();
-            const ctx = document.getElementById('modalProjectChart').getContext('2d');
-            
-            modalProjectChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: unit,
-                        data: data,
-                        backgroundColor: color,
-                        borderRadius: 6,
-                        barThickness: 'flex',
-                        maxBarThickness: 40
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: true, ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } },
-                        y: { display: true, ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9', borderDash: [2, 2] } }
-                    },
-                    onClick: (e, activeEls) => {
-                        if (activeEls.length > 0 && modalChartState.subView === 'trend') {
-                            const index = activeEls[0].index;
-                            if (modalChartState.view === 'year') {
-                                modalChartState.year = parseInt(labels[index]);
-                                modalChartState.view = 'month';
-                                updateModalUI();
-                                renderModalProjectChart();
-                            } else if (modalChartState.view === 'month') {
-                                modalChartState.month = index;
-                                modalChartState.view = 'day';
-                                updateModalUI();
-                                renderModalProjectChart();
-                            } else if (modalChartState.view === 'day') {
-                                // Trigger Daily Detail Popup
-                                showProjectDailyList(index);
-                            }
-                        }
-                    },
-                    onHover: (e, els) => e.native.target.style.cursor = els[0] ? 'pointer' : 'default'
-                }
-            });
-        }
-        
-        function renderModalFuelChart() { renderSyncedModalChart('fuel', 'modalFuelChart', 'modal-fuel-title', 'val-modal-fuel'); }
-        function renderModalMaintChart() { renderSyncedModalChart('maint', 'modalMaintChart', 'modal-maint-title', 'val-modal-maint'); }
-        
-        function renderSyncedModalChart(type, canvasId, titleId, valId) {
-             const code = modalChartState.machineCode;
-             const dataSource = type === 'fuel' ? appData.fuel : appData.maintenance;
-             const valKey = type === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-             const unit = type === 'fuel' ? 'ลิตร' : 'บาท';
-             const color = type === 'fuel' ? '#10b981' : '#8b5cf6'; // Green / Purple
-             
-             const dataFiltered = dataSource.filter(item => item['รหัสรถ'] === code);
-             let labels = [], data = [], total = 0;
-
-             if (modalChartState.view === 'year') {
-                 const grouped = {}; dataFiltered.forEach(item => { const d = parseDate(item['วันที่']); if (d) { const val = parseNumber(item[valKey]); grouped[d.getFullYear()] = (grouped[d.getFullYear()] || 0) + val; total += val; } });
-                 labels = Object.keys(grouped).sort(); data = labels.map(y => grouped[y]);
-             } else if (modalChartState.view === 'month') {
-                 if(!modalChartState.year) { const years = [...new Set(dataFiltered.map(i => parseDate(i['วันที่'])?.getFullYear()).filter(y => y))].sort((a,b) => b-a); modalChartState.year = years[0] || new Date().getFullYear(); }
-                 const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-                 const grouped = new Array(12).fill(0); dataFiltered.forEach(item => { const d = parseDate(item['วันที่']); if (d && d.getFullYear() === modalChartState.year) { const val = parseNumber(item[valKey]); grouped[d.getMonth()] += val; total += val; } });
-                 labels = months; data = grouped;
-             } else if (modalChartState.view === 'day') {
-                 const days = new Date(modalChartState.year, modalChartState.month + 1, 0).getDate();
-                 const grouped = new Array(days).fill(0); dataFiltered.forEach(item => { const d = parseDate(item['วันที่']); if (d && d.getFullYear() === modalChartState.year && d.getMonth() === modalChartState.month) { const val = parseNumber(item[valKey]); grouped[d.getDate()-1] += val; total += val; } });
-                 labels = Array.from({length: days}, (_, i) => i + 1); data = grouped;
-             }
-             
-             if(document.getElementById(valId)) document.getElementById(valId).innerText = `${formatNumber(total)} ${unit}`;
-             
-             const chartVar = type === 'fuel' ? modalFuelChartInstance : modalMaintChartInstance;
-             if (chartVar) chartVar.destroy();
-             
-             const ctx = document.getElementById(canvasId).getContext('2d');
-             const chart = new Chart(ctx, {
-                 type: 'bar', data: { labels: labels, datasets: [{ label: unit, data: data, backgroundColor: color, borderRadius: 4 }] },
-                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-                      scales: { x: { display: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }, y: { display: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9', borderDash: [2, 2] } } },
-                      onClick: (e, activeEls) => { if (activeEls.length > 0) { const index = activeEls[0].index; if (modalChartState.view === 'year') { modalChartState.year = parseInt(labels[index]); modalChartState.view = 'month'; updateModalCharts(); } else if (modalChartState.view === 'month') { modalChartState.month = index; modalChartState.view = 'day'; updateModalCharts(); } } }
-                 }
-             });
-             
-             if (type === 'fuel') modalFuelChartInstance = chart; else modalMaintChartInstance = chart;
-        }
-
-        // --- Main Chart ---
-        function setupFuelChart() { 
-            const backBtn = document.getElementById('chart-back-btn');
-            if (backBtn) backBtn.addEventListener('click', goBackLevel); 
-            
-            const homeBtn = document.getElementById('chart-home-btn');
-            if (homeBtn) {
-                homeBtn.addEventListener('click', () => { 
-                    chartState.selectedMachine = 'ALL'; 
-                    chartState.selectedProject = 'ALL'; 
-                    document.getElementById('machine-select').value = 'ALL'; 
-                    resetChartToYear(); 
-                }); 
-            }
-            
-            const machineSelect = document.getElementById('machine-select');
-            if (machineSelect) {
-                machineSelect.addEventListener('change', (e) => { 
-                    chartState.selectedMachine = e.target.value; 
-                    resetChartToYear(); 
-                }); 
-            }
-            
-            updateChart(); 
-        }
-
-        function switchGraphMode(mode) { 
-            currentGraphMode = mode; 
-            document.getElementById('card-fuel').classList.remove('card-selected'); 
-            document.getElementById('card-maintenance').classList.remove('card-selected'); 
-            if (mode === 'fuel') { 
-                document.getElementById('card-fuel').classList.add('card-selected'); 
-                document.getElementById('chart-title').innerText = 'สถิติการใช้น้ำมัน'; 
-            } else { 
-                document.getElementById('card-maintenance').classList.add('card-selected'); 
-                document.getElementById('chart-title').innerText = 'สถิติค่าซ่อมบำรุง'; 
-            } 
-            resetChartToYear(); 
-            // updateAllStats(); // called inside resetChartToYear
-        }
-
-        function resetChartToYear() { 
-            chartState.view = 'year'; 
-            chartState.selectedYear = null; 
-            chartState.selectedMonth = null; 
-            chartState.selectedDay = null; 
-            updateChart(); 
-            updateAllStats(); // Update stats on reset
-        }
-
-        function goBackLevel() { 
-            if (chartState.view === 'single_day') { 
-                chartState.view = 'day'; 
-                chartState.selectedDay = null; 
-            } else if (chartState.view === 'day') { 
-                chartState.view = 'month'; 
-                chartState.selectedMonth = null; 
-            } else if (chartState.view === 'month') { 
-                chartState.view = 'year'; 
-                chartState.selectedYear = null; 
-            } 
-            updateChart(); 
-            updateAllStats(); // Update stats on back
-        }
-
-        function updateChart() { 
-            renderTrendChart(); 
-            renderRankChart();
-        }
-
-        // Reverted to Timeline Chart (Vertical Bars by Time)
-        function renderTrendChart() {
-             const ctx = document.getElementById('trendChart').getContext('2d');
-             if (chartState.trendInstance) chartState.trendInstance.destroy();
-             
-             let dataSource = currentGraphMode === 'fuel' ? appData.fuel : appData.maintenance;
-             let valKey = currentGraphMode === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-             // Modern Gradients
-             let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-             if (currentGraphMode === 'fuel') {
-                 gradient.addColorStop(0, '#10b981'); // Green-500
-                 gradient.addColorStop(1, '#059669'); // Green-600
-             } else {
-                 gradient.addColorStop(0, '#8b5cf6'); // Purple-500
-                 gradient.addColorStop(1, '#7c3aed'); // Purple-600
-             }
-             
-             // Filter
-             dataSource = dataSource.filter(item => {
-                 if (chartState.selectedProject !== 'ALL' && item['โครงการ'] !== chartState.selectedProject) return false;
-                 if (chartState.selectedMachine !== 'ALL' && item['รหัสรถ'] !== chartState.selectedMachine) return false;
-                 return true;
-             });
-
-             let labels = [], data = [];
-             
-             const filterAndSumTrend = (groupFn) => {
-                 const grouped = {}; 
-                 dataSource.forEach(item => { 
-                     const d = parseDate(item['วันที่']); 
-                     if (!d) return;
-                     if (chartState.view === 'month' && d.getFullYear() !== chartState.selectedYear) return;
-                     if (chartState.view === 'day' && (d.getFullYear() !== chartState.selectedYear || d.getMonth() !== chartState.selectedMonth)) return;
-                     
-                     const val = parseNumber(item[valKey]);
-                     const key = groupFn(d);
-                     if (key !== null) grouped[key] = (grouped[key] || 0) + val;
-                 });
-                 return grouped;
-             }
-
-             if (chartState.view === 'year') {
-                 document.getElementById('chart-breadcrumb').innerText = "ภาพรวมรายปี";
-                 document.getElementById('chart-back-btn').classList.add('hidden');
-                 document.getElementById('chart-home-btn').classList.add('hidden');
-                 
-                 const d = filterAndSumTrend((date) => date.getFullYear());
-                 labels = Object.keys(d).sort(); data = labels.map(k => d[k]);
-                 
-             } else if (chartState.view === 'month') {
-                 document.getElementById('chart-breadcrumb').innerText = `ปี ${chartState.selectedYear}`;
-                 document.getElementById('chart-back-btn').classList.remove('hidden');
-                 document.getElementById('chart-home-btn').classList.remove('hidden');
-                 
-                 const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-                 const d = filterAndSumTrend((date) => date.getMonth());
-                 labels = months; data = new Array(12).fill(0).map((_, i) => d[i] || 0);
-
-             } else if (chartState.view === 'day' || chartState.view === 'single_day') {
-                 const mName = new Date(chartState.selectedYear, chartState.selectedMonth).toLocaleString('th-TH', { month: 'short' });
-                 document.getElementById('chart-breadcrumb').innerText = `${mName} ${chartState.selectedYear}`;
-                 if (chartState.view === 'single_day') {
-                      document.getElementById('chart-breadcrumb').innerText += ` (วันที่ ${chartState.selectedDay})`;
-                 }
-                 const days = new Date(chartState.selectedYear, chartState.selectedMonth + 1, 0).getDate();
-                 
-                 const d = filterAndSumTrend((date) => date.getDate());
-                 labels = Array.from({length: days}, (_, i) => i + 1); data = labels.map(k => d[k] || 0);
-             }
-
-             chartState.trendInstance = new Chart(ctx, {
-                 type: 'bar', 
-                 data: { labels: labels, datasets: [{ label: currentGraphMode, data: data, backgroundColor: gradient, borderRadius: 6, barThickness: 'flex', maxBarThickness: 50 }] },
-                 options: { 
-                     responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-                     scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#f1f5f9', borderDash: [2, 2] }, ticks: { color: '#94a3b8' } } },
-                     onClick: (e, activeEls) => { if(activeEls.length > 0) handleTrendClick(activeEls[0].index, labels); },
-                     onHover: (e, els) => e.native.target.style.cursor = els[0] ? 'pointer' : 'default'
-                 }
-             });
-        }
-
-        function renderRankChart() {
-             const ctx = document.getElementById('rankChart').getContext('2d');
-             if (chartState.rankInstance) chartState.rankInstance.destroy();
-             
-             let dataSource = currentGraphMode === 'fuel' ? appData.fuel : appData.maintenance;
-             let valKey = currentGraphMode === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-             let color = currentGraphMode === 'fuel' ? '#34d399' : '#a78bfa'; 
-             
-             dataSource = dataSource.filter(item => {
-                 if (chartState.selectedProject !== 'ALL' && item['โครงการ'] !== chartState.selectedProject) return false;
-                 
-                 const d = parseDate(item['วันที่']);
-                 if (!d) return false;
-
-                 if (chartState.view === 'month' && d.getFullYear() !== chartState.selectedYear) return false;
-                 if ((chartState.view === 'day' || chartState.view === 'single_day') && (d.getFullYear() !== chartState.selectedYear || d.getMonth() !== chartState.selectedMonth)) return false;
-                 
-                 return true;
-             });
-
-             const grouped = {};
-             dataSource.forEach(item => {
-                 const val = parseNumber(item[valKey]);
-                 const key = item['รหัสรถ'];
-                 if (key) grouped[key] = (grouped[key] || 0) + val;
-             });
-
-             const sorted = Object.entries(grouped).sort(([,a], [,b]) => b - a).slice(0, 10);
-             const labels = sorted.map(k => k[0]);
-             const data = sorted.map(k => k[1]);
-
-             chartState.rankInstance = new Chart(ctx, {
-                 type: 'bar', 
-                 data: { labels: labels, datasets: [{ label: 'Top 10', data: data, backgroundColor: color, borderRadius: 6 }] },
-                 options: { 
-                     indexAxis: 'y', 
-                     responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-                     scales: { x: { grid: { color: '#f1f5f9', borderDash: [2, 2] }, ticks: { color: '#94a3b8', font: {size: 10} } }, y: { grid: { display: false }, ticks: { color: '#4b5563', font: { weight: 'bold' } } } },
-                     onClick: (e, activeEls) => { if(activeEls.length > 0) handleRankClick(activeEls[0].index, labels); },
-                     onHover: (e, els) => e.native.target.style.cursor = els[0] ? 'pointer' : 'default'
-                 }
-             });
-        }
-
-        // New Function: Render Full Ranking in Modal
-        function renderFullRankingChart() {
-             const canvas = document.getElementById('modalRankingChart');
-             if (!canvas) return;
-             const ctx = canvas.getContext('2d');
-             
-             if (modalRankingChartInstance) {
-                 modalRankingChartInstance.destroy();
-                 modalRankingChartInstance = null;
-             }
-             
-             let dataSource = currentGraphMode === 'fuel' ? appData.fuel : appData.maintenance;
-             let valKey = currentGraphMode === 'fuel' ? 'ปริมาณ(ลิตร)' : 'ค่าซ่อมบำรุง';
-             
-             let gradient = ctx.createLinearGradient(400, 0, 0, 0); 
-             if (currentGraphMode === 'fuel') {
-                 gradient.addColorStop(0, '#10b981'); 
-                 gradient.addColorStop(1, '#059669'); 
-             } else {
-                 gradient.addColorStop(0, '#8b5cf6'); 
-                 gradient.addColorStop(1, '#7c3aed'); 
-             }
-             
-             dataSource = dataSource.filter(item => {
-                 if (chartState.selectedProject !== 'ALL' && item['โครงการ'] !== chartState.selectedProject) return false;
-                 
-                 // Apply Date Filter from Main Context
-                 const d = parseDate(item['วันที่']);
-                 if (!d) return false;
-
-                 if (chartState.view === 'month' && d.getFullYear() !== chartState.selectedYear) return false;
-                 if ((chartState.view === 'day' || chartState.view === 'single_day') && (d.getFullYear() !== chartState.selectedYear || d.getMonth() !== chartState.selectedMonth)) return false;
-
-                 return true;
-             });
-
-             const grouped = {};
-             dataSource.forEach(item => {
-                 const val = parseNumber(item[valKey]);
-                 const key = item['รหัสรถ'];
-                 if (key) grouped[key] = (grouped[key] || 0) + val;
-             });
-
-             const sorted = Object.entries(grouped).sort(([,a], [,b]) => b - a);
-             
-             const labels = sorted.map(k => k[0]);
-             const data = sorted.map(k => k[1]);
-
-             const calculatedHeight = Math.max(500, labels.length * 40);
-             canvas.parentNode.style.height = '600px'; 
-             canvas.height = calculatedHeight; 
-             canvas.style.height = `${calculatedHeight}px`; 
-
-             modalRankingChartInstance = new Chart(ctx, {
-                 type: 'bar', 
-                 data: { labels: labels, datasets: [{ label: currentGraphMode === 'fuel' ? 'ปริมาณน้ำมัน' : 'ค่าซ่อมบำรุง', data: data, backgroundColor: gradient, borderRadius: 6, barThickness: 20 }] },
-                 options: { 
-                     indexAxis: 'y', 
-                     responsive: true, 
-                     maintainAspectRatio: false, 
-                     plugins: { legend: { display: false } }, 
-                     scales: { 
-                         x: { grid: { color: '#f1f5f9', borderDash: [2, 2] }, ticks: { color: '#94a3b8' } }, 
-                         y: { grid: { display: false }, ticks: { color: '#1f2937', font: { weight: 'bold' } } } 
-                     },
-                     onClick: (e, activeEls) => { 
-                        if(activeEls.length > 0) {
-                            const index = activeEls[0].index;
-                            // Pass context here too
-                            const context = {
-                                view: chartState.view,
-                                year: chartState.selectedYear,
-                                month: chartState.selectedMonth
-                            };
-                            showMachineDetails(labels[index], context);
-                        }
-                     },
-                     onHover: (e, els) => e.native.target.style.cursor = els[0] ? 'pointer' : 'default'
-                 }
-             });
-        }
-
-        loadData();
     </script>
 </body>
 </html>
