@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sarayut Maungpraserd | Portfolio</title>
+    <title>Sarayut Maungpraserd | HRD Portfolio</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
     <!-- Google Fonts: Prompt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -21,10 +28,26 @@
                         sans: ['Prompt', 'sans-serif'],
                     },
                     colors: {
-                        primary: '#2563eb', // Blue 600
-                        secondary: '#64748b', // Slate 500
+                        brand: '#3b82f6', // Blue
+                        accent: '#8b5cf6', // Violet
                         dark: '#0f172a', // Slate 900
-                        light: '#f8fafc', // Slate 50
+                        card: '#1e293b', // Slate 800
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
                     }
                 }
             }
@@ -32,133 +55,143 @@
     </script>
     <style>
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        .glasser {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        body.no-scroll {
-            overflow: hidden;
-        }
-        
-        /* Image Hover Zoom */
-        .zoom-hover {
-            transition: transform 0.3s ease;
-        }
-        .zoom-hover:hover {
-            transform: scale(1.03);
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        #lightbox-modal {
-            z-index: 9999;
-        }
-        #gallery-modal {
-            z-index: 9000;
+        body.no-scroll { overflow: hidden; }
+        #lightbox-modal { z-index: 9999; }
+        #gallery-modal { z-index: 9000; }
+        
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
-<body class="font-sans text-slate-600 bg-slate-50 antialiased selection:bg-primary selection:text-white">
+<body class="font-sans text-slate-300 bg-dark antialiased overflow-x-hidden selection:bg-brand selection:text-white">
+
+    <!-- Background Animation Blobs -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 glasser transition-all duration-300" id="navbar">
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
+            <div class="flex justify-between items-center h-20">
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="#" class="text-xl font-bold text-dark tracking-wider hover:text-primary transition">
-                        SARAYUT<span class="text-primary">.M</span>
+                    <a href="#" class="text-2xl font-bold tracking-wider text-white">
+                        SARAYUT<span class="text-brand">.M</span>
                     </a>
                 </div>
-                
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="#home" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary rounded-full hover:bg-blue-50 transition">หน้าแรก</a>
-                    <a href="#about" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary rounded-full hover:bg-blue-50 transition">ข้อมูลส่วนตัว</a>
-                    <a href="#education" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary rounded-full hover:bg-blue-50 transition">การศึกษา</a>
-                    <a href="#experience" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary rounded-full hover:bg-blue-50 transition">ประสบการณ์</a>
-                    <a href="#media" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary rounded-full hover:bg-blue-50 transition">สื่อการสอน</a>
-                    <a href="#certificates" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary rounded-full hover:bg-blue-50 transition">เกียรติบัตร</a>
-                    <a href="#contact" class="ml-4 px-5 py-2 text-sm font-medium text-white bg-dark rounded-full hover:bg-primary shadow-lg hover:shadow-blue-500/30 transition transform hover:-translate-y-0.5">Contact</a>
+                    <a href="#home" class="px-4 py-2 text-sm font-medium hover:text-white transition">หน้าแรก</a>
+                    <a href="#skills" class="px-4 py-2 text-sm font-medium hover:text-white transition">ทักษะ</a>
+                    <a href="#education" class="px-4 py-2 text-sm font-medium hover:text-white transition">การศึกษา</a>
+                    <a href="#experience" class="px-4 py-2 text-sm font-medium hover:text-white transition">ประสบการณ์</a>
+                    <a href="#media" class="px-4 py-2 text-sm font-medium hover:text-white transition">สื่อการสอน</a>
+                    <a href="#certificates" class="px-4 py-2 text-sm font-medium hover:text-white transition">เกียรติบัตร</a>
+                    <a href="#contact" class="ml-4 px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-violet-600 rounded-full hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition transform hover:-translate-y-0.5">Contact Me</a>
                 </div>
-
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center">
-                    <button onclick="toggleMobileMenu()" class="text-slate-600 hover:text-primary focus:outline-none p-2">
+                    <button onclick="toggleMobileMenu()" class="text-slate-300 hover:text-white focus:outline-none p-2">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
         </div>
-        
-        <!-- Mobile Menu Dropdown -->
-        <div class="md:hidden hidden bg-white border-t border-slate-100 absolute w-full shadow-lg" id="mobile-menu">
-            <div class="px-4 pt-2 pb-4 space-y-1">
-                <a href="#home" class="block px-3 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary hover:bg-slate-50">หน้าแรก</a>
-                <a href="#about" class="block px-3 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary hover:bg-slate-50">ข้อมูลส่วนตัว</a>
-                <a href="#education" class="block px-3 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary hover:bg-slate-50">การศึกษา</a>
-                <a href="#experience" class="block px-3 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary hover:bg-slate-50">ประสบการณ์</a>
-                <a href="#media" class="block px-3 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary hover:bg-slate-50">สื่อการสอน</a>
-                <a href="#certificates" class="block px-3 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary hover:bg-slate-50">เกียรติบัตร</a>
-                <a href="#contact" class="block mt-4 text-center px-3 py-3 rounded-lg text-base font-medium bg-primary text-white shadow-md">Contact</a>
+        <!-- Mobile Dropdown -->
+        <div class="md:hidden hidden bg-slate-900 border-t border-slate-800 absolute w-full shadow-2xl" id="mobile-menu">
+            <div class="px-4 pt-2 pb-6 space-y-1">
+                <a href="#home" class="block px-3 py-3 rounded-lg text-base font-medium hover:bg-slate-800 hover:text-brand">หน้าแรก</a>
+                <a href="#skills" class="block px-3 py-3 rounded-lg text-base font-medium hover:bg-slate-800 hover:text-brand">ทักษะ</a>
+                <a href="#education" class="block px-3 py-3 rounded-lg text-base font-medium hover:bg-slate-800 hover:text-brand">การศึกษา</a>
+                <a href="#experience" class="block px-3 py-3 rounded-lg text-base font-medium hover:bg-slate-800 hover:text-brand">ประสบการณ์</a>
+                <a href="#media" class="block px-3 py-3 rounded-lg text-base font-medium hover:bg-slate-800 hover:text-brand">สื่อการสอน</a>
+                <a href="#certificates" class="block px-3 py-3 rounded-lg text-base font-medium hover:bg-slate-800 hover:text-brand">เกียรติบัตร</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 bg-dark overflow-hidden">
-        <!-- Background Elements -->
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-primary opacity-20 blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-purple-600 opacity-20 blur-3xl"></div>
-
+    <section id="home" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
                 
-                <!-- Text Content -->
-                <div class="w-full lg:w-3/5 text-center lg:text-left order-2 lg:order-1">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                        ศรายุทธ <br class="hidden lg:block">
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">ม่วงประเสริฐ</span>
+                <!-- Content -->
+                <div class="w-full lg:w-3/5 text-center lg:text-left" data-aos="fade-right" data-aos-duration="1000">
+                    <div class="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-brand uppercase bg-blue-900/30 rounded-full border border-blue-500/30">
+                        Available for HRD Position
+                    </div>
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6">
+                        ศรายุทธ <br>
+                        <span class="text-gradient">ม่วงประเสริฐ</span>
                     </h1>
-                    <p class="text-lg text-slate-300 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                        Technical Training Specialist และวิศวกรไฟฟ้าที่มีความเชี่ยวชาญด้านการออกแบบวงจร การถ่ายทอดความรู้นวัตกรรมเทคโนโลยี และการพัฒนาหลักสูตรฝึกอบรม พร้อมนำประสบการณ์มาประยุกต์ใช้เพื่อสร้างสรรค์ผลงานที่มีคุณภาพ
+                    <p class="text-lg text-slate-400 mb-10 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                        จากวิศวกรและครูผู้สอน สู่บทบาท <span class="text-white font-semibold">Technical Training Specialist</span> และนักพัฒนาบุคลากร (HRD) ที่เชี่ยวชาญด้านการออกแบบหลักสูตร การถ่ายทอดเทคโนโลยี และการผลิตสื่อการเรียนรู้สมัยใหม่ พร้อมขับเคลื่อนองค์กรด้วยศักยภาพของ "คน"
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <a href="#contact" class="px-8 py-3.5 rounded-full bg-white text-dark font-semibold hover:bg-gray-100 transition shadow-lg shadow-white/10 transform hover:-translate-y-1">
-                            Contact Me
+                    <div class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+                        <a href="#contact" class="px-8 py-4 rounded-full bg-white text-dark font-bold hover:bg-gray-100 transition shadow-[0_0_20px_rgba(255,255,255,0.3)] transform hover:-translate-y-1">
+                            ติดต่อร่วมงาน
                         </a>
-                        <a href="#certificates" class="px-8 py-3.5 rounded-full border border-slate-600 text-slate-300 font-medium hover:border-white hover:text-white transition">
-                            ดูผลงาน
+                        <a href="#skills" class="px-8 py-4 rounded-full border border-slate-600 text-slate-300 font-medium hover:border-brand hover:text-white hover:bg-brand/10 transition">
+                            ดูทักษะและความสามารถ
                         </a>
                     </div>
                 </div>
 
-                <!-- Image Profile -->
-                <div class="w-full lg:w-2/5 flex justify-center order-1 lg:order-2">
-                    <div class="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full blur-lg opacity-70 animate-pulse"></div>
-                        <img src="images/profile.png" onerror="this.src='https://placehold.co/400x400/1e40af/ffffff?text=Profile+Pic'" class="relative w-full h-full object-cover rounded-full border-4 border-slate-800 shadow-2xl z-10" alt="Profile Picture">
-                        
-                        <!-- Floating Badges -->
-                        <div class="absolute top-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl shadow-xl z-20 animate-bounce" style="animation-duration: 3s;">
-                            <i class="fas fa-bolt text-yellow-400 text-2xl"></i>
+                <!-- Profile Image -->
+                <div class="w-full lg:w-2/5 flex justify-center" data-aos="fade-left" data-aos-duration="1200">
+                    <div class="relative w-72 h-72 sm:w-96 sm:h-96 animate-float">
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-2xl opacity-50"></div>
+                        <div class="relative w-full h-full rounded-full p-2 bg-gradient-to-b from-slate-700 to-slate-900 border border-slate-600 shadow-2xl">
+                            <img src="images/profile.png" onerror="this.src='https://placehold.co/400x400/1e40af/ffffff?text=Profile+Pic'" class="w-full h-full object-cover rounded-full border-4 border-slate-800" alt="Profile">
                         </div>
-                        <div class="absolute bottom-8 left-0 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl shadow-xl z-20 animate-bounce" style="animation-duration: 4s;">
-                            <i class="fas fa-graduation-cap text-blue-400 text-2xl"></i>
+                        
+                        <!-- Floating Badge 1 -->
+                        <div class="absolute top-0 right-0 bg-card/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-xl animate-bounce" style="animation-duration: 3s;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                    <i class="fas fa-chalkboard-user text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400">Experience</p>
+                                    <p class="font-bold text-white">Training Specialist</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Floating Badge 2 -->
+                        <div class="absolute bottom-10 -left-4 bg-card/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-xl animate-bounce" style="animation-duration: 4s;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                    <i class="fas fa-photo-film text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400">Skill</p>
+                                    <p class="font-bold text-white">Media Production</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,173 +199,226 @@
         </div>
     </section>
 
-    <!-- About Info Section -->
-    <section id="about" class="py-20 bg-white">
+    <!-- SKILLS SECTION (UPDATED) -->
+    <section id="skills" class="py-20 relative z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center text-center mb-16">
-                <span class="text-primary font-semibold tracking-wider uppercase text-sm mb-2">About Me</span>
-                <h2 class="text-3xl md:text-4xl font-bold text-dark">ข้อมูลส่วนตัว & ช่องทางติดต่อ</h2>
-                <div class="w-16 h-1 bg-primary mt-4 rounded-full"></div>
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">ทักษะและความเชี่ยวชาญ</h2>
+                <div class="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
             </div>
 
             <div class="grid md:grid-cols-2 gap-8">
-                <!-- Personal Info Card -->
-                <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
-                    <h3 class="text-xl font-bold text-dark mb-6 flex items-center">
-                        <span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="far fa-user"></i></span>
-                        ข้อมูลส่วนตัว
+                
+                <!-- Left: Core Competencies -->
+                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="100">
+                    <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
+                        <i class="fas fa-briefcase text-brand mr-3 text-3xl"></i> Core Competencies
                     </h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between border-b border-slate-200 pb-3">
-                            <span class="font-medium text-slate-500">ชื่อเล่น</span>
-                            <span class="text-dark font-semibold">นิก (Nick)</span>
+                    <div class="space-y-6">
+                        <!-- Skill Item -->
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium text-slate-300">Training Delivery (การเป็นวิทยากร)</span>
+                                <span class="text-brand text-sm">Excellent</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2.5">
+                                <div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-2.5 rounded-full" style="width: 95%"></div>
+                            </div>
                         </div>
-                        <div class="flex justify-between border-b border-slate-200 pb-3">
-                            <span class="font-medium text-slate-500">อายุ</span>
-                            <span class="text-dark font-semibold">28 ปี</span>
+                        <!-- Skill Item -->
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium text-slate-300">Instructional Design (ออกแบบหลักสูตร)</span>
+                                <span class="text-brand text-sm">Advanced</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2.5">
+                                <div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-2.5 rounded-full" style="width: 85%"></div>
+                            </div>
                         </div>
-                        <div class="flex justify-between border-b border-slate-200 pb-3">
-                            <span class="font-medium text-slate-500">ภูมิลำเนา</span>
-                            <span class="text-dark font-semibold">พิจิตร</span>
+                        <!-- Skill Item -->
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium text-slate-300">Training Media Development (พัฒนาสื่อ)</span>
+                                <span class="text-brand text-sm">Advanced</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2.5">
+                                <div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-2.5 rounded-full" style="width: 90%"></div>
+                            </div>
                         </div>
-                        <div class="flex justify-between pt-1">
-                            <span class="font-medium text-slate-500">งานอดิเรก</span>
-                            <span class="text-dark font-semibold">ดูซีรีย์, อ่านนิยาย, เล่นเกมส์</span>
+                        <!-- Skill Item -->
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium text-slate-300">Coaching & Mentoring</span>
+                                <span class="text-brand text-sm">Intermediate</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2.5">
+                                <div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-2.5 rounded-full" style="width: 75%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Contact Info Card -->
-                <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
-                    <h3 class="text-xl font-bold text-dark mb-6 flex items-center">
-                        <span class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center mr-3"><i class="far fa-address-card"></i></span>
-                        ช่องทางติดต่อ
+                <!-- Right: Technical & Tools (Updated) -->
+                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+                    <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
+                        <i class="fas fa-tools text-accent mr-3 text-3xl"></i> Technical & Tools
                     </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <a href="tel:0800508823" class="flex items-center p-3 bg-white rounded-xl border border-slate-200 hover:border-primary hover:shadow-sm transition group">
-                            <div class="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center mr-3 group-hover:bg-primary group-hover:text-white transition">
-                                <i class="fas fa-phone"></i>
+                    <div class="space-y-5">
+                        
+                        <!-- Microsoft Word -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium text-slate-300 flex items-center"><i class="fas fa-file-word text-blue-500 mr-2"></i>Microsoft Word</span>
+                                <span class="text-accent text-sm">90%</span>
                             </div>
-                            <div class="text-sm">
-                                <p class="text-slate-400 text-xs">โทรศัพท์</p>
-                                <p class="font-semibold text-dark">080 050 8823</p>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-600 to-blue-400 h-2 rounded-full" style="width: 90%"></div>
                             </div>
-                        </a>
-                        <a href="mailto:nickdnc@gmail.com" class="flex items-center p-3 bg-white rounded-xl border border-slate-200 hover:border-red-500 hover:shadow-sm transition group">
-                            <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mr-3 group-hover:bg-red-500 group-hover:text-white transition">
-                                <i class="fas fa-envelope"></i>
+                        </div>
+
+                        <!-- Microsoft PowerPoint -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium text-slate-300 flex items-center"><i class="fas fa-file-powerpoint text-orange-500 mr-2"></i>Microsoft PowerPoint</span>
+                                <span class="text-accent text-sm">80%</span>
                             </div>
-                            <div class="text-sm">
-                                <p class="text-slate-400 text-xs">อีเมล</p>
-                                <p class="font-semibold text-dark truncate w-24">nickdnc@gmail.com</p>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-orange-600 to-orange-400 h-2 rounded-full" style="width: 80%"></div>
                             </div>
-                        </a>
-                        <a href="#" class="flex items-center p-3 bg-white rounded-xl border border-slate-200 hover:border-green-500 hover:shadow-sm transition group">
-                            <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-3 group-hover:bg-green-500 group-hover:text-white transition">
-                                <i class="fab fa-line text-lg"></i>
+                        </div>
+
+                        <!-- Microsoft Excel -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium text-slate-300 flex items-center"><i class="fas fa-file-excel text-green-500 mr-2"></i>Microsoft Excel</span>
+                                <span class="text-accent text-sm">70%</span>
                             </div>
-                            <div class="text-sm">
-                                <p class="text-slate-400 text-xs">LINE ID</p>
-                                <p class="font-semibold text-dark">nickasnick</p>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-green-600 to-green-400 h-2 rounded-full" style="width: 70%"></div>
                             </div>
-                        </a>
-                        <a href="https://facebook.com" target="_blank" class="flex items-center p-3 bg-white rounded-xl border border-slate-200 hover:border-blue-600 hover:shadow-sm transition group">
-                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3 group-hover:bg-blue-600 group-hover:text-white transition">
-                                <i class="fab fa-facebook-f"></i>
+                        </div>
+
+                        <!-- Video/Photo Edit -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium text-slate-300 flex items-center"><i class="fas fa-photo-video text-purple-500 mr-2"></i>Video/Photo Edit</span>
+                                <span class="text-accent text-sm">70%</span>
                             </div>
-                            <div class="text-sm">
-                                <p class="text-slate-400 text-xs">Facebook</p>
-                                <p class="font-semibold text-dark truncate w-24">Sarayut M.</p>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-600 to-pink-400 h-2 rounded-full" style="width: 70%"></div>
                             </div>
-                        </a>
+                        </div>
+
+                        <!-- Innovation Design -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium text-slate-300 flex items-center"><i class="fas fa-microchip text-yellow-500 mr-2"></i>Innovation Design</span>
+                                <span class="text-accent text-sm">80%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-500 to-amber-400 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+                        </div>
+
+                        <!-- PLC & Automation (Suggested) -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium text-slate-300 flex items-center"><i class="fas fa-cogs text-gray-400 mr-2"></i>PLC & Automation</span>
+                                <span class="text-accent text-sm">75%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-gray-500 to-slate-400 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
-    <!-- Education Section (Timeline Style) -->
-    <section id="education" class="py-20 bg-slate-50 border-y border-slate-200">
+    <!-- Education Section -->
+    <section id="education" class="py-20 bg-dark relative border-y border-slate-800">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center text-center mb-16">
-                <span class="text-primary font-semibold tracking-wider uppercase text-sm mb-2">Education</span>
-                <h2 class="text-3xl md:text-4xl font-bold text-dark">ประวัติการศึกษา</h2>
-                <div class="w-16 h-1 bg-primary mt-4 rounded-full"></div>
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-white">ประวัติการศึกษา</h2>
+                <div class="h-1 w-20 bg-brand mx-auto rounded-full mt-4"></div>
             </div>
 
-            <div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+            <div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-700 before:to-transparent">
                 
                 <!-- Bachelor -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-primary shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-brand shadow-[0_0_15px_rgba(59,130,246,0.5)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl hover:bg-slate-800 transition duration-300 relative group-hover:border-brand/50">
                         <div class="flex flex-col sm:flex-row justify-between mb-2">
-                            <span class="font-bold text-primary text-lg">ปริญญาตรี (เกียรตินิยมอันดับ 2)</span>
-                            <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">2561 - 2562</span>
+                            <span class="font-bold text-white text-lg">ปริญญาตรี (เกียรตินิยมอันดับ 2)</span>
+                            <span class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700">2561 - 2562</span>
                         </div>
-                        <p class="text-dark font-medium">มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ</p>
+                        <p class="text-slate-300 font-medium">มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ</p>
                         <p class="text-slate-500 text-sm mt-1">สาขาวิชาเทคโนโลยีไฟฟ้าและอิเล็กทรอนิกส์</p>
                         <div class="mt-4 flex items-center justify-between">
-                            <span class="text-primary font-bold bg-blue-50 px-3 py-1 rounded-lg text-sm">GPA: 3.37</span>
-                            <button onclick="openLightbox('images/transcript/3.jpg')" class="text-slate-500 hover:text-primary text-xs flex items-center transition">
-                                <i class="fas fa-file-alt mr-1"></i> ดู Transcript
+                            <span class="text-brand font-bold bg-blue-900/30 px-3 py-1 rounded-lg text-sm border border-blue-500/20">GPA: 3.37</span>
+                            <button onclick="openLightbox('images/transcript/3.jpg')" class="text-slate-400 hover:text-white text-xs flex items-center transition group/btn">
+                                <i class="fas fa-file-alt mr-2 group-hover/btn:text-brand"></i> ดู Transcript
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Teaching Cert -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-purple-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-accent shadow-[0_0_15px_rgba(139,92,246,0.5)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
                         <i class="fas fa-certificate"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl hover:bg-slate-800 transition duration-300 relative group-hover:border-accent/50">
                         <div class="flex flex-col sm:flex-row justify-between mb-2">
-                            <span class="font-bold text-purple-600 text-lg">ประกาศนียบัตรวิชาชีพครู</span>
-                            <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">2564 - 2565</span>
+                            <span class="font-bold text-accent text-lg">ประกาศนียบัตรวิชาชีพครู</span>
+                            <span class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700">2564 - 2565</span>
                         </div>
-                        <p class="text-dark font-medium">มหาวิทยาลัยราชภัฏพิบูลสงคราม</p>
+                        <p class="text-slate-300 font-medium">มหาวิทยาลัยราชภัฏพิบูลสงคราม</p>
                         <div class="mt-4 flex items-center justify-between">
-                            <span class="text-purple-600 font-bold bg-purple-50 px-3 py-1 rounded-lg text-sm">GPA: 3.87</span>
-                            <button onclick="openLightbox('images/transcript/4.jpg')" class="text-slate-500 hover:text-purple-600 text-xs flex items-center transition">
-                                <i class="fas fa-file-alt mr-1"></i> ดู Transcript
+                            <span class="text-accent font-bold bg-violet-900/30 px-3 py-1 rounded-lg text-sm border border-violet-500/20">GPA: 3.87</span>
+                            <button onclick="openLightbox('images/transcript/4.jpg')" class="text-slate-400 hover:text-white text-xs flex items-center transition group/btn">
+                                <i class="fas fa-file-alt mr-2 group-hover/btn:text-accent"></i> ดู Transcript
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Vocational -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-400 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-slate-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
                         <i class="fas fa-tools"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl hover:bg-slate-800 transition duration-300 relative">
                         <div class="flex flex-col sm:flex-row justify-between mb-2">
-                            <span class="font-bold text-slate-700 text-lg">ปวช. – ปวส.</span>
-                            <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">2556 - 2561</span>
+                            <span class="font-bold text-slate-200 text-lg">ปวช. – ปวส.</span>
+                            <span class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700">2556 - 2561</span>
                         </div>
-                        <p class="text-dark font-medium">วิทยาลัยเทคนิคพิจิตร</p>
+                        <p class="text-slate-300 font-medium">วิทยาลัยเทคนิคพิจิตร</p>
                         <p class="text-slate-500 text-sm mt-1">แผนกวิชาช่างอิเล็กทรอนิกส์</p>
                         <div class="mt-4 flex gap-3">
-                            <button onclick="openLightbox('images/transcript/1.jpg')" class="text-xs bg-slate-100 px-3 py-1.5 rounded-md hover:bg-slate-200 transition">ปวช.</button>
-                            <button onclick="openLightbox('images/transcript/2.jpg')" class="text-xs bg-slate-100 px-3 py-1.5 rounded-md hover:bg-slate-200 transition">ปวส.</button>
+                            <button onclick="openLightbox('images/transcript/1.jpg')" class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-700 hover:text-white transition">ปวช.</button>
+                            <button onclick="openLightbox('images/transcript/2.jpg')" class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-700 hover:text-white transition">ปวส.</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- High School -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-slate-700 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white text-sm">
                         <i class="fas fa-school"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl hover:bg-slate-800 transition duration-300 relative">
                         <div class="flex flex-col sm:flex-row justify-between mb-2">
-                            <span class="font-bold text-slate-600 text-lg">มัธยมศึกษาตอนต้น</span>
-                            <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">2552 - 2555</span>
+                            <span class="font-bold text-slate-400 text-lg">มัธยมศึกษาตอนต้น</span>
+                            <span class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700">2552 - 2555</span>
                         </div>
-                        <p class="text-dark font-medium">โรงเรียนพิจิตรพิทยาคม</p>
+                        <p class="text-slate-300 font-medium">โรงเรียนพิจิตรพิทยาคม</p>
                     </div>
                 </div>
 
@@ -340,50 +426,48 @@
         </div>
     </section>
 
-    <!-- Experience Section (Timeline Style) -->
-    <section id="experience" class="py-20 bg-white">
+    <!-- Experience Section -->
+    <section id="experience" class="py-20 relative z-10">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center text-center mb-16">
-                <span class="text-primary font-semibold tracking-wider uppercase text-sm mb-2">Career Path</span>
-                <h2 class="text-3xl md:text-4xl font-bold text-dark">ประสบการณ์ทำงาน</h2>
-                <div class="w-16 h-1 bg-primary mt-4 rounded-full"></div>
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-white">ประสบการณ์ทำงาน</h2>
+                <div class="h-1 w-20 bg-brand mx-auto rounded-full mt-4"></div>
             </div>
 
-            <!-- Timeline Container -->
-            <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-200">
+            <div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-800">
 
                 <!-- Job 1: Hitachi -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-primary shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-brand shadow-[0_0_20px_rgba(59,130,246,0.6)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
                         <i class="fas fa-briefcase"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-lg shadow-blue-100/50 border border-blue-50 relative">
-                        <span class="absolute top-6 right-6 text-xs font-bold text-primary bg-blue-50 px-2 py-1 rounded">ต.ค. 66 - ก.พ. 68</span>
-                        <h3 class="font-bold text-xl text-dark mb-1">Technical Training Specialist</h3>
-                        <p class="text-primary font-medium text-sm mb-4">บริษัท ฮิตาชิ เอลลิเวเตอร์ (ประเทศไทย) จำกัด</p>
-                        <ul class="list-disc list-outside ml-4 text-sm text-slate-600 space-y-1 mb-5">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl border border-blue-500/30 hover:border-blue-500/60 shadow-lg relative transition duration-300">
+                        <span class="absolute top-6 right-6 text-xs font-bold text-brand bg-blue-900/30 border border-blue-500/20 px-2 py-1 rounded">ต.ค. 66 - ก.พ. 68</span>
+                        <h3 class="font-bold text-xl text-white mb-1">Technical Training Specialist</h3>
+                        <p class="text-brand font-medium text-sm mb-4">บริษัท ฮิตาชิ เอลลิเวเตอร์ (ประเทศไทย) จำกัด</p>
+                        <ul class="list-disc list-outside ml-4 text-sm text-slate-400 space-y-1 mb-5">
                             <li>อบรมพนักงานหลักสูตรพนักงานใหม่ และพนักงานอายุงาน 1-2 ปี</li>
                             <li>อบรมลูกค้าหลักสูตรการใช้งานลิฟต์และการช่วยเหลือผู้โดยสารติดลิฟต์เบื้องต้น</li>
                             <li>ประเมินผลและติดตามผลการอบรม</li>
                             <li>สร้าง ปรับปรุง พัฒนาสื่อประกอบการฝึกอบรม</li>
                             <li>ออก OJT พนักงานช่าง</li>
                         </ul>
-                        <button onclick="openGalleryOverview()" class="w-full py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm font-medium hover:bg-primary hover:text-white hover:border-primary transition flex items-center justify-center gap-2 group-btn">
+                        <button onclick="openGalleryOverview()" class="w-full py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-medium hover:bg-blue-600 hover:text-white hover:border-blue-600 transition flex items-center justify-center gap-2 group-btn">
                             <i class="fas fa-images"></i> ดูอัลบั้มรูปผลงาน
                         </button>
                     </div>
                 </div>
 
                 <!-- Job 2: Delta -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-slate-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
                         <i class="fas fa-microchip"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-50 p-6 rounded-2xl border border-slate-100 relative">
-                        <span class="absolute top-6 right-6 text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded">มี.ค. 66 - ส.ค. 66</span>
-                        <h3 class="font-bold text-xl text-dark mb-1">Electrical Design Engineer</h3>
-                        <p class="text-slate-600 font-medium text-sm mb-4">บริษัท เดลต้า อีเลคโทรนิคส์ (ประเทศไทย) จำกัด (มหาชน)</p>
-                        <ul class="list-disc list-outside ml-4 text-sm text-slate-500 space-y-1">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl hover:bg-slate-800 transition duration-300 relative">
+                        <span class="absolute top-6 right-6 text-xs font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2 py-1 rounded">มี.ค. 66 - ส.ค. 66</span>
+                        <h3 class="font-bold text-xl text-white mb-1">Electrical Design Engineer</h3>
+                        <p class="text-slate-400 font-medium text-sm mb-4">บริษัท เดลต้า อีเลคโทรนิคส์ (ประเทศไทย) จำกัด (มหาชน)</p>
+                        <ul class="list-disc list-outside ml-4 text-sm text-slate-400 space-y-1">
                             <li>ออกแบบวงจรเพาเวอร์ซัพพลาย</li>
                             <li>ทดสอบการทำงาน หาประสิทธิภาพ หา power loss</li>
                             <li>ทดสอบ EMI ทั้ง CE และ RE</li>
@@ -394,35 +478,35 @@
                 </div>
 
                 <!-- Job 3: Teacher -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-indigo-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-accent shadow-[0_0_20px_rgba(139,92,246,0.6)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative">
-                        <span class="absolute top-6 right-6 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">ม.ค. 64 - ธ.ค. 65</span>
-                        <h3 class="font-bold text-xl text-dark mb-1">ครูพิเศษสอน</h3>
-                        <p class="text-indigo-600 font-medium text-sm mb-4">วิทยาลัยเทคนิคพิจิตร</p>
-                        <ul class="list-disc list-outside ml-4 text-sm text-slate-600 space-y-1 mb-5">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl border border-violet-500/30 hover:border-violet-500/60 shadow-lg relative transition duration-300">
+                        <span class="absolute top-6 right-6 text-xs font-bold text-accent bg-violet-900/30 border border-violet-500/20 px-2 py-1 rounded">ม.ค. 64 - ธ.ค. 65</span>
+                        <h3 class="font-bold text-xl text-white mb-1">ครูพิเศษสอน</h3>
+                        <p class="text-accent font-medium text-sm mb-4">วิทยาลัยเทคนิคพิจิตร</p>
+                        <ul class="list-disc list-outside ml-4 text-sm text-slate-400 space-y-1 mb-5">
                             <li>ครูผู้สอนวิชา: การควบคุมนิวเมติกส์ฯ, ไมโครคอนโทรลเลอร์, PLC เบื้องต้น</li>
                             <li>ครูผู้ควบคุมทีมแข่งหุ่นยนต์ และดูแลสิ่งประดิษฐ์ทั้งหมด</li>
                             <li>ผู้ช่วยหัวหน้างานวิจัยนวัตกรรม / ทะเบียน / หลักสูตร / สื่อการสอน</li>
                         </ul>
-                        <button onclick="openAlbum('teacher')" class="w-full py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm font-medium hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition flex items-center justify-center gap-2">
+                        <button onclick="openAlbum('teacher')" class="w-full py-2.5 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-300 text-sm font-medium hover:bg-violet-600 hover:text-white hover:border-violet-600 transition flex items-center justify-center gap-2">
                             <i class="fas fa-camera"></i> ดูอัลบั้มรูปกิจกรรมการสอน
                         </button>
                     </div>
                 </div>
 
                 <!-- Job 4: Cal-Comp -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-400 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group" data-aos="fade-up">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-900 bg-slate-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-white">
                         <i class="fas fa-cogs"></i>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-50 p-6 rounded-2xl border border-slate-100 relative">
-                        <span class="absolute top-6 right-6 text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded">มี.ค. 60 - ก.ย. 60</span>
-                        <h3 class="font-bold text-xl text-dark mb-1">Operator</h3>
-                        <p class="text-slate-600 font-medium text-sm mb-4">บริษัท แคล-คอมพ์อีเล็คโทรนิคส์ (ประเทศไทย)</p>
-                        <ul class="list-disc list-outside ml-4 text-sm text-slate-500 space-y-1">
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] glass-card p-6 rounded-2xl hover:bg-slate-800 transition duration-300 relative">
+                        <span class="absolute top-6 right-6 text-xs font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2 py-1 rounded">มี.ค. 60 - ก.ย. 60</span>
+                        <h3 class="font-bold text-xl text-white mb-1">Operator</h3>
+                        <p class="text-slate-400 font-medium text-sm mb-4">บริษัท แคล-คอมพ์อีเล็คโทรนิคส์ (ประเทศไทย)</p>
+                        <ul class="list-disc list-outside ml-4 text-sm text-slate-400 space-y-1">
                             <li>ซ่อมแผ่นวงจรฮาร์ดดิสที่เสียจากไลน์ผลิตและจากลูกค้า</li>
                             <li>Test แผ่นวงจรที่ซ่อมเสร็จแล้ว</li>
                             <li>ซ่อมเครื่องเทสแผ่น PCB</li>
@@ -435,70 +519,70 @@
     </section>
 
     <!-- Media & GIFs Section -->
-    <section id="media" class="py-20 bg-slate-50 border-y border-slate-200">
+    <section id="media" class="py-20 bg-slate-900 border-y border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center text-center mb-12">
-                <span class="text-primary font-semibold tracking-wider uppercase text-sm mb-2">Media & Motion</span>
-                <h2 class="text-3xl md:text-4xl font-bold text-dark">ตัวอย่างสื่อที่จัดทำ</h2>
-                <p class="text-slate-500 mt-2 max-w-2xl">สื่อการสอนและ Animation ประกอบการอบรม (GIF) ที่ออกแบบเพื่อให้เข้าใจระบบการทำงานได้ง่ายขึ้น</p>
+            <div class="flex flex-col items-center text-center mb-12" data-aos="fade-up">
+                <span class="text-brand font-semibold tracking-wider uppercase text-sm mb-2">Media & Motion</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-white">ตัวอย่างสื่อที่จัดทำ</h2>
+                <p class="text-slate-400 mt-2 max-w-2xl">สื่อการสอนและ Animation ประกอบการอบรม (GIF) ที่ออกแบบเพื่อให้เข้าใจระบบการทำงานได้ง่ายขึ้น</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- GIF Items with hover effects -->
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/ALP.gif')">
-                    <div class="aspect-video bg-slate-900 flex items-center justify-center overflow-hidden relative">
-                        <img src="images/media/ALP.gif" alt="ALP" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition">
-                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                            <i class="fas fa-play text-white text-3xl"></i>
+                <!-- GIF Items -->
+                <div class="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden hover:border-brand/50 hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/ALP.gif')" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden relative">
+                        <img src="images/media/ALP.gif" alt="ALP" class="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition duration-300">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <i class="fas fa-play text-white text-3xl drop-shadow-lg scale-75 group-hover:scale-100 transition"></i>
                         </div>
                     </div>
                     <div class="p-4 text-center">
-                        <h4 class="font-semibold text-dark group-hover:text-primary transition">ALP Operation</h4>
+                        <h4 class="font-semibold text-slate-200 group-hover:text-brand transition">ALP Operation</h4>
                     </div>
                 </div>
 
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Break.gif')">
-                    <div class="aspect-video bg-white flex items-center justify-center overflow-hidden relative border-b border-slate-100">
-                        <img src="images/media/Break.gif" alt="Break" class="w-full h-full object-contain group-hover:scale-105 transition">
+                <div class="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden hover:border-brand/50 hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Break.gif')" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="aspect-video bg-white flex items-center justify-center overflow-hidden relative">
+                        <img src="images/media/Break.gif" alt="Break" class="w-full h-full object-contain group-hover:scale-105 transition duration-500">
                     </div>
                     <div class="p-4 text-center">
-                        <h4 class="font-semibold text-dark group-hover:text-primary transition">Magnetic Brake</h4>
+                        <h4 class="font-semibold text-slate-200 group-hover:text-brand transition">Magnetic Brake</h4>
                     </div>
                 </div>
 
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Elevator animetion.gif')">
-                    <div class="aspect-video bg-white flex items-center justify-center overflow-hidden relative border-b border-slate-100">
-                        <img src="images/media/Elevator animetion.gif" alt="Elevator Animation" class="w-full h-full object-contain group-hover:scale-105 transition">
+                <div class="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden hover:border-brand/50 hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Elevator animetion.gif')" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="aspect-video bg-white flex items-center justify-center overflow-hidden relative">
+                        <img src="images/media/Elevator animetion.gif" alt="Elevator Animation" class="w-full h-full object-contain group-hover:scale-105 transition duration-500">
                     </div>
                     <div class="p-4 text-center">
-                        <h4 class="font-semibold text-dark group-hover:text-primary transition">Elevator Animation</h4>
+                        <h4 class="font-semibold text-slate-200 group-hover:text-brand transition">Elevator Animation</h4>
                     </div>
                 </div>
 
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Fire Emergency rev.2.gif')">
+                <div class="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden hover:border-brand/50 hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Fire Emergency rev.2.gif')" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden relative">
+                        <img src="images/media/Fire Emergency rev.2.gif" alt="Fire Emergency" class="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition duration-300">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h4 class="font-semibold text-slate-200 group-hover:text-brand transition">Fire Emergency Mode</h4>
+                    </div>
+                </div>
+
+                <div class="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden hover:border-brand/50 hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Fire man.gif')" data-aos="zoom-in" data-aos-delay="500">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden relative">
+                        <img src="images/media/Fire man.gif" alt="Fire Man" class="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition duration-300">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h4 class="font-semibold text-slate-200 group-hover:text-brand transition">Fireman Operation</h4>
+                    </div>
+                </div>
+
+                <div class="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden hover:border-brand/50 hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Gen.gif')" data-aos="zoom-in" data-aos-delay="600">
                     <div class="aspect-video bg-slate-900 flex items-center justify-center overflow-hidden relative">
-                        <img src="images/media/Fire Emergency rev.2.gif" alt="Fire Emergency" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition">
+                        <img src="images/media/Gen.gif" alt="Generator" class="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition duration-300">
                     </div>
                     <div class="p-4 text-center">
-                        <h4 class="font-semibold text-dark group-hover:text-primary transition">Fire Emergency Mode</h4>
-                    </div>
-                </div>
-
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Fire man.gif')">
-                    <div class="aspect-video bg-slate-900 flex items-center justify-center overflow-hidden relative">
-                        <img src="images/media/Fire man.gif" alt="Fire Man" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition">
-                    </div>
-                    <div class="p-4 text-center">
-                        <h4 class="font-semibold text-dark group-hover:text-primary transition">Fireman Operation</h4>
-                    </div>
-                </div>
-
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openLightbox('images/media/Gen.gif')">
-                    <div class="aspect-video bg-slate-900 flex items-center justify-center overflow-hidden relative">
-                        <img src="images/media/Gen.gif" alt="Generator" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition">
-                    </div>
-                    <div class="p-4 text-center">
-                        <h4 class="font-semibold text-dark group-hover:text-primary transition">Generator Mode</h4>
+                        <h4 class="font-semibold text-slate-200 group-hover:text-brand transition">Generator Mode</h4>
                     </div>
                 </div>
             </div>
@@ -506,160 +590,138 @@
     </section>
 
     <!-- Certificates Section -->
-    <section id="certificates" class="py-20 bg-dark text-white">
+    <section id="certificates" class="py-20 bg-dark relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center text-center mb-16">
+            <div class="flex flex-col items-center text-center mb-16" data-aos="fade-up">
                 <span class="text-blue-400 font-semibold tracking-wider uppercase text-sm mb-2">Achievements</span>
                 <h2 class="text-3xl md:text-4xl font-bold text-white">เกียรติบัตรและผลงาน</h2>
-                <div class="w-16 h-1 bg-blue-500 mt-4 rounded-full"></div>
+                <div class="w-16 h-1 bg-brand mt-4 rounded-full"></div>
             </div>
 
             <!-- Certificates Grid -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                <!-- Helper for rendering image cards with zoom effect -->
-                <!-- 1(1) to 1(5) -->
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/1 (1).jpg')">
-                    <img src="images/certificates/1 (1).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300"></div>
+                <!-- Image Helper Function: Keep same logic but add AOS -->
+                <!-- Use a loop in your head: copy-paste blocks below for all your certs -->
+                
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/1 (1).jpg')" data-aos="fade-up" data-aos-delay="100">
+                    <img src="images/certificates/1 (1).jpg" onerror="this.src='https://placehold.co/600x400/1e293b/ffffff?text=Cert'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end justify-center p-4">
+                        <i class="fas fa-search-plus text-white text-2xl"></i>
+                    </div>
                 </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/1 (2).jpg')">
-                    <img src="images/certificates/1 (2).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300"></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/1 (2).jpg')" data-aos="fade-up" data-aos-delay="150">
+                    <img src="images/certificates/1 (2).jpg" onerror="this.src='https://placehold.co/600x400/1e293b/ffffff?text=Cert'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end justify-center p-4">
+                        <i class="fas fa-search-plus text-white text-2xl"></i>
+                    </div>
                 </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/1 (3).jpg')">
-                    <img src="images/certificates/1 (3).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300"></div>
+                <!-- ... Copy this block for all 1(3) to 1(5) ... -->
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/1 (3).jpg')" data-aos="fade-up">
+                    <img src="images/certificates/1 (3).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                 </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/1 (4).jpg')">
-                    <img src="images/certificates/1 (4).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300"></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/1 (4).jpg')" data-aos="fade-up">
+                    <img src="images/certificates/1 (4).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                 </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/1 (5).jpg')">
-                    <img src="images/certificates/1 (5).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300"></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/1 (5).jpg')" data-aos="fade-up">
+                    <img src="images/certificates/1 (5).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                 </div>
 
                 <!-- Single Certs -->
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/c.jpg')">
-                    <div class="aspect-[3/4] relative">
-                        <img src="images/certificates/c.jpg" onerror="this.src='https://placehold.co/600x800/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/c.jpg')" data-aos="fade-up">
+                    <div class="aspect-[3/4]"><img src="images/certificates/c.jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div>
                 </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/M.jpg')">
-                    <img src="images/certificates/M.jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/M.jpg')" data-aos="fade-up">
+                    <img src="images/certificates/M.jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                 </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer bg-white" onclick="openLightbox('images/certificates/stem.png')">
-                    <img src="images/certificates/stem.png" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300 bg-white" onclick="openLightbox('images/certificates/stem.png')" data-aos="fade-up">
+                    <img src="images/certificates/stem.png" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                 </div>
 
                 <!-- N Series -->
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/N (1).jpg')">
-                    <img src="images/certificates/N (1).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/N (2).jpg')">
-                    <img src="images/certificates/N (2).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/N (3).jpg')">
-                    <img src="images/certificates/N (3).jpg" onerror="this.src='https://placehold.co/600x400/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                </div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/N (1).jpg')" data-aos="fade-up"><img src="images/certificates/N (1).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/N (2).jpg')" data-aos="fade-up"><img src="images/certificates/N (2).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/N (3).jpg')" data-aos="fade-up"><img src="images/certificates/N (3).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div>
 
                 <!-- R Series -->
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/R (1).jpg')">
-                    <div class="aspect-[3/4] relative">
-                        <img src="images/certificates/R (1).jpg" onerror="this.src='https://placehold.co/600x800/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/R (2).jpg')">
-                    <div class="aspect-[3/4] relative">
-                        <img src="images/certificates/R (2).jpg" onerror="this.src='https://placehold.co/600x800/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/R (3).jpg')">
-                    <div class="aspect-[3/4] relative">
-                        <img src="images/certificates/R (3).jpg" onerror="this.src='https://placehold.co/600x800/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/R (4).jpg')">
-                    <div class="aspect-[3/4] relative">
-                        <img src="images/certificates/R (4).jpg" onerror="this.src='https://placehold.co/600x800/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                </div>
-                <div class="group relative rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox('images/certificates/R (5).jpg')">
-                    <div class="aspect-[3/4] relative">
-                        <img src="images/certificates/R (5).jpg" onerror="this.src='https://placehold.co/600x800/334155/ffffff?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                </div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/R (1).jpg')" data-aos="fade-up"><div class="aspect-[3/4]"><img src="images/certificates/R (1).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/R (2).jpg')" data-aos="fade-up"><div class="aspect-[3/4]"><img src="images/certificates/R (2).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/R (3).jpg')" data-aos="fade-up"><div class="aspect-[3/4]"><img src="images/certificates/R (3).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/R (4).jpg')" data-aos="fade-up"><div class="aspect-[3/4]"><img src="images/certificates/R (4).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div></div>
+                <div class="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-blue-500/30 transition-all duration-300" onclick="openLightbox('images/certificates/R (5).jpg')" data-aos="fade-up"><div class="aspect-[3/4]"><img src="images/certificates/R (5).jpg" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"></div></div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer id="contact" class="bg-slate-900 border-t border-slate-800 py-12">
+    <footer id="contact" class="bg-slate-900 border-t border-slate-800 py-12 relative z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-2xl font-bold text-white mb-8">Contact Me</h2>
-            <div class="flex justify-center gap-6 mb-8">
-                <a href="https://facebook.com" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-blue-600 transition duration-300">
+            <h2 class="text-2xl font-bold text-white mb-8" data-aos="fade-up">Contact Me</h2>
+            <div class="flex justify-center gap-6 mb-8" data-aos="fade-up" data-aos-delay="100">
+                <a href="https://facebook.com" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-blue-600 transition duration-300 transform hover:scale-110">
                     <i class="fab fa-facebook-f text-xl"></i>
                 </a>
-                <a href="mailto:nickdnc@gmail.com" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500 transition duration-300">
+                <a href="mailto:nickdnc@gmail.com" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500 transition duration-300 transform hover:scale-110">
                     <i class="fas fa-envelope text-xl"></i>
                 </a>
-                <a href="#" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-green-500 transition duration-300">
+                <a href="#" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-green-500 transition duration-300 transform hover:scale-110">
                     <i class="fab fa-line text-xl"></i>
                 </a>
-                <a href="tel:0800508823" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-primary transition duration-300">
+                <a href="tel:0800508823" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand transition duration-300 transform hover:scale-110">
                     <i class="fas fa-phone text-xl"></i>
                 </a>
             </div>
             <p class="text-sm text-slate-500">
                 &copy; 2024 Sarayut Maungpraserd. All Rights Reserved. <br>
-                Designed for Portfolio.
+                Designed for HRD Portfolio.
             </p>
         </div>
     </footer>
 
     <!-- Gallery Modal -->
     <div id="gallery-modal" class="fixed inset-0 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/95 transition-opacity backdrop-blur-sm" onclick="closeGallery()"></div>
+        <div class="fixed inset-0 bg-slate-900/95 transition-opacity backdrop-blur-md" onclick="closeGallery()"></div>
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-6xl border border-slate-200">
-                
-                <!-- Modal Header -->
-                <div class="bg-white px-4 py-4 sm:px-6 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+            <div class="relative transform overflow-hidden rounded-2xl bg-slate-800 border border-slate-700 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-6xl">
+                <!-- Header -->
+                <div class="bg-slate-800 px-4 py-4 sm:px-6 border-b border-slate-700 flex justify-between items-center sticky top-0 z-10">
                     <div class="flex items-center">
-                        <button id="back-btn" onclick="openGalleryOverview()" class="hidden mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition focus:outline-none">
+                        <button id="back-btn" onclick="openGalleryOverview()" class="hidden mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-slate-300 hover:bg-slate-600 transition focus:outline-none">
                             <i class="fas fa-arrow-left"></i>
                         </button>
-                        <h3 class="text-xl font-bold text-slate-800" id="modal-title">Photo Gallery</h3>
+                        <h3 class="text-xl font-bold text-white" id="modal-title">Photo Gallery</h3>
                     </div>
-                    <button type="button" onclick="closeGallery()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50 transition focus:outline-none">
+                    <button type="button" onclick="closeGallery()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition focus:outline-none">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-
-                <!-- Modal Body -->
-                <div class="bg-slate-50 px-4 py-6 sm:px-6 h-[70vh] overflow-y-auto custom-scrollbar">
-                    <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <!-- Dynamic Content -->
-                    </div>
+                <!-- Body -->
+                <div class="bg-slate-900 px-4 py-6 sm:px-6 h-[70vh] overflow-y-auto custom-scrollbar">
+                    <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
                 </div>
-
-                <!-- Modal Footer -->
-                <div class="bg-white px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-slate-100">
-                    <button type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-200 sm:mt-0 sm:w-auto transition" onclick="closeGallery()">ปิดหน้าต่าง</button>
+                <!-- Footer -->
+                <div class="bg-slate-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-slate-700">
+                    <button type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-600 sm:mt-0 sm:w-auto transition" onclick="closeGallery()">ปิดหน้าต่าง</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Lightbox Modal -->
-    <div id="lightbox-modal" class="fixed inset-0 hidden bg-black/95 flex items-center justify-center p-4 backdrop-blur-md" onclick="closeLightbox()">
-        <button class="absolute top-4 right-4 text-white/70 hover:text-white text-4xl focus:outline-none transition">&times;</button>
-        <img id="lightbox-image" src="" alt="Large View" class="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl rounded-lg">
+    <div id="lightbox-modal" class="fixed inset-0 hidden bg-black/98 flex items-center justify-center p-4 backdrop-blur-lg" onclick="closeLightbox()">
+        <button class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition focus:outline-none text-xl">&times;</button>
+        <img id="lightbox-image" src="" alt="Large View" class="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl rounded-lg animate-[float_4s_ease-in-out_infinite]">
     </div>
 
     <!-- Scripts -->
     <script>
+        // Initialize AOS
+        AOS.init({
+            once: true,
+            offset: 50,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+
         // Mobile Menu Toggle
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
@@ -670,11 +732,11 @@
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
-                navbar.classList.add('shadow-md');
-                navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                navbar.classList.add('shadow-md', 'bg-slate-900/95');
+                navbar.classList.remove('bg-slate-900/80');
             } else {
-                navbar.classList.remove('shadow-md');
-                navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+                navbar.classList.remove('shadow-md', 'bg-slate-900/95');
+                navbar.classList.add('bg-slate-900/80');
             }
         });
 
@@ -695,26 +757,12 @@
             'audit_office': { title: 'ตรวจเงินแผ่นดิน (สตง)', folder: 'images/hitachi/ตรวจเงินแผ่นดิน(สตง)', images: ['1.jpg', '2.jpg'] },
             'mahachai2': { title: 'โรงพยาบาลมหาชัย 2', folder: 'images/hitachi/รพ.มหาชัย2', images: ['1.jpg', '2.jpg'] },
             'rama_bangplee': { title: 'รพ.รามาบางพลี อาคารกายวิภาคคลินิก', folder: 'images/hitachi/รพ.รามาบางพลี อาคารกายวิภาคคลินิก', images: ['1.jpg', '2.jpg'] },
-
-            // --- TEACHER ALBUM ---
             'teacher': {
                 title: 'กิจกรรมการสอน (วิทยาลัยเทคนิคพิจิตร)',
                 folder: 'images/teacher',
-                images: [
-                    '1 (1).jpg', '1 (2).jpg', '1 (3).jpg', '1 (4).jpg', '1 (5).jpg', 
-                    '1 (6).jpg', '1 (7).jpg', '1 (8).jpg', '1 (9).jpg', '1 (10).jpg',
-                    '1 (11).jpg', '1 (12).jpg', '1 (13).jpg', '1 (14).jpg', '1 (15).jpg',
-                    '1 (16).jpg', '1 (17).jpg', '1 (18).jpg', '1 (19).jpg', '1 (20).jpg',
-                    '1 (21).jpg', '1 (22).jpg', '1 (23).jpg', '1 (24).jpg', '1 (25).jpg',
-                    '1 (26).jpg', '1 (27).jpg', '1 (28).jpg', '1 (29).jpg', '1 (30).jpg',
-                    '1 (31).jpg'
-                ]
+                images: Array.from({length: 31}, (_, i) => `1 (${i+1}).jpg`)
             }
         };
-
-        // ----------------------------------------------------
-        // GALLERY LOGIC
-        // ----------------------------------------------------
 
         function openGalleryOverview() {
             const grid = document.getElementById('gallery-grid');
@@ -732,16 +780,15 @@
                 const coverImage = encodeURI(`${album.folder}/${album.images[0]}`);
 
                 const albumCard = document.createElement('div');
-                albumCard.className = 'group relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-lg transition border border-slate-200';
+                albumCard.className = 'group relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-brand/40 transition-all border border-slate-700 bg-slate-800';
                 albumCard.onclick = () => openAlbum(key);
 
                 albumCard.innerHTML = `
-                    <img src="${coverImage}" onerror="this.src='https://placehold.co/300x300/f1f5f9/94a3b8?text=No+Image'" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4">
-                        <h4 class="text-white font-bold text-lg leading-tight mb-1">${album.title}</h4>
-                        <span class="text-slate-300 text-xs flex items-center"><i class="far fa-images mr-1.5"></i> ${album.images.length} รูป</span>
+                    <img src="${coverImage}" onerror="this.src='https://placehold.co/300x300/1e293b/ffffff?text=No+Image'" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-80 group-hover:opacity-100">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent flex flex-col justify-end p-4">
+                        <h4 class="text-white font-bold text-lg leading-tight mb-1 group-hover:text-brand transition">${album.title}</h4>
+                        <span class="text-slate-400 text-xs flex items-center"><i class="far fa-images mr-1.5"></i> ${album.images.length} รูป</span>
                     </div>
-                    <div class="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                 `;
                 grid.appendChild(albumCard);
             }
@@ -770,20 +817,19 @@
             grid.innerHTML = '';
 
             if (data.images.length === 0) {
-                grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400"><i class="far fa-folder-open text-4xl mb-2"></i><p>ไม่มีรูปภาพในอัลบั้มนี้</p></div>';
+                grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500"><i class="far fa-folder-open text-4xl mb-2"></i><p>ไม่มีรูปภาพในอัลบั้มนี้</p></div>';
             } else {
                 data.images.forEach(filename => {
                     const imgPath = encodeURI(`${data.folder}/${filename}`);
-                    
                     const imgContainer = document.createElement('div');
-                    imgContainer.className = 'group rounded-xl overflow-hidden shadow-sm hover:shadow-md cursor-pointer border border-slate-200 bg-slate-100 relative';
+                    imgContainer.className = 'group rounded-xl overflow-hidden shadow-lg hover:shadow-brand/30 cursor-pointer border border-slate-700 bg-slate-800 relative';
                     imgContainer.onclick = () => openLightbox(imgPath);
 
                     imgContainer.innerHTML = `
                         <div class="aspect-[4/3] overflow-hidden">
-                            <img src="${imgPath}" onerror="this.src='https://placehold.co/400x300/f1f5f9/94a3b8?text=Image+Not+Found'" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
+                            <img src="${imgPath}" onerror="this.src='https://placehold.co/400x300/1e293b/ffffff?text=Image+Not+Found'" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90 group-hover:opacity-100" loading="lazy">
                         </div>
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                             <i class="fas fa-search-plus text-white text-2xl drop-shadow-md"></i>
                         </div>
                     `;
