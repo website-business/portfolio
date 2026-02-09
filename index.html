@@ -64,10 +64,12 @@
                     <div class="ml-10 flex items-baseline space-x-8">
                         <a href="#home" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">หน้าแรก</a>
                         <a href="#about" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">ข้อมูลส่วนตัว</a>
-                        <a href="#experience" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">ประสบการณ์</a>
+                        <!-- Swapped Order: Education first -->
                         <a href="#education" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">การศึกษา</a>
+                        <a href="#experience" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">ประสบการณ์</a>
+                        <a href="#media" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">สื่อการสอน</a>
                         <a href="#certificates" class="hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition">เกียรติบัตร</a>
-                        <a href="#contact" class="bg-primary text-white hover:bg-blue-800 px-4 py-2 rounded-full text-sm font-medium transition">ติดต่อ</a>
+                        <a href="#contact" class="bg-primary text-white hover:bg-blue-800 px-4 py-2 rounded-full text-sm font-medium transition">Contact</a>
                     </div>
                 </div>
                 <div class="-mr-2 flex md:hidden">
@@ -82,10 +84,11 @@
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 <a href="#home" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">หน้าแรก</a>
                 <a href="#about" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">ข้อมูลส่วนตัว</a>
-                <a href="#experience" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">ประสบการณ์</a>
                 <a href="#education" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">การศึกษา</a>
+                <a href="#experience" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">ประสบการณ์</a>
+                <a href="#media" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">สื่อการสอน</a>
                 <a href="#certificates" class="block hover:bg-blue-50 hover:text-primary px-3 py-2 rounded-md text-base font-medium">เกียรติบัตร</a>
-                <a href="#contact" class="block bg-primary text-white px-3 py-2 rounded-md text-base font-medium mt-4">ติดต่อ</a>
+                <a href="#contact" class="block bg-primary text-white px-3 py-2 rounded-md text-base font-medium mt-4">Contact</a>
             </div>
         </div>
     </nav>
@@ -107,8 +110,9 @@
                         วิศวกรและนักการศึกษาที่มีประสบการณ์ด้านการออกแบบไฟฟ้า, Training Specialist และการสอนนวัตกรรม พร้อมเรียนรู้และพัฒนาตนเองอยู่เสมอ
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <!-- Changed Button Text -->
                         <a href="#contact" class="bg-primary text-white px-8 py-3 rounded-full font-medium hover:bg-blue-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            ติดต่อผม
+                            Contact
                         </a>
                         <a href="#certificates" class="border-2 border-primary text-primary px-8 py-3 rounded-full font-medium hover:bg-blue-50 transition">
                             ดูผลงาน
@@ -118,8 +122,7 @@
                 <div class="w-full md:w-1/2 flex justify-center md:justify-end relative">
                     <div class="relative w-64 h-64 md:w-80 md:h-80">
                         <div class="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-                        <!-- IMPORTANT: Replace src with your actual image path e.g., images/profile.jpg -->
-                        <img src="images/profile.png" onerror="this.src='https://placehold.co/400x400/1e40af/ffffff?text=Profile+Pic'" alt="Sarayut Maungpraserd" class="relative w-full h-full object-cover rounded-full border-4 border-white shadow-2xl z-10">
+                        <img src="images/profile.jpg" onerror="this.src='https://placehold.co/400x400/1e40af/ffffff?text=Profile+Pic'" alt="Sarayut Maungpraserd" class="relative w-full h-full object-cover rounded-full border-4 border-white shadow-2xl z-10">
                         
                         <!-- Floating badges -->
                         <div class="absolute top-0 right-0 bg-white p-3 rounded-xl shadow-lg z-20 animate-bounce" style="animation-duration: 3s;">
@@ -134,7 +137,7 @@
         </div>
     </section>
 
-    <!-- About & Contact Info Section -->
+    <!-- About Section -->
     <section id="about" class="py-16 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
@@ -212,111 +215,8 @@
         </div>
     </section>
 
-    <!-- Work Experience Section -->
-    <section id="experience" class="py-16 bg-gray-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <span class="text-secondary font-semibold uppercase tracking-wider text-sm">Career Path</span>
-                <h2 class="text-3xl font-bold text-dark mt-2">ประสบการณ์ทำงาน</h2>
-            </div>
-
-            <div class="relative border-l-4 border-blue-200 ml-3 md:ml-6 space-y-12">
-                
-                <!-- Hitachi -->
-                <div class="relative pl-8 md:pl-12">
-                    <div class="absolute -left-3.5 bg-primary h-7 w-7 rounded-full border-4 border-white shadow-sm"></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-dark">Technical Training Specialist</h3>
-                                <p class="text-primary font-medium">บริษัท ฮิตาชิ เอลลิเวเตอร์ (ประเทศไทย) จำกัด</p>
-                            </div>
-                            <span class="mt-2 md:mt-0 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full w-fit">ต.ค. 66 - ก.พ. 68</span>
-                        </div>
-                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
-                            <li>อบรมพนักงานหลักสูตรพนักงานใหม่ และพนักงานอายุงาน 1-2 ปี</li>
-                            <li>อบรมลูกค้าหลักสูตรการใช้งานลิฟต์และการช่วยเหลือผู้โดยสารติดลิฟต์เบื้องต้น</li>
-                            <li>ประเมินผลและติดตามผลการอบรม</li>
-                            <li>สร้าง ปรับปรุง พัฒนาสื่อประกอบการฝึกอบรม</li>
-                            <li>ออก OJT พนักงานช่าง</li>
-                        </ul>
-                        
-                        <!-- Single Gallery Button -->
-                        <div class="mt-6 pt-4 border-t border-gray-100">
-                            <button onclick="openGalleryOverview()" class="w-full sm:w-auto px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg shadow hover:bg-blue-800 transition flex items-center justify-center transform hover:-translate-y-0.5">
-                                <i class="fas fa-images mr-2"></i> ดูอัลบั้มรูปผลงานทั้งหมด
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Delta -->
-                <div class="relative pl-8 md:pl-12">
-                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-dark">Electrical Design Engineer</h3>
-                                <p class="text-primary font-medium">บริษัท เดลต้า อีเลคโทรนิคส์ (ประเทศไทย) จำกัด (มหาชน)</p>
-                            </div>
-                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">มี.ค. 66 - ส.ค. 66</span>
-                        </div>
-                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
-                            <li>ออกแบบวงจรเพาเวอร์ซัพพลาย</li>
-                            <li>ทดสอบการทำงาน หาประสิทธิภาพ หา power loss</li>
-                            <li>ทดสอบ EMI ทั้ง CE และ RE</li>
-                            <li>ปรับปรุงสัญญาณรบกวนที่เกิดจากตัวงาน</li>
-                            <li>อัพเดท BOM (Bill of Materials) ของโปรเจค</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Technical College -->
-                <div class="relative pl-8 md:pl-12">
-                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-dark">ครูพิเศษสอน</h3>
-                                <p class="text-primary font-medium">วิทยาลัยเทคนิคพิจิตร</p>
-                            </div>
-                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">ม.ค. 64 - ธ.ค. 65</span>
-                        </div>
-                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
-                            <li>ครูผู้สอนวิชา: การควบคุมนิวเมติกส์ฯ, ไมโครคอนโทรลเลอร์, PLC เบื้องต้น, หุ่นยนต์เบื้องต้น</li>
-                            <li>ครูผู้ควบคุมทีมแข่งหุ่นยนต์ และดูแลสิ่งประดิษฐ์ทั้งหมด</li>
-                            <li>ผู้ช่วยหัวหน้างานวิจัยนวัตกรรม / ทะเบียน / หลักสูตร / สื่อการสอน</li>
-                            <li>ครูที่ปรึกษา</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Cal-Comp -->
-                <div class="relative pl-8 md:pl-12">
-                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-dark">Operator</h3>
-                                <p class="text-primary font-medium">บริษัท แคล-คอมพ์อีเล็คโทรนิคส์ (ประเทศไทย)</p>
-                            </div>
-                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">มี.ค. 60 - ก.ย. 60</span>
-                        </div>
-                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
-                            <li>ซ่อมแผ่นวงจรฮาร์ดดิสที่เสียจากไลน์ผลิตและจากลูกค้า</li>
-                            <li>Test แผ่นวงจรที่ซ่อมเสร็จแล้ว</li>
-                            <li>ซ่อมเครื่องเทสแผ่น PCB</li>
-                        </ul>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Education Section -->
-    <section id="education" class="py-16 bg-white">
+    <!-- Education Section (Moved Up) -->
+    <section id="education" class="py-16 bg-white border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-dark inline-block border-b-4 border-primary pb-2">ประวัติการศึกษา</h2>
@@ -382,6 +282,191 @@
                     </div>
                     <p class="text-gray-700 font-medium">โรงเรียนพิจิตรพิทยาคม</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Work Experience Section -->
+    <section id="experience" class="py-16 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-secondary font-semibold uppercase tracking-wider text-sm">Career Path</span>
+                <h2 class="text-3xl font-bold text-dark mt-2">ประสบการณ์ทำงาน</h2>
+            </div>
+
+            <div class="relative border-l-4 border-blue-200 ml-3 md:ml-6 space-y-12">
+                
+                <!-- Hitachi -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-primary h-7 w-7 rounded-full border-4 border-white shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">Technical Training Specialist</h3>
+                                <p class="text-primary font-medium">บริษัท ฮิตาชิ เอลลิเวเตอร์ (ประเทศไทย) จำกัด</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full w-fit">ต.ค. 66 - ก.พ. 68</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>อบรมพนักงานหลักสูตรพนักงานใหม่ และพนักงานอายุงาน 1-2 ปี</li>
+                            <li>อบรมลูกค้าหลักสูตรการใช้งานลิฟต์และการช่วยเหลือผู้โดยสารติดลิฟต์เบื้องต้น</li>
+                            <li>ประเมินผลและติดตามผลการอบรม</li>
+                            <li>สร้าง ปรับปรุง พัฒนาสื่อประกอบการฝึกอบรม</li>
+                            <li>ออก OJT พนักงานช่าง</li>
+                        </ul>
+                        
+                        <!-- Hitachi Gallery Button -->
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <button onclick="openGalleryOverview()" class="w-full sm:w-auto px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg shadow hover:bg-blue-800 transition flex items-center justify-center transform hover:-translate-y-0.5">
+                                <i class="fas fa-images mr-2"></i> ดูอัลบั้มรูปผลงานทั้งหมด
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Delta -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">Electrical Design Engineer</h3>
+                                <p class="text-primary font-medium">บริษัท เดลต้า อีเลคโทรนิคส์ (ประเทศไทย) จำกัด (มหาชน)</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">มี.ค. 66 - ส.ค. 66</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>ออกแบบวงจรเพาเวอร์ซัพพลาย</li>
+                            <li>ทดสอบการทำงาน หาประสิทธิภาพ หา power loss</li>
+                            <li>ทดสอบ EMI ทั้ง CE และ RE</li>
+                            <li>ปรับปรุงสัญญาณรบกวนที่เกิดจากตัวงาน</li>
+                            <li>อัพเดท BOM (Bill of Materials) ของโปรเจค</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Technical College -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">ครูพิเศษสอน</h3>
+                                <p class="text-primary font-medium">วิทยาลัยเทคนิคพิจิตร</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">ม.ค. 64 - ธ.ค. 65</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>ครูผู้สอนวิชา: การควบคุมนิวเมติกส์ฯ, ไมโครคอนโทรลเลอร์, PLC เบื้องต้น, หุ่นยนต์เบื้องต้น</li>
+                            <li>ครูผู้ควบคุมทีมแข่งหุ่นยนต์ และดูแลสิ่งประดิษฐ์ทั้งหมด</li>
+                            <li>ผู้ช่วยหัวหน้างานวิจัยนวัตกรรม / ทะเบียน / หลักสูตร / สื่อการสอน</li>
+                            <li>ครูที่ปรึกษา</li>
+                        </ul>
+
+                        <!-- ADDED: Teacher Gallery Button -->
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <button onclick="openAlbum('teacher')" class="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 transition flex items-center justify-center transform hover:-translate-y-0.5">
+                                <i class="fas fa-camera mr-2 text-primary"></i> ดูอัลบั้มรูปกิจกรรมการสอน
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cal-Comp -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3.5 bg-white border-4 border-gray-400 h-7 w-7 rounded-full shadow-sm"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark">Operator</h3>
+                                <p class="text-primary font-medium">บริษัท แคล-คอมพ์อีเล็คโทรนิคส์ (ประเทศไทย)</p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full w-fit">มี.ค. 60 - ก.ย. 60</span>
+                        </div>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm md:text-base">
+                            <li>ซ่อมแผ่นวงจรฮาร์ดดิสที่เสียจากไลน์ผลิตและจากลูกค้า</li>
+                            <li>Test แผ่นวงจรที่ซ่อมเสร็จแล้ว</li>
+                            <li>ซ่อมเครื่องเทสแผ่น PCB</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: Media & GIFs -->
+    <section id="media" class="py-16 bg-blue-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-secondary font-semibold uppercase tracking-wider text-sm">Media & Motion</span>
+                <h2 class="text-3xl font-bold text-dark mt-2">ตัวอย่างสื่อที่จัดทำ</h2>
+                <p class="text-gray-500 mt-2">สื่อการสอนและ Animation ประกอบการอบรม (GIF)</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                
+                <!-- GIF 1: ALP -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/ALP.gif')">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
+                        <img src="images/media/ALP.gif" alt="ALP" class="w-full h-full object-contain">
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-semibold text-gray-700 text-center">ALP</p>
+                    </div>
+                </div>
+
+                <!-- GIF 2: Break -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Break.gif')">
+                    <div class="aspect-video bg-white flex items-center justify-center overflow-hidden">
+                        <img src="images/media/Break.gif" alt="Break" class="w-full h-full object-contain">
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-semibold text-gray-700 text-center">Break (Magnetic Brake)</p>
+                    </div>
+                </div>
+
+                <!-- GIF 3: Elevator Animation -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Elevator animetion.gif')">
+                    <div class="aspect-video bg-white flex items-center justify-center overflow-hidden">
+                        <img src="images/media/Elevator animetion.gif" alt="Elevator Animation" class="w-full h-full object-contain">
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-semibold text-gray-700 text-center">Elevator Animation</p>
+                    </div>
+                </div>
+
+                <!-- GIF 4: Fire Emergency -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Fire Emergency rev.2.gif')">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
+                        <img src="images/media/Fire Emergency rev.2.gif" alt="Fire Emergency" class="w-full h-full object-contain">
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-semibold text-gray-700 text-center">Fire Emergency Rev.2</p>
+                    </div>
+                </div>
+
+                <!-- GIF 5: Fire man -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Fire man.gif')">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
+                        <img src="images/media/Fire man.gif" alt="Fire Man" class="w-full h-full object-contain">
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-semibold text-gray-700 text-center">Fire Man Operation</p>
+                    </div>
+                </div>
+
+                <!-- GIF 6: Gen -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Gen.gif')">
+                    <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
+                        <img src="images/media/Gen.gif" alt="Generator" class="w-full h-full object-contain">
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-semibold text-gray-700 text-center">Generator</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
@@ -552,6 +637,7 @@
         // ----------------------------------------------------
         
         const galleryData = {
+            // --- HITACHI ALBUMS ---
             '1_year': {
                 title: 'ผลงาน 1 Year',
                 folder: 'images/hitachi/1 year',
@@ -606,6 +692,13 @@
                 title: 'รพ.รามาบางพลี อาคารกายวิภาคคลินิก',
                 folder: 'images/hitachi/รพ.รามาบางพลี อาคารกายวิภาคคลินิก',
                 images: ['1.jpg', '2.jpg']
+            },
+
+            // --- TEACHER ALBUM ---
+            'teacher': {
+                title: 'กิจกรรมการสอน (วิทยาลัยเทคนิคพิจิตร)',
+                folder: 'images/teacher', // สร้างโฟลเดอร์นี้และใส่รูป 1.jpg, 2.jpg
+                images: ['1.jpg', '2.jpg']
             }
         };
 
@@ -623,14 +716,15 @@
             backBtn.classList.add('hidden'); // Hide back button
             grid.innerHTML = '';
 
-            // Loop through data to create Folder Thumbnails
+            // Loop through data to create Folder Thumbnails (Exclude teacher for Hitachi overview)
             for (const key in galleryData) {
+                if(key === 'teacher') continue; // Skip teacher album in Hitachi overview
+
                 const album = galleryData[key];
-                // Use the first image as the folder cover
                 const coverImage = encodeURI(`${album.folder}/${album.images[0]}`);
 
                 const albumCard = document.createElement('div');
-                albumCard.className = 'album-card relative rounded-lg overflow-hidden shadow-sm bg-white cursor-pointer group aspect-square';
+                albumCard.className = 'album-card relative rounded-lg overflow-hidden shadow-sm bg-white cursor-pointer group aspect-square border border-gray-200';
                 albumCard.onclick = () => openAlbum(key);
 
                 albumCard.innerHTML = `
@@ -663,28 +757,38 @@
             const backBtn = document.getElementById('back-btn');
 
             title.innerText = data.title;
-            backBtn.classList.remove('hidden'); // Show back button
+            
+            // Show back button ONLY if it came from Hitachi overview (not teacher direct click)
+            if(key !== 'teacher') {
+                backBtn.classList.remove('hidden');
+                backBtn.onclick = openGalleryOverview;
+            } else {
+                backBtn.classList.add('hidden'); // Hide back button for direct teacher album
+            }
+
             grid.innerHTML = '';
 
             if (data.images.length === 0) {
                 grid.innerHTML = '<p class="text-center text-gray-500 col-span-full py-10">ไม่มีรูปภาพในอัลบั้มนี้</p>';
-                return;
+            } else {
+                data.images.forEach(filename => {
+                    const imgPath = encodeURI(`${data.folder}/${filename}`);
+                    
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'rounded-lg overflow-hidden shadow-sm cursor-pointer border border-gray-200 group';
+                    imgContainer.onclick = () => openLightbox(imgPath); // Click to open large image
+
+                    imgContainer.innerHTML = `
+                        <div class="aspect-video overflow-hidden bg-gray-100">
+                            <img src="${imgPath}" onerror="this.src='https://placehold.co/400x300?text=Image+Not+Found'" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                    `;
+                    grid.appendChild(imgContainer);
+                });
             }
-
-            data.images.forEach(filename => {
-                const imgPath = encodeURI(`${data.folder}/${filename}`);
-                
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'rounded-lg overflow-hidden shadow-sm cursor-pointer border border-gray-200 group';
-                imgContainer.onclick = () => openLightbox(imgPath); // Click to open large image
-
-                imgContainer.innerHTML = `
-                    <div class="aspect-video overflow-hidden">
-                        <img src="${imgPath}" onerror="this.src='https://placehold.co/400x300?text=Image+Not+Found'" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                    </div>
-                `;
-                grid.appendChild(imgContainer);
-            });
+            
+            document.getElementById('gallery-modal').classList.remove('hidden');
+            document.body.classList.add('no-scroll');
         }
 
         // 3. Open Lightbox (Large Image)
