@@ -120,7 +120,7 @@
                 <div class="w-full md:w-1/2 flex justify-center md:justify-end relative">
                     <div class="relative w-64 h-64 md:w-80 md:h-80">
                         <div class="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-                        <!-- CHANGED: .jpg -> .png -->
+                        <!-- Profile Image (.png) -->
                         <img src="images/profile.png" onerror="this.src='https://placehold.co/400x400/1e40af/ffffff?text=Profile+Pic'" alt="Sarayut Maungpraserd" class="relative w-full h-full object-cover rounded-full border-4 border-white shadow-2xl z-10">
                         
                         <div class="absolute top-0 right-0 bg-white p-3 rounded-xl shadow-lg z-20 animate-bounce" style="animation-duration: 3s;">
@@ -314,7 +314,6 @@
             </div>
 
             <div class="relative border-l-4 border-blue-200 ml-3 md:ml-6 space-y-12">
-                
                 <!-- Hitachi -->
                 <div class="relative pl-8 md:pl-12">
                     <div class="absolute -left-3.5 bg-primary h-7 w-7 rounded-full border-4 border-white shadow-sm"></div>
@@ -333,14 +332,11 @@
                             <li>สร้าง ปรับปรุง พัฒนาสื่อประกอบการฝึกอบรม</li>
                             <li>ออก OJT พนักงานช่าง</li>
                         </ul>
-                        
-                        <!-- Hitachi Gallery Button -->
                         <div class="mt-6 pt-4 border-t border-gray-100">
                             <button onclick="openGalleryOverview()" class="w-full sm:w-auto px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg shadow hover:bg-blue-800 transition flex items-center justify-center transform hover:-translate-y-0.5">
                                 <i class="fas fa-images mr-2"></i> ดูอัลบั้มรูปผลงานทั้งหมด
                             </button>
                         </div>
-
                     </div>
                 </div>
 
@@ -382,8 +378,6 @@
                             <li>ผู้ช่วยหัวหน้างานวิจัยนวัตกรรม / ทะเบียน / หลักสูตร / สื่อการสอน</li>
                             <li>ครูที่ปรึกษา</li>
                         </ul>
-
-                        <!-- ADDED: Teacher Gallery Button -->
                         <div class="mt-6 pt-4 border-t border-gray-100">
                             <button onclick="openAlbum('teacher')" class="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 transition flex items-center justify-center transform hover:-translate-y-0.5">
                                 <i class="fas fa-camera mr-2 text-primary"></i> ดูอัลบั้มรูปกิจกรรมการสอน
@@ -410,12 +404,11 @@
                         </ul>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- NEW SECTION: Media & GIFs -->
+    <!-- Media & GIFs Section -->
     <section id="media" class="py-16 bg-blue-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
@@ -425,7 +418,6 @@
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                
                 <!-- GIF 1: ALP -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/ALP.gif')">
                     <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
@@ -435,7 +427,6 @@
                         <p class="text-sm font-semibold text-gray-700 text-center">ALP</p>
                     </div>
                 </div>
-
                 <!-- GIF 2: Break -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Break.gif')">
                     <div class="aspect-video bg-white flex items-center justify-center overflow-hidden">
@@ -445,7 +436,6 @@
                         <p class="text-sm font-semibold text-gray-700 text-center">Break (Magnetic Brake)</p>
                     </div>
                 </div>
-
                 <!-- GIF 3: Elevator Animation -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Elevator animetion.gif')">
                     <div class="aspect-video bg-white flex items-center justify-center overflow-hidden">
@@ -455,7 +445,6 @@
                         <p class="text-sm font-semibold text-gray-700 text-center">Elevator Animation</p>
                     </div>
                 </div>
-
                 <!-- GIF 4: Fire Emergency -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Fire Emergency rev.2.gif')">
                     <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
@@ -465,7 +454,6 @@
                         <p class="text-sm font-semibold text-gray-700 text-center">Fire Emergency Rev.2</p>
                     </div>
                 </div>
-
                 <!-- GIF 5: Fire man -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Fire man.gif')">
                     <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
@@ -475,7 +463,6 @@
                         <p class="text-sm font-semibold text-gray-700 text-center">Fire Man Operation</p>
                     </div>
                 </div>
-
                 <!-- GIF 6: Gen -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer" onclick="openLightbox('images/media/Gen.gif')">
                     <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
@@ -485,12 +472,11 @@
                         <p class="text-sm font-semibold text-gray-700 text-center">Generator</p>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- Certificates/Portfolio Section -->
+    <!-- Certificates Section -->
     <section id="certificates" class="py-16 bg-blue-900 text-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
@@ -499,71 +485,98 @@
                 <p class="text-blue-200 mt-2">รางวัลและการอบรมเพื่อพัฒนาทักษะ</p>
             </div>
 
-            <!-- Grid Layout for Images -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Card 1 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
-                    <div class="relative overflow-hidden h-64">
-                        <img src="images/cert1.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate+1'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                            <span class="text-white font-medium border border-white px-4 py-2 rounded">ดูรูปขยาย</span>
-                        </div>
-                    </div>
-                    <div class="p-4 text-gray-800">
-                        <h4 class="font-bold text-lg mb-1">สิ่งประดิษฐ์ด้านการประกอบอาชีพ</h4>
-                        <p class="text-sm text-gray-600">รางวัลชมเชย ระดับเหรียญเงิน (ระดับชาติ)</p>
+            <!-- Certificates Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                
+                <!-- Helper for rendering image cards -->
+                <!-- Images: 1 (1).jpg to 1 (5).jpg -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/1 (1).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/1 (1).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                     </div>
                 </div>
-                <!-- Card 2 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
-                    <div class="relative overflow-hidden h-64">
-                        <img src="images/cert2.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate+2'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                    <div class="p-4 text-gray-800">
-                        <h4 class="font-bold text-lg mb-1">นวัตกรรมซอฟต์แวร์</h4>
-                        <p class="text-sm text-gray-600">รางวัลชมเชย ระดับเหรียญทอง</p>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/1 (2).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/1 (2).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                     </div>
                 </div>
-                 <!-- Card 3 -->
-                 <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
-                    <div class="relative overflow-hidden h-64">
-                        <img src="images/cert3.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate+3'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                    <div class="p-4 text-gray-800">
-                        <h4 class="font-bold text-lg mb-1">สิ่งประดิษฐ์เพื่อประโยชน์สาธารณะ</h4>
-                        <p class="text-sm text-gray-600">รางวัลชมเชย ระดับเหรียญเงิน</p>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/1 (3).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/1 (3).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                     </div>
                 </div>
-                <!-- Card 4 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
-                    <div class="relative overflow-hidden h-64">
-                        <img src="images/cert4.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Hour+of+Code'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                    <div class="p-4 text-gray-800">
-                        <h4 class="font-bold text-lg mb-1">Hour of Code</h4>
-                        <p class="text-sm text-gray-600">Computer Science Concepts</p>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/1 (4).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/1 (4).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                     </div>
                 </div>
-                <!-- Card 5 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
-                    <div class="relative overflow-hidden h-64">
-                        <img src="images/cert5.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Robot+Maintenance'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                    <div class="p-4 text-gray-800">
-                        <h4 class="font-bold text-lg mb-1">การซ่อมบำรุงหุ่นยนต์อุตสาหกรรม</h4>
-                        <p class="text-sm text-gray-600">กรมพัฒนาฝีมือแรงงาน</p>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/1 (5).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/1 (5).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                     </div>
                 </div>
-                <!-- Card 6 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-lg group">
-                    <div class="relative overflow-hidden h-64">
-                        <img src="images/cert6.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=STEM+Education'" alt="Certificate" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
-                    </div>
-                    <div class="p-4 text-gray-800">
-                        <h4 class="font-bold text-lg mb-1">อบรม STEM Education</h4>
-                        <p class="text-sm text-gray-600">วิทยาลัยเทคนิคพิจิตร</p>
+
+                <!-- Single Certs: c, M, stem -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/c.jpg')">
+                    <div class="relative overflow-hidden aspect-[3/4]"> <!-- Portrait for 'c' based on icon -->
+                        <img src="images/certificates/c.jpg" onerror="this.src='https://placehold.co/600x800/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
                     </div>
                 </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/M.jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/M.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/stem.jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/stem.jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+
+                <!-- N Series: N (1) to N (3) -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/N (1).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/N (1).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/N (2).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/N (2).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/N (3).jpg')">
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="images/certificates/N (3).jpg" onerror="this.src='https://placehold.co/600x400/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+
+                <!-- R Series: R (1) to R (5) (Likely Portrait based on icon) -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/R (1).jpg')">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="images/certificates/R (1).jpg" onerror="this.src='https://placehold.co/600x800/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/R (2).jpg')">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="images/certificates/R (2).jpg" onerror="this.src='https://placehold.co/600x800/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/R (3).jpg')">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="images/certificates/R (3).jpg" onerror="this.src='https://placehold.co/600x800/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/R (4).jpg')">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="images/certificates/R (4).jpg" onerror="this.src='https://placehold.co/600x800/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg group cursor-pointer" onclick="openLightbox('images/certificates/R (5).jpg')">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="images/certificates/R (5).jpg" onerror="this.src='https://placehold.co/600x800/e2e8f0/1e40af?text=Certificate'" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    </div>
+                </div>
+
             </div>
             
             <div class="text-center mt-12">
@@ -591,13 +604,9 @@
 
     <!-- Gallery Modal -->
     <div id="gallery-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Background overlay -->
         <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeGallery()"></div>
-
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
             <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-6xl">
-                
-                <!-- Modal Header -->
                 <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex items-center">
                         <button id="back-btn" onclick="openGalleryOverview()" class="hidden mr-4 text-gray-500 hover:text-primary transition focus:outline-none">
@@ -609,15 +618,10 @@
                         <i class="fas fa-times text-2xl"></i>
                     </button>
                 </div>
-
-                <!-- Modal Body (Dynamic Content) -->
                 <div class="bg-gray-100 px-4 py-6 sm:px-6 h-[70vh] overflow-y-auto">
                     <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <!-- Dynamic Content will be injected here via JavaScript -->
                     </div>
                 </div>
-
-                <!-- Modal Footer -->
                 <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                     <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" onclick="closeGallery()">ปิดหน้าต่าง</button>
                 </div>
@@ -625,7 +629,7 @@
         </div>
     </div>
 
-    <!-- Lightbox Modal (For viewing Large Images) -->
+    <!-- Lightbox Modal -->
     <div id="lightbox-modal" class="fixed inset-0 hidden bg-black bg-opacity-95 flex items-center justify-center p-4" onclick="closeLightbox()">
         <button class="absolute top-4 right-4 text-white text-4xl focus:outline-none hover:text-gray-300">&times;</button>
         <img id="lightbox-image" src="" alt="Large View" class="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl rounded-sm">
@@ -651,10 +655,6 @@
             }
         });
 
-        // ----------------------------------------------------
-        // DATA CONFIGURATION
-        // ----------------------------------------------------
-        
         const galleryData = {
             // --- HITACHI ALBUMS ---
             '1_year': {
@@ -713,11 +713,10 @@
                 images: ['1.jpg', '2.jpg']
             },
 
-            // --- TEACHER ALBUM (UPDATED FILE NAMES) ---
+            // --- TEACHER ALBUM ---
             'teacher': {
                 title: 'กิจกรรมการสอน (วิทยาลัยเทคนิคพิจิตร)',
                 folder: 'images/teacher',
-                // Updated to match 1 (1).jpg ... 1 (31).jpg
                 images: [
                     '1 (1).jpg', '1 (2).jpg', '1 (3).jpg', '1 (4).jpg', '1 (5).jpg', 
                     '1 (6).jpg', '1 (7).jpg', '1 (8).jpg', '1 (9).jpg', '1 (10).jpg',
@@ -730,23 +729,17 @@
             }
         };
 
-        // ----------------------------------------------------
-        // GALLERY LOGIC
-        // ----------------------------------------------------
-
-        // 1. Open Overview (Show list of Folders)
         function openGalleryOverview() {
             const grid = document.getElementById('gallery-grid');
             const title = document.getElementById('modal-title');
             const backBtn = document.getElementById('back-btn');
 
             title.innerText = 'อัลบั้มรูปผลงาน (Hitachi)';
-            backBtn.classList.add('hidden'); // Hide back button
+            backBtn.classList.add('hidden');
             grid.innerHTML = '';
 
-            // Loop through data to create Folder Thumbnails (Exclude teacher for Hitachi overview)
             for (const key in galleryData) {
-                if(key === 'teacher') continue; // Skip teacher album in Hitachi overview
+                if(key === 'teacher') continue; 
 
                 const album = galleryData[key];
                 const coverImage = encodeURI(`${album.folder}/${album.images[0]}`);
@@ -775,7 +768,6 @@
             document.body.classList.add('no-scroll');
         }
 
-        // 2. Open Specific Album (Show images inside folder)
         function openAlbum(key) {
             const data = galleryData[key];
             if (!data) return;
@@ -786,12 +778,11 @@
 
             title.innerText = data.title;
             
-            // Show back button ONLY if it came from Hitachi overview (not teacher direct click)
             if(key !== 'teacher') {
                 backBtn.classList.remove('hidden');
                 backBtn.onclick = openGalleryOverview;
             } else {
-                backBtn.classList.add('hidden'); // Hide back button for direct teacher album
+                backBtn.classList.add('hidden');
             }
 
             grid.innerHTML = '';
@@ -804,7 +795,7 @@
                     
                     const imgContainer = document.createElement('div');
                     imgContainer.className = 'rounded-lg overflow-hidden shadow-sm cursor-pointer border border-gray-200 group';
-                    imgContainer.onclick = () => openLightbox(imgPath); // Click to open large image
+                    imgContainer.onclick = () => openLightbox(imgPath);
 
                     imgContainer.innerHTML = `
                         <div class="aspect-video overflow-hidden bg-gray-100">
@@ -819,7 +810,6 @@
             document.body.classList.add('no-scroll');
         }
 
-        // 3. Open Lightbox (Large Image)
         function openLightbox(src) {
             const lightbox = document.getElementById('lightbox-modal');
             const lightboxImg = document.getElementById('lightbox-image');
@@ -831,7 +821,6 @@
             document.getElementById('lightbox-modal').classList.add('hidden');
         }
 
-        // Close Main Gallery Modal
         function closeGallery() {
             document.getElementById('gallery-modal').classList.add('hidden');
             document.body.classList.remove('no-scroll');
