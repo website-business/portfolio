@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointing and Calling Simulator - Pro Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Styles --- */
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f3f4f6; /* gray-100 */
+            user-select: none; /* ป้องกันการคลุมดำ */
+        }
+
+        /* --- Grid System Specifics --- */
+        .grid-layout-container {
+            display: grid;
+            /* 40px for sidebar, 1fr for main content, 40px for right sidebar */
+            grid-template-columns: 40px 1fr 40px;
+            /* 30px top header, 30px bottom header, auto for main grid */
+            grid-template-rows: 35px 35px auto;
+            gap: 4px;
+        }
+
+        /* Labels styling */
+        .label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .label-green { background-color: #16a34a; border: 1px solid #14532d; }
+        .label-yellow { background-color: #facc15; color: #422006; border: 1px solid #a16207; }
+
+        /* Cell styling */
+        .grid-cell {
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+        .grid-cell:hover {
+            background-color: #e0f2fe; /* sky-100 */
+            border-color: #0ea5e9;
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .grid-cell:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Animations & Effects --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake-effect {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            border: 2px solid #ef4444 !important; /* Red border on error */
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            z-index: 20;
+            backdrop-filter: blur(2px);
+        }
+        .feedback-overlay.show { opacity: 1; transform: scale(1.1); }
+        .feedback-correct { background-color: rgba(34, 197, 94, 0.7); }
+        .feedback-incorrect { background-color: rgba(239, 68, 68, 0.7); }
+
+        /* Progress Bar */
+        .timer-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+            background-size: 200% 100%;
+            transition: width 0.1s linear;
+        }
+
+        /* Modal Transitions */
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-2 md:p-4 bg-gradient-to-br from-gray-200 to-gray-400">
+
+    <!-- ================= INITIAL SCREEN (START MENU) ================= -->
+    <div id="start-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center modal">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-blue-500">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">POINTING & CALLING</h1>
+                <p class="text-blue-600 font-semibold text-sm uppercase tracking-widest mt-1">Simulator Pro Edition</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้เข้าฝึก (Trainee Name)</label>
+                    <input type="text" id="player-name-input" placeholder="ระบุชื่อของคุณ..." class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-center font-bold text-gray-800">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">เลือกระดับความยาก (Difficulty)</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="diff-btn p-3 rounded-lg border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all font-semibold text-gray-600" data-diff="easy">ง่าย (Easy)</button>
+                        <button class="diff-btn p-3 rounded-lg border-2 border-blue-500 bg-blue-50 text-blue-700 font-bold shadow-sm selected" data-diff="normal">ปกติ (Normal)</button>
+                        <button class="diff-btn p-3 rounded-lg border-2 border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition-all font-semibold text-gray-600" data-diff="hard">ยาก (Hard)</button>
+                        <button class="diff-btn p-3 rounded-lg border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all font-semibold text-gray-600" data-diff="ultimate">ยากสุด (Ultimate)</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">🔊 เสียงขาน (Voice & SFX)</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="sound-toggle" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+
+                <div class="flex gap-2 mt-6">
+                    <button id="show-leaderboard-btn" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg transition-all text-sm">🏆 อันดับคะแนน</button>
+                    <button id="start-game-btn" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1">เริ่มการฝึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= LEADERBOARD MODAL ================= -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center modal hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">🏆 Hall of Fame</h2>
+                <button id="close-leaderboard-btn" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="overflow-y-auto max-h-[60vh]">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-100 text-gray-600 font-semibold text-sm">
+                        <tr>
+                            <th class="p-3 rounded-tl-lg">อันดับ</th>
+                            <th class="p-3">ชื่อ</th>
+                            <th class="p-3">ระดับ</th>
+                            <th class="p-3 text-right">คะแนน</th>
+                            <th class="p-3 text-right rounded-tr-lg">เวลาเฉลี่ย</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="text-sm">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+                <div id="no-scores-msg" class="text-center py-8 text-gray-400 hidden">ยังไม่มีประวัติคะแนน</div>
+            </div>
+            <button id="clear-leaderboard-btn" class="mt-4 text-xs text-red-500 hover:text-red-700 underline w-full text-center">ล้างประวัติคะแนน</button>
+        </div>
+    </div>
+
+    <!-- ================= GAME INTERFACE ================= -->
+    <div id="game-container" class="w-full max-w-5xl hidden flex flex-col gap-4">
+        
+        <!-- Top HUD -->
+        <div class="bg-gray-900 rounded-2xl shadow-xl overflow-hidden text-white relative">
+            <div class="p-6 flex flex-col items-center justify-center min-h-[140px] relative">
+                
+                <!-- Task Display -->
+                <div class="text-sm uppercase tracking-widest text-gray-400 mb-2">คำสั่ง (Command)</div>
+                <div id="task-display" class="flex items-center gap-6 text-5xl md:text-6xl font-black drop-shadow-lg transition-all duration-300 transform scale-100">
+                    <!-- Example: <span class="text-green-400">A</span> <span class="text-yellow-400">15</span> -->
+                </div>
+
+                <!-- Timer Bar -->
+                <div class="absolute bottom-0 left-0 w-full h-2 bg-gray-800">
+                    <div id="timer-bar" class="h-full bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 w-full transition-all duration-100 ease-linear"></div>
+                </div>
+
+                <!-- Numerical Timer & Round -->
+                <div class="absolute top-4 right-4 flex gap-3">
+                    <div class="bg-black/40 px-3 py-1 rounded text-sm font-mono text-gray-300">
+                        ข้อที่: <span id="round-display" class="text-white font-bold">1/5</span>
+                    </div>
+                    <div id="timer-text" class="bg-black/40 px-3 py-1 rounded text-2xl font-mono font-bold text-white">00.00</div>
+                </div>
+
+                <!-- Controls -->
+                <button id="quit-btn" class="absolute top-4 left-4 bg-red-500/20 hover:bg-red-500/50 text-red-200 p-2 rounded-full transition-colors" title="ออกจากเกม">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Grid Area -->
+        <div class="bg-white p-2 md:p-6 rounded-2xl shadow-xl relative overflow-hidden">
+            <div id="game-feedback-overlay" class="feedback-overlay rounded-2xl"></div>
+            
+            <div id="grid-wrapper" class="w-full overflow-x-auto pb-2">
+                <!-- Grid Injected via JS -->
+            </div>
+            
+            <!-- Next Challenge Button (Overlay) -->
+            <div id="next-round-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-30 hidden flex-col items-center justify-center">
+                <h3 id="round-result-text" class="text-3xl font-bold mb-2">ถูกต้อง!</h3>
+                <p id="round-time-text" class="text-gray-600 mb-6 font-mono text-lg">ใช้เวลา 1.25 วินาที</p>
+                <button id="next-round-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full shadow-lg transform transition hover:scale-105 flex items-center gap-2">
+                    ข้อต่อไป <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= RESULTS MODAL ================= -->
+    <div id="results-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center modal hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="bg-blue-600 p-6 text-center">
+                <h2 class="text-3xl font-bold text-white mb-1">สรุปผลการฝึก</h2>
+                <p id="result-player-name" class="text-blue-200 font-medium"></p>
+            </div>
+            
+            <div class="p-6">
+                <!-- Score Cards -->
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1 bg-green-50 p-4 rounded-xl border border-green-100 text-center">
+                        <div class="text-xs text-green-600 font-bold uppercase mb-1">ความถูกต้อง</div>
+                        <div id="summary-score" class="text-3xl font-black text-green-700">5/5</div>
+                    </div>
+                    <div class="flex-1 bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                        <div class="text-xs text-blue-600 font-bold uppercase mb-1">เวลาเฉลี่ย</div>
+                        <div id="summary-time" class="text-3xl font-black text-blue-700">2.5s</div>
+                    </div>
+                </div>
+
+                <!-- Detailed List -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6 max-h-48 overflow-y-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="text-gray-400 border-b border-gray-200"><th class="text-left pb-2">ข้อ</th><th class="pb-2">สถานะ</th><th class="text-right pb-2">เวลา</th></tr></thead>
+                        <tbody id="result-details-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="menu-btn" class="flex-1 py-3 px-4 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition">กลับหน้าหลัก</button>
+                    <button id="replay-btn" class="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-lg">ฝึกอีกครั้ง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        // ================= CONFIGURATION & STATE =================
+        const CONFIG = {
+            totalRounds: 5,
+            difficulties: {
+                easy: { name: 'Easy', rows: ['A', 'B'], cols: 5, time: 10 },
+                normal: { name: 'Normal', rows: ['A', 'B', 'C', 'D', 'E'], cols: 20, time: 7 },
+                hard: { name: 'Hard', rows: ['A', 'B', 'C', 'D', 'E'], cols: 20, time: 4 },
+                ultimate: { name: 'Ultimate', rows: ['A', 'B', 'C', 'D', 'E'], cols: 20, time: 5 }
+            },
+            colors: {
+                green: { name: 'เขียว', class: 'text-green-500', hex: '#22c55e', bg: 'label-green' },
+                yellow: { name: 'เหลือง', class: 'text-yellow-400', hex: '#facc15', bg: 'label-yellow' }
+            }
+        };
+
+        let state = {
+            playerName: '',
+            difficulty: 'normal',
+            soundEnabled: true,
+            currentRound: 0,
+            currentTask: null,
+            timerId: null,
+            startTime: 0,
+            timeLeft: 0,
+            results: [], // { round, status: 'correct'|'incorrect'|'timeout', time }
+            audioContext: null
+        };
+
+        // ================= DOM ELEMENTS =================
+        const els = {
+            modals: {
+                start: document.getElementById('start-modal'),
+                results: document.getElementById('results-modal'),
+                leaderboard: document.getElementById('leaderboard-modal')
+            },
+            inputs: {
+                name: document.getElementById('player-name-input'),
+                sound: document.getElementById('sound-toggle')
+            },
+            game: {
+                container: document.getElementById('game-container'),
+                taskDisplay: document.getElementById('task-display'),
+                timerBar: document.getElementById('timer-bar'),
+                timerText: document.getElementById('timer-text'),
+                roundDisplay: document.getElementById('round-display'),
+                gridWrapper: document.getElementById('grid-wrapper'),
+                overlay: document.getElementById('next-round-overlay'),
+                feedback: document.getElementById('game-feedback-overlay')
+            },
+            btns: {
+                diff: document.querySelectorAll('.diff-btn'),
+                start: document.getElementById('start-game-btn'),
+                showLeaderboard: document.getElementById('show-leaderboard-btn'),
+                closeLeaderboard: document.getElementById('close-leaderboard-btn'),
+                clearLeaderboard: document.getElementById('clear-leaderboard-btn'),
+                nextRound: document.getElementById('next-round-btn'),
+                quit: document.getElementById('quit-btn'),
+                replay: document.getElementById('replay-btn'),
+                menu: document.getElementById('menu-btn')
+            }
+        };
+
+        // ================= AUDIO SYSTEM (TTS & SFX) =================
+        
+        function initAudio() {
+            if (!state.audioContext) {
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (state.audioContext.state === 'suspended') {
+                state.audioContext.resume();
+            }
+        }
+
+        function playSFX(type) {
+            if (!state.soundEnabled || !state.audioContext) return;
+            
+            const ctx = state.audioContext;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            const now = ctx.currentTime;
+
+            if (type === 'correct') {
+                // High pitch Ding
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'incorrect') {
+                // Low pitch Buzz
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'click') {
+                // Subtle UI click
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+        }
+
+        function speakTask(task) {
+            if (!state.soundEnabled) return;
+            window.speechSynthesis.cancel(); // Stop previous
+
+            const lColor = task.letterColor === 'green' ? 'สีเขียว' : 'สีเหลือง';
+            const nColor = task.numberColor === 'green' ? 'สีเขียว' : 'สีเหลือง';
+            
+            // Format: "เอ... สีเขียว... ห้า... สีเหลือง"
+            // Use pauses for clarity
+            const text = `${task.letter}... ${lColor} ... ${task.number}... ${nColor}`;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH';
+            utterance.rate = 1.1; // Slightly faster
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ================= GAME LOGIC =================
+
+        function startGame() {
+            const name = els.inputs.name.value.trim();
+            if (!name) {
+                els.inputs.name.classList.add('ring-2', 'ring-red-500', 'animate-pulse');
+                setTimeout(() => els.inputs.name.classList.remove('ring-2', 'ring-red-500', 'animate-pulse'), 1000);
+                return;
+            }
+
+            state.playerName = name;
+            state.soundEnabled = els.inputs.sound.checked;
+            state.results = [];
+            state.currentRound = 0;
+            
+            initAudio();
+            playSFX('click');
+
+            els.modals.start.classList.add('hidden');
+            els.game.container.classList.remove('hidden');
+            els.game.container.classList.add('flex');
+
+            nextRound();
+        }
+
+        function nextRound() {
+            state.currentRound++;
+            
+            if (state.currentRound > CONFIG.totalRounds) {
+                endGame();
+                return;
+            }
+
+            // Hide overlay if shown
+            els.game.overlay.classList.add('hidden');
+            els.game.overlay.classList.remove('flex');
+            
+            // Update HUD
+            els.game.roundDisplay.textContent = `${state.currentRound}/${CONFIG.totalRounds}`;
+            els.game.taskDisplay.innerHTML = `<span class="text-gray-400 text-lg animate-pulse">กำลังรับคำสั่ง...</span>`;
+            
+            // Generate Grid & Task
+            const { gridConfig, task } = generateLevelData();
+            state.currentTask = task;
+            
+            renderGrid(gridConfig);
+
+            // Small delay before revealing task (simulating processing)
+            setTimeout(() => {
+                revealTask();
+            }, 500);
+        }
+
+        function generateLevelData() {
+            const setting = CONFIG.difficulties[state.difficulty];
+            const isUltimate = state.difficulty === 'ultimate';
+
+            // Layout Configuration (Randomized for Ultimate)
+            let layout = {
+                headerGreenPos: 1, headerYellowPos: 2,
+                sideGreenPos: 1, sideYellowPos: 3,
+                headerGreenOrder: 'asc', headerYellowOrder: 'desc',
+                sideGreenOrder: 'desc', sideYellowOrder: 'asc'
+            };
+
+            if (isUltimate) {
+                layout = {
+                    headerGreenPos: Math.random() < 0.5 ? 1 : 2,
+                    headerYellowPos: Math.random() < 0.5 ? 2 : 1, // Will be swapped if conflict
+                    sideGreenPos: Math.random() < 0.5 ? 1 : 3,
+                    sideYellowPos: Math.random() < 0.5 ? 3 : 1,
+                    headerGreenOrder: Math.random() < 0.5 ? 'asc' : 'desc',
+                    headerYellowOrder: Math.random() < 0.5 ? 'asc' : 'desc',
+                    sideGreenOrder: Math.random() < 0.5 ? 'asc' : 'desc',
+                    sideYellowOrder: Math.random() < 0.5 ? 'asc' : 'desc'
+                };
+                // Ensure unique positions
+                if (layout.headerGreenPos === layout.headerYellowPos) layout.headerYellowPos = layout.headerGreenPos === 1 ? 2 : 1;
+                if (layout.sideGreenPos === layout.sideYellowPos) layout.sideYellowPos = layout.sideGreenPos === 1 ? 3 : 1;
+            }
+
+            // Generate Task
+            const task = {
+                letter: setting.rows[Math.floor(Math.random() * setting.rows.length)],
+                letterColor: Math.random() < 0.5 ? 'green' : 'yellow',
+                number: Math.floor(Math.random() * setting.cols) + 1,
+                numberColor: Math.random() < 0.5 ? 'green' : 'yellow',
+                layout: layout,
+                setting: setting
+            };
+
+            return { gridConfig: { setting, layout }, task };
+        }
+
+        function renderGrid({ setting, layout }) {
+            const container = els.game.gridWrapper;
+            container.innerHTML = '';
+
+            const grid = document.createElement('div');
+            grid.className = 'grid-layout-container min-w-[800px]'; // Min width to prevent squishing
+
+            // Inline styles for grid areas
+            const styles = {
+                hg: `grid-column: 2; grid-row: ${layout.headerGreenPos}; display: grid; grid-template-columns: repeat(${setting.cols}, 1fr); gap: 4px;`,
+                hy: `grid-column: 2; grid-row: ${layout.headerYellowPos}; display: grid; grid-template-columns: repeat(${setting.cols}, 1fr); gap: 4px;`,
+                sg: `grid-column: ${layout.sideGreenPos}; grid-row: 3; display: grid; grid-template-rows: repeat(${setting.rows.length}, 1fr); gap: 4px;`,
+                sy: `grid-column: ${layout.sideYellowPos}; grid-row: 3; display: grid; grid-template-rows: repeat(${setting.rows.length}, 1fr); gap: 4px;`,
+                main: `grid-column: 2; grid-row: 3; display: grid; grid-template-columns: repeat(${setting.cols}, 1fr); grid-template-rows: repeat(${setting.rows.length}, 1fr); gap: 4px;`
+            };
+
+            // Generate Headers
+            const makeLabels = (count, isAsc, type) => {
+                let html = '';
+                const arr = Array.from({length: count}, (_, i) => isAsc === 'asc' ? i + 1 : count - i);
+                arr.forEach(n => html += `<div class="label ${CONFIG.colors[type].bg}">${n}</div>`);
+                return html;
+            };
+            
+            // Generate Sidebars
+            const makeSideLabels = (arr, isAsc, type) => {
+                let html = '';
+                const labels = isAsc === 'asc' ? arr : [...arr].reverse();
+                labels.forEach(l => html += `<div class="label ${CONFIG.colors[type].bg}">${l}</div>`);
+                return html;
+            };
+
+            grid.innerHTML = `
+                <div style="${styles.hg}">${makeLabels(setting.cols, layout.headerGreenOrder, 'green')}</div>
+                <div style="${styles.hy}">${makeLabels(setting.cols, layout.headerYellowOrder, 'yellow')}</div>
+                <div style="${styles.sg}">${makeSideLabels(setting.rows, layout.sideGreenOrder, 'green')}</div>
+                <div style="${styles.sy}">${makeSideLabels(setting.rows, layout.sideYellowOrder, 'yellow')}</div>
+                <div id="main-click-area" style="${styles.main}"></div>
+            `;
+
+            container.appendChild(grid);
+
+            // Generate Clickable Cells
+            const mainArea = grid.querySelector('#main-click-area');
+            for (let r = 0; r < setting.rows.length; r++) {
+                for (let c = 0; c < setting.cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    cell.onclick = (e) => handleCellClick(r, c, e.target);
+                    mainArea.appendChild(cell);
+                }
+            }
+        }
+
+        function revealTask() {
+            const t = state.currentTask;
+            const lClass = t.letterColor === 'green' ? CONFIG.colors.green.class : CONFIG.colors.yellow.class;
+            const nClass = t.numberColor === 'green' ? CONFIG.colors.green.class : CONFIG.colors.yellow.class;
+
+            // Animate Text In
+            els.game.taskDisplay.style.opacity = '0';
+            els.game.taskDisplay.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                els.game.taskDisplay.innerHTML = `
+                    <span class="${lClass} drop-shadow-sm filter">${t.letter}</span>
+                    <span class="text-gray-600 text-4xl mx-2">•</span>
+                    <span class="${nClass} drop-shadow-sm filter">${t.number}</span>
+                `;
+                els.game.taskDisplay.style.opacity = '1';
+                els.game.taskDisplay.style.transform = 'scale(1)';
+                
+                // Start Timer and Speak
+                speakTask(t);
+                startTimer();
+            }, 100);
+        }
+
+        function startTimer() {
+            clearInterval(state.timerId);
+            const maxTime = CONFIG.difficulties[state.difficulty].time;
+            state.timeLeft = maxTime;
+            state.startTime = Date.now();
+
+            const updateTimer = () => {
+                const now = Date.now();
+                const diff = (now - state.startTime) / 1000;
+                state.timeLeft = Math.max(0, maxTime - diff);
+
+                // Update Text
+                els.game.timerText.textContent = state.timeLeft.toFixed(2);
+                
+                // Update Bar
+                const pct = (state.timeLeft / maxTime) * 100;
+                els.game.timerBar.style.width = `${pct}%`;
+
+                // Color warning
+                if (pct < 30) els.game.timerBar.classList.replace('from-green-500', 'from-red-500'); // Simplified logic
+
+                if (state.timeLeft <= 0) {
+                    processResult('timeout');
+                }
+            };
+
+            state.timerId = setInterval(updateTimer, 50); // High refresh rate for smooth bar
+        }
+
+        function handleCellClick(r, c, cellElement) {
+            if (state.timeLeft <= 0) return; // Prevent clicking after timeout
+            
+            const t = state.currentTask;
+            const s = t.setting;
+            const l = t.layout;
+
+            // Determine values at clicked position based on layout logic
+            const sideGreenRows = l.sideGreenOrder === 'asc' ? s.rows : [...s.rows].reverse();
+            const sideYellowRows = l.sideYellowOrder === 'asc' ? s.rows : [...s.rows].reverse();
+            
+            const headerGreenVal = l.headerGreenOrder === 'asc' ? c + 1 : s.cols - c;
+            const headerYellowVal = l.headerYellowOrder === 'asc' ? c + 1 : s.cols - c;
+
+            // Logic Check
+            const letterMatch = t.letterColor === 'green' 
+                ? sideGreenRows[r] === t.letter 
+                : sideYellowRows[r] === t.letter;
+
+            const numberMatch = t.numberColor === 'green'
+                ? headerGreenVal === t.number
+                : headerYellowVal === t.number;
+
+            if (letterMatch && numberMatch) {
+                processResult('correct', cellElement);
+            } else {
+                processResult('incorrect', cellElement);
+            }
+        }
+
+        function processResult(status, element) {
+            clearInterval(state.timerId);
+            
+            const timeTaken = status === 'timeout' 
+                ? CONFIG.difficulties[state.difficulty].time 
+                : (CONFIG.difficulties[state.difficulty].time - state.timeLeft);
+
+            state.results.push({ round: state.currentRound, status, time: timeTaken });
+
+            // Visual & Audio Feedback
+            playSFX(status);
+
+            const overlay = els.game.feedback;
+            overlay.className = 'feedback-overlay rounded-2xl show'; // reset classes
+
+            if (status === 'correct') {
+                overlay.innerHTML = '<div class="text-6xl">✅</div>';
+                overlay.classList.add('feedback-correct');
+                if (element) element.style.backgroundColor = '#86efac'; // flash green
+            } else {
+                overlay.innerHTML = '<div class="text-6xl">❌</div>';
+                overlay.classList.add('feedback-incorrect');
+                els.game.container.classList.add('shake-effect'); // Screen Shake
+                setTimeout(() => els.game.container.classList.remove('shake-effect'), 500);
+                if (element) element.style.backgroundColor = '#fca5a5'; // flash red
+            }
+
+            setTimeout(() => {
+                overlay.classList.remove('show');
+                showRoundSummary(status, timeTaken);
+            }, 800);
+        }
+
+        function showRoundSummary(status, time) {
+            const overlay = els.game.overlay;
+            const title = document.getElementById('round-result-text');
+            const sub = document.getElementById('round-time-text');
+            const btn = els.btns.nextRound;
+
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+
+            if (status === 'correct') {
+                title.textContent = 'ยอดเยี่ยม! (Excellent)';
+                title.className = 'text-3xl font-bold mb-2 text-green-600';
+            } else if (status === 'incorrect') {
+                title.textContent = 'ผิดพลาด! (Mistake)';
+                title.className = 'text-3xl font-bold mb-2 text-red-600';
+            } else {
+                title.textContent = 'หมดเวลา! (Timeout)';
+                title.className = 'text-3xl font-bold mb-2 text-orange-600';
+            }
+
+            sub.textContent = `เวลา: ${time.toFixed(2)} วินาที`;
+            
+            // Auto focus button for keyboard users
+            setTimeout(() => btn.focus(), 100);
+        }
+
+        function endGame() {
+            els.game.container.classList.add('hidden');
+            els.game.container.classList.remove('flex');
+            els.modals.results.classList.remove('hidden');
+
+            const correctCount = state.results.filter(r => r.status === 'correct').length;
+            const totalTime = state.results.reduce((acc, curr) => acc + curr.time, 0);
+            const avgTime = correctCount > 0 ? (totalTime / CONFIG.totalRounds) : 0; // Simple avg over total rounds
+
+            // Update UI
+            document.getElementById('result-player-name').textContent = state.playerName;
+            document.getElementById('summary-score').textContent = `${correctCount}/${CONFIG.totalRounds}`;
+            document.getElementById('summary-time').textContent = `${avgTime.toFixed(2)}s`;
+
+            const tbody = document.getElementById('result-details-body');
+            tbody.innerHTML = '';
+            
+            state.results.forEach(r => {
+                let color = r.status === 'correct' ? 'text-green-600' : (r.status === 'timeout' ? 'text-orange-500' : 'text-red-600');
+                let text = r.status === 'correct' ? 'ถูกต้อง' : (r.status === 'timeout' ? 'หมดเวลา' : 'ผิดพลาด');
+                tbody.innerHTML += `
+                    <tr class="border-b border-gray-100 last:border-0">
+                        <td class="py-2 font-mono text-gray-500">#${r.round}</td>
+                        <td class="py-2 font-bold ${color}">${text}</td>
+                        <td class="py-2 text-right font-mono text-gray-700">${r.time.toFixed(2)}s</td>
+                    </tr>
+                `;
+            });
+
+            // Save to Leaderboard if score > 0
+            if (correctCount > 0) {
+                saveToLeaderboard(correctCount, avgTime);
+            }
+        }
+
+        // ================= LEADERBOARD LOGIC =================
+
+        function saveToLeaderboard(score, time) {
+            const key = 'pc_sim_leaderboard';
+            let data = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            data.push({
+                name: state.playerName,
+                diff: CONFIG.difficulties[state.difficulty].name,
+                score: score,
+                time: time,
+                date: new Date().toISOString()
+            });
+
+            // Sort: High Score > Low Time
+            data.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.time - b.time;
+            });
+
+            // Keep top 10
+            data = data.slice(0, 10);
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function showLeaderboard() {
+            const data = JSON.parse(localStorage.getItem('pc_sim_leaderboard') || '[]');
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                document.getElementById('no-scores-msg').classList.remove('hidden');
+            } else {
+                document.getElementById('no-scores-msg').classList.add('hidden');
+                data.forEach((entry, i) => {
+                    let medal = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : ''));
+                    let rowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    tbody.innerHTML += `
+                        <tr class="${rowClass} border-b border-gray-100 hover:bg-blue-50 transition">
+                            <td class="p-3 font-bold text-gray-600">${i+1} ${medal}</td>
+                            <td class="p-3 font-medium text-gray-800">${entry.name}</td>
+                            <td class="p-3 text-xs uppercase tracking-wide text-gray-500">${entry.diff}</td>
+                            <td class="p-3 text-right font-bold text-green-600">${entry.score}/5</td>
+                            <td class="p-3 text-right font-mono text-gray-600">${parseFloat(entry.time).toFixed(2)}s</td>
+                        </tr>
+                    `;
+                });
+            }
+            els.modals.leaderboard.classList.remove('hidden');
+        }
+
+        // ================= EVENT LISTENERS =================
+
+        // Difficulty Selection
+        els.btns.diff.forEach(btn => {
+            btn.addEventListener('click', () => {
+                els.btns.diff.forEach(b => {
+                    b.classList.remove('selected', 'bg-blue-50', 'text-blue-700', 'border-blue-500', 'shadow-sm');
+                    b.classList.add('border-gray-200', 'text-gray-600');
+                });
+                btn.classList.add('selected', 'bg-blue-50', 'text-blue-700', 'border-blue-500', 'shadow-sm');
+                btn.classList.remove('border-gray-200', 'text-gray-600');
+                state.difficulty = btn.dataset.diff;
+            });
+        });
+
+        // Main Buttons
+        els.btns.start.addEventListener('click', startGame);
+        els.btns.nextRound.addEventListener('click', () => {
+            playSFX('click');
+            nextRound();
+        });
+        
+        // Results Menu
+        els.btns.replay.addEventListener('click', () => {
+            els.modals.results.classList.add('hidden');
+            startGame();
+        });
+        els.btns.menu.addEventListener('click', () => {
+            els.modals.results.classList.add('hidden');
+            els.modals.start.classList.remove('hidden');
+        });
+        els.btns.quit.addEventListener('click', () => {
+             if(confirm('ต้องการออกจากเกมใช่หรือไม่?')) {
+                 clearInterval(state.timerId);
+                 window.speechSynthesis.cancel();
+                 els.game.container.classList.add('hidden');
+                 els.game.container.classList.remove('flex');
+                 els.modals.start.classList.remove('hidden');
+             }
+        });
+
+        // Leaderboard
+        els.btns.showLeaderboard.addEventListener('click', showLeaderboard);
+        els.btns.closeLeaderboard.addEventListener('click', () => els.modals.leaderboard.classList.add('hidden'));
+        els.btns.clearLeaderboard.addEventListener('click', () => {
+            if(confirm('ล้างข้อมูลคะแนนทั้งหมด?')) {
+                localStorage.removeItem('pc_sim_leaderboard');
+                showLeaderboard();
+            }
+        });
+
+        // Initialize Audio Context on first click anywhere (Browser policy)
+        document.body.addEventListener('click', initAudio, { once: true });
+
+    </script>
+</body>
+</html>
